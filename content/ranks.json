@@ -1,0 +1,9 @@
+[
+  { "n": 1, "title": "Посыльный", "weeks": "1–2", "requirement": "Первая таблица с формулами сдана", "promoteWhen": { "contracts": [1] } },
+  { "n": 2, "title": "Приказчик", "weeks": "3–5", "requirement": "Посчитал юнит-экономику 10 реальных товаров Novelia", "promoteWhen": { "contracts": [2] } },
+  { "n": 3, "title": "Старший приказчик", "weeks": "6–9", "requirement": "Нашёл и исправил 3 убыточные цены", "promoteWhen": { "contracts": [5, 6] } },
+  { "n": 4, "title": "Управляющий лавкой", "weeks": "10–13", "requirement": "Запустил рекламу, посчитал ДРР и ROMI", "promoteWhen": { "contracts": [11, 12] } },
+  { "n": 5, "title": "Компаньон", "weeks": "14–17", "requirement": "Провёл реальные переговоры с поставщиком и зафиксировал итог", "promoteWhen": { "contracts": [18] } },
+  { "n": 6, "title": "Глава торгового дома", "weeks": "18–21", "requirement": "Еженедельный дашборд Novelia ведётся им 4 недели подряд", "promoteWhen": { "contracts": [19, 20, 21, 22] } },
+  { "n": 7, "title": "Глава Дома", "weeks": "22–24", "requirement": "Портфолио собрано, 10 откликов отправлено, 1 собеседование пройдено", "promoteWhen": { "contracts": [] } }
+]

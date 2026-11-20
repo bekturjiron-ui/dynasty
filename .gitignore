@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+*.local
+.DS_Store
+
+# Выгрузки из кабинета Kaspi: персональные данные покупателей, в git не кладём
+data/
