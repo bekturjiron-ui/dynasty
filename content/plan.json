@@ -458,7 +458,15 @@
     "resource": {
       "title": "Stepik: Excel и Google Таблицы для аналитика",
       "kind": "course"
-    }
+    },
+    "lessonIds": [
+      "w20-l1",
+      "w20-l2",
+      "w20-l3",
+      "w20-l4",
+      "w20-l5"
+    ],
+    "bossId": "w20-boss"
   },
   {
     "n": 21,
@@ -473,7 +481,15 @@
     "resource": {
       "title": "Т-Банк: Управление командой",
       "kind": "course"
-    }
+    },
+    "lessonIds": [
+      "w21-l1",
+      "w21-l2",
+      "w21-l3",
+      "w21-l4",
+      "w21-l5"
+    ],
+    "bossId": "w21-boss"
   },
   {
     "n": 22,
