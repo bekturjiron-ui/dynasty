@@ -65,7 +65,14 @@ export type KaspiImport = {
 }
 
 /** Правки плана наставником (и порядок уроков игроком). Нет записи — действует content/plan.json. */
-export type PlanOverride = { id: 'main'; weeks: Week[]; missions: Mission[]; updatedAt: string }
+export type PlanOverride = {
+  id: 'main'
+  weeks: Week[]
+  missions: Mission[]
+  updatedAt: string
+  /** Базовый план на момент сохранения: по нему видно, что правил человек, а что обновилось в новой версии игры. */
+  baseWeeks?: Week[]
+}
 
 /** Выполненная своя миссия. */
 export type MissionResult = { id: string; at: string; value?: number; photo?: Blob }

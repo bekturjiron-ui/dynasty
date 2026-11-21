@@ -9,11 +9,59 @@ export const weekKey = (w: Week) => w.key ?? w.n
 /** Нумерация по порядку: n = позиция, key сохраняется. */
 export const renumber = (weeks: Week[]): Week[] => weeks.map((w, i) => ({ ...w, key: weekKey(w), n: i + 1 }))
 
+const MERGED_FIELDS = ['act', 'title', 'bossId', 'negotiationId', 'bossTitle', 'contract', 'resource', 'deadline'] as const
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x))
+
+/**
+ * Накладывает правки на новую версию базового плана. Поле берётся из правок, только если человек его менял
+ * (отличается от snapshot — базы на момент сохранения). Иначе берётся новая версия игры.
+ * Старые записи без snapshot хранили лишь порядок уроков или правки до появления этой логики: у них сохраняем порядок уроков и свои недели (key > 100).
+ */
+export function rebaseWeeks(baseWeeks: Week[], ownWeeks: Week[], snapshot?: Week[]): Week[] {
+  const snap = new Map((snapshot ?? ownWeeks).map((w) => [weekKey(w), w]))
+  const baseBy = new Map(baseWeeks.map((w) => [weekKey(w), w]))
+  const ownBy = new Map(ownWeeks.map((w) => [weekKey(w), w]))
+  const isCustom = (w: Week) => !baseBy.has(weekKey(w)) && (snapshot ? !snap.has(weekKey(w)) : weekKey(w) > 100)
+
+  const merged = (b: Week): Week => {
+    const o = ownBy.get(weekKey(b))
+    if (!o) return b
+    const s = snap.get(weekKey(b)) ?? o
+    const out: Week = { ...b }
+    for (const f of MERGED_FIELDS) if (!same(o[f], s[f])) Object.assign(out, { [f]: o[f] })
+    out.lessonIds = sameSet(o.lessonIds, s.lessonIds)
+      ? [...o.lessonIds.filter((id) => b.lessonIds.includes(id)), ...b.lessonIds.filter((id) => !o.lessonIds.includes(id))]
+      : o.lessonIds
+    return out
+  }
+
+  // неделя из базы, которую наставник удалил, остаётся удалённой
+  const baseList = baseWeeks.filter((b) => !snapshot || !snap.has(weekKey(b)) || ownBy.has(weekKey(b)))
+  const ownOrder = ownWeeks.map(weekKey).filter((k) => snap.has(k))
+  const snapOrder = (snapshot ?? ownWeeks).map(weekKey).filter((k) => ownBy.has(k))
+  const kept = ownWeeks.filter((w) => baseBy.has(weekKey(w)) || isCustom(w))
+
+  if (snapshot && !same(ownOrder, snapOrder)) {
+    // наставник переставлял недели: держим его порядок, новые недели вставляем на их место в базе
+    const seq = kept.map((w) => (baseBy.has(weekKey(w)) ? merged(baseBy.get(weekKey(w))!) : w))
+    baseList.forEach((b, i) => { if (!ownBy.has(weekKey(b))) seq.splice(Math.min(i, seq.length), 0, b) })
+    return seq
+  }
+  const seq = baseList.map(merged)
+  ownWeeks.forEach((w, i) => {
+    if (!isCustom(w)) return
+    const prev = i > 0 ? seq.findIndex((x) => weekKey(x) === weekKey(ownWeeks[i - 1])) : -1
+    seq.splice(prev < 0 ? (i === 0 ? 0 : seq.length) : prev + 1, 0, w)
+  })
+  return seq
+}
+
 /** Контент с учётом правок наставника. */
-export function effectiveContent(base: Content, override?: { weeks: Week[]; missions?: Mission[] }): Content {
+export function effectiveContent(base: Content, override?: { weeks: Week[]; missions?: Mission[]; baseWeeks?: Week[] }): Content {
   if (!override?.weeks?.length) return base
   // уроки/боссы, которых больше нет в контенте, тихо выкидываем — план не должен ломать игру
-  const weeks = renumber(override.weeks).map((w) => ({
+  const weeks = renumber(rebaseWeeks(base.weeks, override.weeks, override.baseWeeks)).map((w) => ({
     ...w,
     lessonIds: w.lessonIds.filter((id) => base.lessons[id]),
     bossId: w.bossId && base.bosses[w.bossId] ? w.bossId : undefined,

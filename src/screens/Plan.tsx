@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { content as baseContent } from '../content'
 import { savePlan, weekStatus } from '../game/engine'
 import { deadlineOf } from '../game/plan'
 import type { Game } from '../game/useGame'
@@ -27,7 +28,7 @@ export default function Plan({ game }: { game: Game }) {
 
   // Игрок меняет порядок уроков внутри недели без PIN
   async function reorderLessons(weekKey: number, lessonIds: string[]) {
-    await savePlan(c.weeks.map((w) => ((w.key ?? w.n) === weekKey ? { ...w, lessonIds } : w)), c.missions)
+    await savePlan(c.weeks.map((w) => ((w.key ?? w.n) === weekKey ? { ...w, lessonIds } : w)), c.missions, baseContent.weeks)
   }
   function checkPin() {
     if (pin === (game.settings.mentorPin || '0000')) { setEditing(true); setPinAsk(false); setPin(''); setPinErr(false) } else setPinErr(true)

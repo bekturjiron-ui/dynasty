@@ -98,12 +98,12 @@
     "id": "w02-boss",
     "week": 2,
     "title": "Товар продаётся, а денег нет",
-    "story": "{{worst.name}} — в лидерах по заказам: {{orders}} продаж в месяц по {{price|tg}}. А денег на счёте Дома не прибавляется. Советник раскладывает бумаги: себестоимость {{cost|tg}}, комиссия {{fee|pct}}, доставка {{delivery|tg}}, налог {{tax|pct}}, упаковка {{pack|pct}}.",
+    "story": "{{p1.name}} — лидер по заказам: {{orders}} продаж в месяц по {{price|tg}}. А денег на счёте Дома почти не прибавляется. Советник раскладывает бумаги: себестоимость {{cost|tg}}, комиссия {{fee|pct}}, доставка {{delivery|tg}}, налог {{tax|pct}}, упаковка {{pack|pct}}.",
     "vars": {
-      "delivery": "worst.delivery",
-      "price": "worst.price",
-      "cost": "worst.cost+worst.inbound",
-      "orders": "worst.orders"
+      "delivery": "p1.delivery",
+      "price": "p1.price",
+      "cost": "p1.cost+p1.inbound",
+      "orders": "p1.orders"
     },
     "jitter": [
       "price",
@@ -167,7 +167,7 @@
         }
       },
       {
-        "prompt": "Какая минимальная цена, чтобы товар перестал уносить деньги?",
+        "prompt": "Какая минимальная цена, ниже которой товар начнёт уносить деньги?",
         "answerFormula": "(cost+delivery)/(1-fee-tax-pack)",
         "hints": [
           "(Себестоимость + доставка) / (1 − комиссия − налог − упаковка)."

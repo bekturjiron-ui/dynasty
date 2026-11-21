@@ -142,14 +142,14 @@ for (const n of Object.values(content.negotiations)) {
   const badDeals = outs.filter(({ s }) => s.end === 'deal' && s.loyalty < n.coldBelow)
   const best = goodDeals.reduce((m, x) => (x.o.saving > m.o.saving ? x : m), goodDeals[0])
   const worstPressure = badDeals.reduce((m, x) => (x.s.discount > m.s.discount ? x : m), badDeals[0])
-  const be = sc0.breakeven as number | undefined
+  const be = sc0.target as number | undefined
   console.log(`  исходов: ${outs.length} — ${JSON.stringify(byEnd)}`)
   if (best) console.log(`  лучшая сделка с отношениями: скидка ${best.s.discount}%, цена ${best.o.dealUnit} ₸, лояльность ${best.s.loyalty}, экономия за ${n.orders} партии ${best.o.saving} ₸ (потолок ${best.o.bestSaving} ₸)`)
   if (worstPressure) console.log(`  давление: скидка ${worstPressure.s.discount}%, лояльность ${worstPressure.s.loyalty}, итог за ${n.orders} партии ${worstPressure.o.saving} ₸`)
   if (be !== undefined) {
     const reach = goodDeals.filter((x) => (x.o.dealUnit ?? Infinity) <= be).length
-    console.log(`  черта безубыточности ${Math.round(be)} ₸: достигают ${reach} из ${goodDeals.length} сделок с отношениями`)
-    if (!reach) fail(n.id, 'ни одна честная сделка не выводит товар из минуса')
+    console.log(`  целевой закуп ${Math.round(be)} ₸: достигают ${reach} из ${goodDeals.length} сделок с отношениями`)
+    if (!reach) fail(n.id, 'ни одна честная сделка не достигает целевого закупа')
   }
   if (!goodDeals.length) fail(n.id, 'нет ни одной сделки с сохранёнными отношениями')
   if (!badDeals.length) fail(n.id, 'давление нигде не ведёт к сделке с холодным поставщиком')

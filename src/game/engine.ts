@@ -219,8 +219,8 @@ export async function completeNegotiation(
 
 // ---------- План наставника ----------
 /** Сохранить правки плана (наставник или порядок уроков игроком). */
-export async function savePlan(weeks: Week[], missions: Mission[]) {
-  await db.plan.put({ id: 'main', weeks: weeks.map((w, i) => ({ ...w, key: w.key ?? w.n, n: i + 1 })), missions, updatedAt: new Date().toISOString() })
+export async function savePlan(weeks: Week[], missions: Mission[], baseWeeks: Week[]) {
+  await db.plan.put({ id: 'main', weeks: weeks.map((w, i) => ({ ...w, key: w.key ?? w.n, n: i + 1 })), missions, baseWeeks, updatedAt: new Date().toISOString() })
 }
 export async function resetPlan() {
   await db.plan.delete('main')
