@@ -16,7 +16,7 @@
 ## Статус этапов
 - [x] 1 Каркас и деплой  - [x] 2 Данные и контент (недели 1–2)  - [x] 3 Плеер урока  - [x] 4 Прогресс
 - [x] 5 Боссы и переговоры (движок src/game/negotiation.ts, контент content/negotiations.json, демо w16-neg)  - [x] 6 Империя (content/empire.json, src/game/rival.ts)  - [x] 7 Совет Дома (src/screens/council, src/game/importKaspi.ts)
-- [x] 8 Редактор и бэкап (src/screens/plan/PlanEditor.tsx, src/game/plan.ts)  - [ ] 9 Контент 3–24 (готовы недели 3–23, дальше неделя 24 «Собеседование» (ключ 24, финальный босс); диалог w16-neg стоит на неделе 17 и играет роль её босса; id уроков — по позиции недели, а не по key: w05 = key 25, w06–w09 = key 5–8, w10 = key 26, w11–w15 = key 9–13, w16–w17 = key 15–16)
+- [x] 8 Редактор и бэкап (src/screens/plan/PlanEditor.tsx, src/game/plan.ts)  - [x] 9 Контент 3–24 (готовы все недели 3–24; финальный босс w24-boss на неделе 24; диалог w16-neg стоит на неделе 17 и играет роль её босса; id уроков — по позиции недели, а не по key: w05 = key 25, w06–w09 = key 5–8, w10 = key 26, w11–w15 = key 9–13, w16–w17 = key 15–16)
 
 ## Переговоры
 - Узел: реплика NPC + 1–4 варианта; `effect.price` — п.п. скидки, `loyalty`/`patience` — сдвиг шкал 0…100.
