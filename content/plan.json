@@ -289,9 +289,18 @@
       "proof": "photo"
     },
     "resource": {
-      "title": "Kaspi Гид: Реклама товаров (ДРР, цена клика)",
+      "title": "Kaspi Гид: условия запуска рекламы товаров",
+      "url": "https://guide.kaspi.kz/partner/ru/marketing/advert_goods/launch/q2088",
       "kind": "kaspi-guide"
-    }
+    },
+    "lessonIds": [
+      "w13-l1",
+      "w13-l2",
+      "w13-l3",
+      "w13-l4",
+      "w13-l5"
+    ],
+    "bossId": "w13-boss"
   },
   {
     "n": 14,
@@ -305,9 +314,18 @@
       "numberLabel": "ДРР теста, %"
     },
     "resource": {
-      "title": "Kaspi Гид: Реклама товаров — рекомендации",
+      "title": "Kaspi Гид: как увеличить продажи рекламой",
+      "url": "https://guide.kaspi.kz/partner/ru/marketing/advert_goods/general/q2720",
       "kind": "kaspi-guide"
-    }
+    },
+    "lessonIds": [
+      "w14-l1",
+      "w14-l2",
+      "w14-l3",
+      "w14-l4",
+      "w14-l5"
+    ],
+    "bossId": "w14-boss"
   },
   {
     "n": 15,
