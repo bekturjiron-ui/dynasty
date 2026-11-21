@@ -103,7 +103,7 @@ export default function Plan({ game }: { game: Game }) {
                       <span className="text-[11px] text-muted">открыто всегда</span>
                     </button>
                   )}
-                  {!s.bossReady && w.bossTitle !== '—' && <p className="px-1 text-[13px] text-muted">Босс недели: {w.bossTitle} — готовится.</p>}
+                  {!s.bossReady && !(w.negotiationId && c.negotiations[w.negotiationId]) && w.bossTitle !== '—' && <p className="px-1 text-[13px] text-muted">Босс недели: {w.bossTitle} — готовится.</p>}
                   {w.resource && (
                     <p className="px-1 text-[13px] text-muted">
                       Источник недели: {w.resource.url ? <a className="text-gold underline" href={w.resource.url} target="_blank" rel="noreferrer">{w.resource.title}</a> : w.resource.title}
