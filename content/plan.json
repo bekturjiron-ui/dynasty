@@ -146,9 +146,18 @@
       "proof": "photo"
     },
     "resource": {
-      "title": "Kaspi Гид: условие цены для запуска рекламы",
+      "title": "Kaspi Гид: почему акцию с бонусами приостановили",
+      "url": "https://guide.kaspi.kz/partner/ru/marketing/bonus_purchase/q4867",
       "kind": "kaspi-guide"
-    }
+    },
+    "lessonIds": [
+      "w07-l1",
+      "w07-l2",
+      "w07-l3",
+      "w07-l4",
+      "w07-l5"
+    ],
+    "bossId": "w07-boss"
   },
   {
     "n": 8,
@@ -159,6 +168,19 @@
     "contract": {
       "text": "Расчёт одной акции Novelia до запуска: что теряем, что получаем.",
       "proof": "photo"
+    },
+    "lessonIds": [
+      "w08-l1",
+      "w08-l2",
+      "w08-l3",
+      "w08-l4",
+      "w08-l5"
+    ],
+    "bossId": "w08-boss",
+    "resource": {
+      "title": "Kaspi Гид: условия акции с бонусами на товар",
+      "url": "https://guide.kaspi.kz/partner/ru/marketing/bonus_purchase/q3814",
+      "kind": "kaspi-guide"
     }
   },
   {
