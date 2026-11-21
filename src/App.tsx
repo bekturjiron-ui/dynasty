@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { foundHouse } from './game/engine'
-import { onRankUp, type RankUp } from './game/events'
+import { clearRankUp, onRankUp, peekRankUp, type RankUp } from './game/events'
 import { useGame, type Game } from './game/useGame'
 import { Button, Icon, Label } from './components/ui'
 import Today from './screens/Today'
@@ -92,8 +92,8 @@ function Welcome() {
 }
 
 function RankCeremony() {
-  const [e, setE] = useState<RankUp | null>(null)
-  useEffect(() => onRankUp(setE), [])
+  const [e, setE] = useState<RankUp | null>(() => peekRankUp())
+  useEffect(() => { const u = peekRankUp(); if (u) setE(u); return onRankUp(setE) }, [])
   if (!e) return null
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 px-8 text-center backdrop-blur" role="dialog" aria-label="Новый титул">
@@ -101,7 +101,7 @@ function RankCeremony() {
       <Label>Совет Дома объявляет</Label>
       <div className="gold-text mt-3 font-serif text-[42px] leading-tight">{e.title}</div>
       <p className="mt-4 text-[16px] leading-relaxed text-parch/90">Титул получен за реальный результат. Его не отнять.</p>
-      <Button className="mt-10 w-full max-w-xs" onClick={() => setE(null)}>Принять титул</Button>
+      <Button className="mt-10 w-full max-w-xs" onClick={() => { clearRankUp(); setE(null) }}>Принять титул</Button>
     </div>
   )
 }

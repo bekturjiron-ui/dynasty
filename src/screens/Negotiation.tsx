@@ -20,6 +20,7 @@ export default function NegotiationScreen() {
   const [log, setLog] = useState<Line[]>([])
   const [result, setResult] = useState<{ o: NegOutcome; gain: { xp: number; influence: number; reputation: number } } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [saveErr, setSaveErr] = useState(false)
   const bottom = useRef<HTMLDivElement>(null)
 
   const base = game.loading ? null : game.scope
@@ -36,6 +37,7 @@ export default function NegotiationScreen() {
     const s = startNeg(n)
     setSt(s)
     setResult(null)
+    setSaveErr(false)
     setLog([{ who: 'npc', text: render(nodes[s.node].npcLine, negScope(n, base!, s)) }])
   }
 
@@ -60,9 +62,15 @@ export default function NegotiationScreen() {
     setSt(next)
     if (next.end) {
       const o2 = outcome(n, next, base!)
-      const gain = await completeNegotiation(content, n.id, {
-        end: next.end, discount: next.discount, loyalty: next.loyalty, saving: o2.saving, xp: o2.xp, influence: o2.influence, reputation: o2.reputation,
-      })
+      let gain = { xp: 0, influence: 0, reputation: 0 }
+      try {
+        gain = await completeNegotiation(content, n.id, {
+          end: next.end, discount: next.discount, loyalty: next.loyalty, saving: o2.saving, xp: o2.xp, influence: o2.influence, reputation: o2.reputation,
+        })
+        setSaveErr(false)
+      } catch {
+        setSaveErr(true) // итог всё равно показываем, чтобы разговор не пропал
+      }
       setResult({ o: o2, gain })
     }
   }
@@ -161,6 +169,7 @@ export default function NegotiationScreen() {
                   </p>
                 )}
               </div>
+              {saveErr && <p className="text-center text-[13px] text-loss">Награду записать не удалось: на телефоне не хватает места. Освободи память и пройди переговоры ещё раз.</p>}
               <p className="text-center text-[13px] text-muted">
                 {result.gain.xp ? `+${result.gain.xp} XP · +${result.gain.influence} Влияния · ` : !result.o.xp ? 'XP — только за сделку, после которой партнёр остаётся · ' : 'Награда за эти переговоры уже в казне · '}Репутация {result.gain.reputation >= 0 ? '+' : ''}{result.gain.reputation}
               </p>

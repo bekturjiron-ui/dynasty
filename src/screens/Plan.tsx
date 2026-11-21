@@ -28,7 +28,7 @@ export default function Plan({ game }: { game: Game }) {
 
   // Игрок меняет порядок уроков внутри недели без PIN
   async function reorderLessons(weekKey: number, lessonIds: string[]) {
-    await savePlan(c.weeks.map((w) => ((w.key ?? w.n) === weekKey ? { ...w, lessonIds } : w)), c.missions, baseContent.weeks)
+    await savePlan(c.weeks.map((w) => ((w.key ?? w.n) === weekKey ? { ...w, lessonIds } : w)), c.missions, baseContent.weeks, baseContent.missions)
   }
   function checkPin() {
     if (pin === (game.settings.mentorPin || '0000')) { setEditing(true); setPinAsk(false); setPin(''); setPinErr(false) } else setPinErr(true)

@@ -158,7 +158,7 @@ export default function LessonScreen() {
           <div className="rounded-2xl border border-gold/50 bg-gradient-to-b from-gold/10 to-transparent p-4">
             <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-gold"><Icon name="arsenal" size={16} /> В Арсенал добавлено навсегда</div>
             <div className="font-serif text-[20px] text-parch">{lesson.arsenalCard.title}</div>
-            <pre className="mt-2 whitespace-pre-wrap font-sans text-[15px] leading-relaxed text-parch/90">{lesson.arsenalCard.body}</pre>
+            <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{lesson.arsenalCard.body}</pre>
           </div>
           <Button full onClick={() => nav('/')}>В Дом</Button>
         </div>

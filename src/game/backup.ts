@@ -37,10 +37,30 @@ export function downloadBlob(blob: Blob, name = `dynasty-backup-${dayKey()}.json
   setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
 
+const TABLES = ['player', 'progress', 'bosses', 'contracts', 'activity', 'settings', 'reports', 'negotiations', 'buildings', 'plan', 'missionResults'] as const
+const KEYS: Record<(typeof TABLES)[number], string> = { player: 'id', progress: 'lessonId', bosses: 'bossId', contracts: 'week', activity: 'day', settings: 'id', reports: 'week', negotiations: 'id', buildings: 'id', plan: 'id', missionResults: 'id' }
+
+/** Проверка файла ДО очистки базы: версия, что таблицы — массивы объектов с ключом, и что игрок выглядит как игрок. */
+function validateBackup(data: Record<string, unknown>) {
+  if (data.version !== undefined && data.version !== 1) throw new Error('Бэкап сделан другой версией игры')
+  for (const t of TABLES) {
+    const rows = data[t]
+    if (rows === undefined) continue
+    if (!Array.isArray(rows)) throw new Error('Файл повреждён: таблица «' + t + '» не список')
+    for (const r of rows) if (!r || typeof r !== 'object' || (r as Record<string, unknown>)[KEYS[t]] === undefined) throw new Error('Файл повреждён: в таблице «' + t + '» строка без ключа')
+  }
+  const players = (data.player ?? []) as Record<string, unknown>[]
+  if (players.length > 1) throw new Error('Файл повреждён: игроков больше одного')
+  for (const p of players) {
+    if (p.id !== 'me' || typeof p.houseName !== 'string' || typeof p.rank !== 'number' || typeof p.capital !== 'number' || typeof p.xp !== 'number' || typeof p.startedAt !== 'string') throw new Error('Файл повреждён: данные игрока не читаются')
+  }
+}
+
 /** Заменяет всё состояние содержимым бэкапа. */
 export async function importState(file: File) {
   const data = JSON.parse(await file.text())
   if (data?.app !== 'dynasty') throw new Error('Это не бэкап «Династии»')
+  validateBackup(data)
   const contracts: ContractResult[] = await Promise.all(
     (data.contracts ?? []).map(async (c: ContractResult & { photo?: string }) => ({
       ...c,

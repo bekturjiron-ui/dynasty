@@ -44,6 +44,8 @@ export type State = {
   bosses: Map<string, BossResult>
   contracts: Map<number, ContractResult>
   missions: Map<string, MissionResult>
+  /** Сыгранные переговоры (id диалога). Нужны, чтобы неделя с диалогом-боссом закрывалась только после него. */
+  negotiations?: Map<string, NegotiationResult>
 }
 
 export type WeekStatus = {
@@ -70,6 +72,9 @@ export function weekStatus(week: Week, content: Content, st: State): WeekStatus 
   const missions = content.missions.filter((m) => m.weekKey === (week.key ?? week.n))
   const missionsDone = missions.filter((m) => st.missions.has(m.id)).length
   const lessonsComplete = done.length === ids.length
+  // Диалог вместо босса: неделя закрыта, когда диалог сыгран хотя бы раз
+  const negReady = !!(week.negotiationId && content.negotiations[week.negotiationId])
+  const negDone = !negReady || !!st.negotiations?.has(week.negotiationId!)
   return {
     week,
     lessonsDone: done.length,
@@ -81,7 +86,7 @@ export function weekStatus(week: Week, content: Content, st: State): WeekStatus 
     contractDone,
     missions,
     missionsDone,
-    complete: lessonsComplete && (!bossReady || bossDone) && contractDone && missionsDone === missions.length,
+    complete: lessonsComplete && (!bossReady || bossDone) && negDone && contractDone && missionsDone === missions.length,
     hasContent: ids.length > 0 || bossReady || missions.length > 0,
   }
 }
@@ -106,13 +111,30 @@ export function rankProgress(content: Content, player: Player, st: State) {
 }
 
 async function loadState(): Promise<State> {
-  const [progress, bosses, contracts, missions] = await Promise.all([db.progress.toArray(), db.bosses.toArray(), db.contracts.toArray(), db.missionResults.toArray()])
+  const [progress, bosses, contracts, missions, negotiations] = await Promise.all([db.progress.toArray(), db.bosses.toArray(), db.contracts.toArray(), db.missionResults.toArray(), db.negotiations.toArray()])
   return {
     progress: new Map(progress.map((p) => [p.lessonId, p])),
     bosses: new Map(bosses.map((b) => [b.bossId, b])),
     contracts: new Map(contracts.map((c) => [c.week, c])),
     missions: new Map(missions.map((m) => [m.id, m])),
+    negotiations: new Map(negotiations.map((n) => [n.id, n])),
   }
+}
+
+// Награды выдаются одной транзакцией: «был ли результат» и начисление не должны расходиться при двойном тапе.
+// Окно «новый титул» показываем после коммита, а не внутри транзакции.
+let pendingRank: { rank: number; title: string } | null = null
+const TX_TABLES = [db.player, db.activity, db.progress, db.bosses, db.contracts, db.missionResults, db.negotiations, db.reports]
+async function atomic<T>(fn: () => Promise<T>): Promise<T> {
+  let r: T
+  try {
+    r = await db.transaction('rw', TX_TABLES, fn)
+  } catch (e) {
+    pendingRank = null
+    throw e
+  }
+  if (pendingRank) { emitRankUp(pendingRank); pendingRank = null }
+  return r
 }
 
 /** Начисляет награду, отмечает активность дня и проверяет повышение ранга. */
@@ -143,13 +165,13 @@ async function award(content: Content, gain: { capital?: number; xp?: number; in
   await db.player.put(updated)
   if (updated.rank > before) {
     const r = content.ranks.find((x) => x.n === updated.rank)!
-    emitRankUp({ rank: r.n, title: r.title })
+    pendingRank = { rank: r.n, title: r.title }
   }
 }
 
 /** Урок решён. Первый раз — полная награда (половина Капитала, если были подсказки).
  *  Повтор без подсказок после «с подсказками» — доплачивает вторую половину. Повтор засчитывается в серию. */
-export async function completeLesson(content: Content, lessonId: string, hintsUsed: number, attempts: number) {
+async function completeLessonRaw(content: Content, lessonId: string, hintsUsed: number, attempts: number) {
   const lesson = content.lessons[lessonId]
   if (!lesson) return { capital: 0, xp: 0 }
   const prev = await db.progress.get(lessonId)
@@ -170,7 +192,7 @@ export async function completeLesson(content: Content, lessonId: string, hintsUs
   return gain
 }
 
-export async function completeBoss(content: Content, bossId: string, attempts: number, livesLeft: number) {
+async function completeBossRaw(content: Content, bossId: string, attempts: number, livesLeft: number) {
   const boss = content.bosses[bossId]
   if (!boss) return { capital: 0, xp: 0 }
   const prev = await db.bosses.get(bossId)
@@ -181,7 +203,7 @@ export async function completeBoss(content: Content, bossId: string, attempts: n
 }
 
 /** week — постоянный ключ недели (Week.key), не позиция в плане. */
-export async function completeContract(content: Content, week: number, proof: ContractResult['proof'], data: { value?: number; photo?: Blob }) {
+async function completeContractRaw(content: Content, week: number, proof: ContractResult['proof'], data: { value?: number; photo?: Blob }) {
   const prev = await db.contracts.get(week)
   await db.contracts.put({ week, at: new Date().toISOString(), proof, ...data })
   const gain = prev ? { capital: 0, xp: 0 } : CONTRACT_REWARD
@@ -191,7 +213,7 @@ export async function completeContract(content: Content, week: number, proof: Co
 
 /** Переговоры завершены. XP — один раз и только за сделку; Влияние и Репутация — по качеству отношений.
  *  Повтор с лучшей экономией обновляет рекорд, но награду не удваивает. */
-export async function completeNegotiation(
+async function completeNegotiationRaw(
   content: Content,
   id: string,
   r: { end: NegotiationResult['end']; discount: number; loyalty: number; saving: number; xp: boolean; influence: number; reputation: number },
@@ -219,8 +241,8 @@ export async function completeNegotiation(
 
 // ---------- План наставника ----------
 /** Сохранить правки плана (наставник или порядок уроков игроком). */
-export async function savePlan(weeks: Week[], missions: Mission[], baseWeeks: Week[]) {
-  await db.plan.put({ id: 'main', weeks: weeks.map((w, i) => ({ ...w, key: w.key ?? w.n, n: i + 1 })), missions, baseWeeks, updatedAt: new Date().toISOString() })
+export async function savePlan(weeks: Week[], missions: Mission[], baseWeeks: Week[], baseMissions: Mission[] = []) {
+  await db.plan.put({ id: 'main', weeks: weeks.map((w, i) => ({ ...w, key: w.key ?? w.n, n: i + 1 })), missions, baseWeeks, baseMissionIds: baseMissions.map((m) => m.id), updatedAt: new Date().toISOString() })
 }
 export async function resetPlan() {
   await db.plan.delete('main')
@@ -236,7 +258,7 @@ export async function setMentorPin(pin: string) {
 }
 
 /** Своя миссия наставника: награда — один раз. */
-export async function completeMission(content: Content, m: Mission, data: { value?: number; photo?: Blob }) {
+async function completeMissionRaw(content: Content, m: Mission, data: { value?: number; photo?: Blob }) {
   const prev = await db.missionResults.get(m.id)
   await db.missionResults.put({ id: m.id, at: new Date().toISOString(), ...data })
   const gain = prev ? { xp: 0, capital: 0 } : m.reward
@@ -247,7 +269,7 @@ export async function completeMission(content: Content, m: Mission, data: { valu
 export const REPORT_REWARD = { xp: 40 }
 
 /** Совет Дома: недельные цифры Novelia. XP — один раз за неделю плана; исправить цифры можно без награды. */
-export async function saveWeeklyReport(content: Content, r: WeeklyReport) {
+async function saveWeeklyReportRaw(content: Content, r: WeeklyReport) {
   const prev = await db.reports.get(r.week)
   await db.reports.put({ ...r, at: new Date().toISOString() })
   const gain = prev ? { xp: 0 } : REPORT_REWARD
@@ -287,3 +309,11 @@ export async function foundHouse(houseName: string) {
     planOffsetWeeks: 0,
   })
 }
+
+// Публичные версии наград — атомарные
+export const completeLesson = (...a: Parameters<typeof completeLessonRaw>) => atomic(() => completeLessonRaw(...a))
+export const completeBoss = (...a: Parameters<typeof completeBossRaw>) => atomic(() => completeBossRaw(...a))
+export const completeContract = (...a: Parameters<typeof completeContractRaw>) => atomic(() => completeContractRaw(...a))
+export const completeNegotiation = (...a: Parameters<typeof completeNegotiationRaw>) => atomic(() => completeNegotiationRaw(...a))
+export const completeMission = (...a: Parameters<typeof completeMissionRaw>) => atomic(() => completeMissionRaw(...a))
+export const saveWeeklyReport = (...a: Parameters<typeof saveWeeklyReportRaw>) => atomic(() => saveWeeklyReportRaw(...a))

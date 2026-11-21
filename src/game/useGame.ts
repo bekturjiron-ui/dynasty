@@ -34,6 +34,7 @@ export function useGame() {
       bosses: new Map(data.bosses.map((b) => [b.bossId, b])),
       contracts: new Map(data.contracts.map((c) => [c.week, c])),
       missions: new Map(data.missionResults.map((m) => [m.id, m])),
+      negotiations: new Map(data.negotiations.map((x) => [x.id, x])),
     }
     // план с правками наставника поверх content/plan.json
     const eff = effectiveContent(content, data.plan)

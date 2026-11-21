@@ -12,15 +12,22 @@ export function ContractCard({ week, result }: { week: Week; result?: ContractRe
   const [num, setNum] = useState('')
   const [photo, setPhoto] = useState<Blob | null>(null)
   const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
   const preview = useObjectUrl(result?.photo ?? photo ?? undefined)
   const { proof } = week.contract
 
   async function submit() {
     setBusy(true)
+    setErr('')
     const value = proof === 'number' ? parseUserNumber(num) ?? undefined : undefined
-    await completeContract(content, week.key ?? week.n, proof, { value, photo: proof === 'photo' ? photo ?? undefined : undefined })
-    setBusy(false)
-    setOpen(false)
+    try {
+      await completeContract(content, week.key ?? week.n, proof, { value, photo: proof === 'photo' ? photo ?? undefined : undefined })
+      setOpen(false)
+    } catch {
+      setErr('Не получилось сохранить. Возможно, на телефоне не хватает места: попробуй фото поменьше или освободи память.')
+    } finally {
+      setBusy(false)
+    }
   }
   const canSubmit = proof === 'checkbox' || (proof === 'number' && parseUserNumber(num) !== null) || (proof === 'photo' && !!photo)
 
@@ -57,6 +64,7 @@ export function ContractCard({ week, result }: { week: Week; result?: ContractRe
           )}
           {proof === 'checkbox' && <p className="text-[14px] text-muted">Подтверди, что действие сделано в живом кабинете.</p>}
           <p className="text-[12px] text-muted">Пруф хранится только на этом телефоне.</p>
+          {err && <p className="text-[13px] text-loss">{err}</p>}
           <div className="flex gap-2">
             <Button variant="quiet" onClick={() => setOpen(false)}>Отмена</Button>
             <Button full disabled={!canSubmit || busy} onClick={submit}>Подтвердить</Button>

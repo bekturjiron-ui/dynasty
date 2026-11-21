@@ -24,7 +24,7 @@ export default function Arsenal({ game }: { game: Game }) {
         <Card key={l.id}>
           <Label>Неделя {l.week} · {l.title}</Label>
           <div className="mt-1 font-serif text-[20px] text-gold">{l.arsenalCard.title}</div>
-          <pre className="mt-2 whitespace-pre-wrap font-sans text-[15px] leading-relaxed text-parch/90">{l.arsenalCard.body}</pre>
+          <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{l.arsenalCard.body}</pre>
         </Card>
       ))}
     </div>

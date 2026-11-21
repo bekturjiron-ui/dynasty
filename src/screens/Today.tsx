@@ -77,7 +77,7 @@ export default function Today({ game }: { game: Game }) {
           <p className="mt-1 text-[15px] leading-relaxed">Дом ждал {streak.daysAway} дн. Вспомним последнее и разомнёмся лёгкой миссией — без давления.</p>
           <div className="mt-3 rounded-xl bg-panel2 p-3">
             <div className="font-serif text-[17px] text-gold">{review.arsenalCard.title}</div>
-            <pre className="mt-1 whitespace-pre-wrap font-sans text-[14px] text-parch/90">{review.arsenalCard.body}</pre>
+            <pre className="mt-1 whitespace-pre-wrap break-words font-sans text-[14px] text-parch/90">{review.arsenalCard.body}</pre>
           </div>
           <Button variant="ghost" full className="mt-3" onClick={() => nav(`/lesson/${review.id}`)}>Лёгкая миссия: повторить «{review.title}»</Button>
         </Card>
@@ -100,7 +100,7 @@ export default function Today({ game }: { game: Game }) {
           <Button full className="mt-4" onClick={() => nav(`/lesson/${lesson.id}`)}>Начать</Button>
         </Card>
       ) : focus.lessonsTotal > 0 ? (
-        <Card><p className="text-[15px]">Все уроки недели пройдены. Остались миссии.</p></Card>
+        <Card><p className="text-[15px]">{focus.complete ? 'Неделя закрыта: уроки, босс и контракт пройдены.' : 'Все уроки недели пройдены. Остались миссии.'}</p></Card>
       ) : (
         <Card><p className="text-[15px] text-muted">Уроки этой недели наставник ещё готовит. Пока — реальный контракт и повторение Арсенала.</p></Card>
       )}

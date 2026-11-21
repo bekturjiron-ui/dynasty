@@ -26,7 +26,7 @@ export function PlanEditor({ game, onClose }: { game: Game; onClose: () => void 
   const patch = (key: number, f: Partial<Week>) => change(weeks.map((w) => (weekKey(w) === key ? { ...w, ...f } : w)))
 
   async function save() {
-    await savePlan(weeks, missions, baseContent.weeks)
+    await savePlan(weeks, missions, baseContent.weeks, baseContent.missions)
     if (offset !== (p.planOffsetWeeks ?? 0)) await setPlanOffset(offset)
     setDirty(false)
     setMsg({ tone: 'gain', text: 'План сохранён. Игрок увидит его сразу.' })

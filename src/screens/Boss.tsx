@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
@@ -23,6 +23,8 @@ export default function BossScreen() {
   const [attempts, setAttempts] = useState(0)
   const [result, setResult] = useState<null | 'won' | 'lost'>(null)
   const [gain, setGain] = useState<{ capital: number; xp: number } | null>(null)
+  const lostTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (lostTimer.current) clearTimeout(lostTimer.current) }, [])
 
   if (!boss) return <div className="pt-safe px-4 text-muted">Босс этой недели ещё готовится.</div>
   if (game.loading) return null
@@ -30,6 +32,7 @@ export default function BossScreen() {
   const sc = scope ?? withVars(real, boss.vars)
 
   function restart() {
+    if (lostTimer.current) clearTimeout(lostTimer.current)
     setScope(jitterVars(withVars(real, boss.vars), boss.jitter))
     setRun((r) => r + 1)
     setRound(0)
@@ -37,6 +40,7 @@ export default function BossScreen() {
     setResult(null)
   }
   async function solved(n: number) {
+    if (lives <= 0) return // жизни кончились: попытка уже проиграна
     const total = attempts + n
     setAttempts(total)
     if (round < boss.rounds.length - 1) { setRound((r) => r + 1); return }
@@ -46,7 +50,7 @@ export default function BossScreen() {
   function off() {
     setLives((l) => {
       const left = l - 1
-      if (left <= 0) setTimeout(() => setResult('lost'), 900)
+      if (left <= 0 && !lostTimer.current) lostTimer.current = setTimeout(() => { lostTimer.current = null; setResult('lost') }, 900)
       return left
     })
   }

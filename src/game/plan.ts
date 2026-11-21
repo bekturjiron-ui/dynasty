@@ -58,7 +58,7 @@ export function rebaseWeeks(baseWeeks: Week[], ownWeeks: Week[], snapshot?: Week
 }
 
 /** Контент с учётом правок наставника. */
-export function effectiveContent(base: Content, override?: { weeks: Week[]; missions?: Mission[]; baseWeeks?: Week[] }): Content {
+export function effectiveContent(base: Content, override?: { weeks: Week[]; missions?: Mission[]; baseWeeks?: Week[]; baseMissionIds?: string[] }): Content {
   if (!override?.weeks?.length) return base
   // уроки/боссы, которых больше нет в контенте, тихо выкидываем — план не должен ломать игру
   const weeks = renumber(rebaseWeeks(base.weeks, override.weeks, override.baseWeeks)).map((w) => ({
@@ -68,7 +68,11 @@ export function effectiveContent(base: Content, override?: { weeks: Week[]; miss
     negotiationId: w.negotiationId && base.negotiations[w.negotiationId] ? w.negotiationId : undefined,
   }))
   const keys = new Set(weeks.map(weekKey))
-  return { ...base, weeks, missions: (override.missions ?? []).filter((m) => keys.has(m.weekKey)) }
+  // свои миссии наставника + миссии, которых не было в базе на момент сохранения (новые из обновления игры)
+  const known = new Set(override.baseMissionIds ?? base.missions.map((m) => m.id))
+  const own = override.missions ?? []
+  const added = base.missions.filter((m) => !known.has(m.id) && !own.some((o) => o.id === m.id))
+  return { ...base, weeks, missions: [...own, ...added].filter((m) => keys.has(m.weekKey)) }
 }
 
 /** Дедлайн недели: свой или конец недели по дате старта и растяжению. */
