@@ -235,15 +235,24 @@
     "key": 9,
     "act": "III. Продвижение на Kaspi",
     "title": "Карточка: название, фото, описание, что влияет на клик",
-    "bossTitle": "Найти 5 ошибок в чужой карточке",
+    "bossTitle": "Найти 5 нарушений в чужой карточке",
     "contract": {
       "text": "Улучши 3 карточки Novelia. Скриншоты до/после.",
       "proof": "photo"
     },
     "resource": {
-      "title": "Kaspi Гид: видео по Магазину",
+      "title": "Kaspi Гид: что нельзя писать в карточке",
+      "url": "https://guide.kaspi.kz/partner/ru/shop/goods/edit/q3555",
       "kind": "kaspi-guide"
-    }
+    },
+    "lessonIds": [
+      "w11-l1",
+      "w11-l2",
+      "w11-l3",
+      "w11-l4",
+      "w11-l5"
+    ],
+    "bossId": "w11-boss"
   },
   {
     "n": 12,
@@ -256,9 +265,18 @@
       "proof": "photo"
     },
     "resource": {
-      "title": "Kaspi Гид: видео по Магазину",
+      "title": "Kaspi Гид: показатели качества",
+      "url": "https://guide.kaspi.kz/partner/ru/shop/quality_index/general/q4034",
       "kind": "kaspi-guide"
-    }
+    },
+    "lessonIds": [
+      "w12-l1",
+      "w12-l2",
+      "w12-l3",
+      "w12-l4",
+      "w12-l5"
+    ],
+    "bossId": "w12-boss"
   },
   {
     "n": 13,
