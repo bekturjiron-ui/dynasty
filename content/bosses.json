@@ -2262,5 +2262,234 @@
       "capital": 300,
       "xp": 100
     }
+  },
+  {
+    "id": "w22-boss",
+    "week": 22,
+    "title": "Совет директоров",
+    "story": "Совет директоров Дома слушает ваш план на квартал: цель, бюджет, риски. Собственник просит одно: каждое число должно быть расчётным. Капитал Дома {{cap|tg}}, реклама {{ad|tg}} (бонус Kaspi {{bonus|tg}}), резерв {{resRate}}% от закупа.",
+    "vars": {
+      "cap": 400000,
+      "ad": 30000,
+      "bonus": 20000,
+      "resRate": 10,
+      "prob": 40
+    },
+    "table": [
+      [
+        "Статья",
+        "Значение"
+      ],
+      [
+        "Капитал, ₸",
+        "$cap"
+      ],
+      [
+        "Реклама, ₸",
+        "$ad"
+      ],
+      [
+        "Бонус Kaspi, ₸",
+        "$bonus"
+      ],
+      [
+        "Резерв от закупа, %",
+        "$resRate"
+      ],
+      [
+        "Вероятность подорожания, %",
+        "$prob"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Какая прибыль Novelia за квартал по нынешним продажам?",
+        "answerFormula": "3*(p1.orders*(p1.price*(1-fee-tax-pack)-p1.delivery-p1.inbound-p1.cost)+p2.orders*(p2.price*(1-fee-tax-pack)-p2.delivery-p2.inbound-p2.cost)+p3.orders*(p3.price*(1-fee-tax-pack)-p3.delivery-p3.inbound-p3.cost)+p4.orders*(p4.price*(1-fee-tax-pack)-p4.delivery-p4.inbound-p4.cost)+p5.orders*(p5.price*(1-fee-tax-pack)-p5.delivery-p5.inbound-p5.cost)+p6.orders*(p6.price*(1-fee-tax-pack)-p6.delivery-p6.inbound-p6.cost)+p7.orders*(p7.price*(1-fee-tax-pack)-p7.delivery-p7.inbound-p7.cost)+p8.orders*(p8.price*(1-fee-tax-pack)-p8.delivery-p8.inbound-p8.cost))",
+        "hints": [
+          "Прибыль каждого товара за месяц × 3."
+        ],
+        "report": {
+          "ok": "База квартала {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Прибыль месяца складываем по товарам и умножаем на три."
+        }
+      },
+      {
+        "prompt": "Какой эффект даст закуп Dr.Hana 80 мл по границе (с маржой 5%) за квартал?",
+        "answerFormula": "(p1.cost-(p1.price*((1-fee-tax-pack)-0.05)-p1.delivery))*p1.orders*3",
+        "hints": [
+          "(Закуп − граница) × продаж в месяц × 3."
+        ],
+        "report": {
+          "ok": "Рычаг даёт {{correct|tg}} за квартал.",
+          "off": "В докладе {{answer|tg}}. Экономия за штуку умножается на продажи за три месяца."
+        }
+      },
+      {
+        "prompt": "Сколько денег нужно на квартал: закуп с резервом плюс реклама после бонуса Kaspi?",
+        "answerFormula": "3*(p1.cost*p1.orders+p2.cost*p2.orders+p3.cost*p3.orders+p4.cost*p4.orders+p5.cost*p5.orders+p6.cost*p6.orders+p7.cost*p7.orders+p8.cost*p8.orders)*(1+resRate/100)+max(0,ad-bonus)",
+        "hints": [
+          "Закуп × (1 + резерв) + max(0, реклама − бонус)."
+        ],
+        "report": {
+          "ok": "Нужно {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Резерв считаем от закупа, рекламу — за вычетом бонуса."
+        }
+      },
+      {
+        "prompt": "Сколько денег не хватает (0, если капитала хватает)?",
+        "answerFormula": "max(0,3*(p1.cost*p1.orders+p2.cost*p2.orders+p3.cost*p3.orders+p4.cost*p4.orders+p5.cost*p5.orders+p6.cost*p6.orders+p7.cost*p7.orders+p8.cost*p8.orders)*(1+resRate/100)+max(0,ad-bonus)-cap)",
+        "hints": [
+          "Нужно минус капитал, не меньше нуля."
+        ],
+        "report": {
+          "ok": "{{correct > 0 ? \"Не хватает \" + correct + \" ₸: сокращаем рекламу или просим отсрочку.\" : \"Капитала хватает.\"}}",
+          "off": "В докладе {{answer|tg}}. Разницу нужного и капитала берём не меньше нуля."
+        }
+      },
+      {
+        "prompt": "Какова ожидаемая потеря квартала от подорожания закупа Dr.Hana на 5% с вероятностью из таблицы?",
+        "answerFormula": "p1.cost*0.05*p1.orders*3*prob/100",
+        "hints": [
+          "Ущерб = закуп × 5% × продаж × 3, умноженный на вероятность."
+        ],
+        "report": {
+          "ok": "Ожидаемая потеря {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Ущерб за квартал умножаем на вероятность."
+        }
+      },
+      {
+        "prompt": "Какая ожидаемая прибыль квартала: база + рычаг − реклама после бонуса − ожидаемая потеря?",
+        "answerFormula": "3*(p1.orders*(p1.price*(1-fee-tax-pack)-p1.delivery-p1.inbound-p1.cost)+p2.orders*(p2.price*(1-fee-tax-pack)-p2.delivery-p2.inbound-p2.cost)+p3.orders*(p3.price*(1-fee-tax-pack)-p3.delivery-p3.inbound-p3.cost)+p4.orders*(p4.price*(1-fee-tax-pack)-p4.delivery-p4.inbound-p4.cost)+p5.orders*(p5.price*(1-fee-tax-pack)-p5.delivery-p5.inbound-p5.cost)+p6.orders*(p6.price*(1-fee-tax-pack)-p6.delivery-p6.inbound-p6.cost)+p7.orders*(p7.price*(1-fee-tax-pack)-p7.delivery-p7.inbound-p7.cost)+p8.orders*(p8.price*(1-fee-tax-pack)-p8.delivery-p8.inbound-p8.cost))+(p1.cost-(p1.price*((1-fee-tax-pack)-0.05)-p1.delivery))*p1.orders*3-max(0,ad-bonus)-p1.cost*0.05*p1.orders*3*prob/100",
+        "hints": [
+          "Сложи базу и рычаг, вычти расходы и потери."
+        ],
+        "report": {
+          "ok": "План даёт {{correct|tg}}. Такую цифру совет директоров примет к сведению.",
+          "off": "В докладе {{answer|tg}}. Из суммы базы и рычага вычитаем рекламу и ожидаемую потерю."
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
+  },
+  {
+    "id": "w23-boss",
+    "week": 23,
+    "title": "Резюме глазами HR за 6 секунд",
+    "story": "HR открывает ваше резюме и смотрит его около шести секунд. Он ищет числа: долю, эффект, покрытие требований. Подготовь цифры, которые захочется прочитать дальше.",
+    "vars": {
+      "req": 8,
+      "have": 6,
+      "c1": 10,
+      "c2": 70,
+      "k": 3
+    },
+    "table": [
+      [
+        "Показатель",
+        "Значение"
+      ],
+      [
+        "Требований в вакансии",
+        "$req"
+      ],
+      [
+        "Закрыто",
+        "$have"
+      ],
+      [
+        "Конверсия в приглашение, %",
+        "$c1"
+      ],
+      [
+        "Доходят до собеседования, %",
+        "$c2"
+      ],
+      [
+        "Нужно собеседований",
+        "$k"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Какую долю выручки магазина даёт Dr.Hana 80 мл?",
+        "answerFormula": "p1.orders*p1.price/(p1.orders*p1.price+p2.orders*p2.price+p3.orders*p3.price+p4.orders*p4.price+p5.orders*p5.price+p6.orders*p6.price+p7.orders*p7.price+p8.orders*p8.price)",
+        "unit": "pct",
+        "hints": [
+          "Выручка товара / выручка магазина."
+        ],
+        "report": {
+          "ok": "Доля выручки {{correct|pct}}.",
+          "off": "В докладе {{answer|pct}}. Выручка товара — продажи в месяц × цена."
+        }
+      },
+      {
+        "prompt": "Какую долю прибыли магазина даёт тот же товар?",
+        "answerFormula": "p1.orders*(p1.price*(1-fee-tax-pack)-p1.delivery-p1.inbound-p1.cost)/(p1.orders*(p1.price*(1-fee-tax-pack)-p1.delivery-p1.inbound-p1.cost)+p2.orders*(p2.price*(1-fee-tax-pack)-p2.delivery-p2.inbound-p2.cost)+p3.orders*(p3.price*(1-fee-tax-pack)-p3.delivery-p3.inbound-p3.cost)+p4.orders*(p4.price*(1-fee-tax-pack)-p4.delivery-p4.inbound-p4.cost)+p5.orders*(p5.price*(1-fee-tax-pack)-p5.delivery-p5.inbound-p5.cost)+p6.orders*(p6.price*(1-fee-tax-pack)-p6.delivery-p6.inbound-p6.cost)+p7.orders*(p7.price*(1-fee-tax-pack)-p7.delivery-p7.inbound-p7.cost)+p8.orders*(p8.price*(1-fee-tax-pack)-p8.delivery-p8.inbound-p8.cost))",
+        "unit": "pct",
+        "hints": [
+          "Прибыль товара / прибыль магазина."
+        ],
+        "report": {
+          "ok": "Доля прибыли {{correct|pct}}. Разрыв с долей выручки пойдёт в резюме.",
+          "off": "В докладе {{answer|pct}}. Прибыль товара делим на прибыль всех товаров."
+        }
+      },
+      {
+        "prompt": "Какой эффект в год даёт кейс «закуп Dr.Hana доведён до маржи 5%»?",
+        "answerFormula": "(p1.price*0.05-(p1.price*(1-fee-tax-pack)-p1.delivery-p1.inbound-p1.cost))*p1.orders*12",
+        "hints": [
+          "(Прибыль после − до) × продаж в месяц × 12."
+        ],
+        "report": {
+          "ok": "Эффект кейса {{correct|tg}} в год.",
+          "off": "В докладе {{answer|tg}}. Прирост прибыли с продажи умножаем на продажи в месяц и на 12."
+        }
+      },
+      {
+        "prompt": "Каково покрытие требований вакансии?",
+        "answerFormula": "have/req",
+        "unit": "pct",
+        "hints": [
+          "Закрыто / Всего."
+        ],
+        "report": {
+          "ok": "Покрытие {{correct|pct}}. {{correct >= 0.7 ? \"Откликаться стоит.\" : \"Сначала добираем навык.\"}}",
+          "off": "В докладе {{answer|pct}}. Закрытые требования делим на все."
+        }
+      },
+      {
+        "prompt": "Сколько откликов нужно для одного собеседования?",
+        "answerFormula": "ceil(round(1/(c1/100*c2/100),6))",
+        "unit": "num",
+        "tolerance": 0,
+        "hints": [
+          "1 / (c1/100 × c2/100), вверх."
+        ],
+        "report": {
+          "ok": "Нужно {{correct}} откликов на одно собеседование.",
+          "off": "В докладе {{answer}}. Единицу делим на произведение конверсий."
+        }
+      },
+      {
+        "prompt": "Сколько откликов нужно для нескольких собеседований из таблицы?",
+        "answerFormula": "ceil(round(k/(c1/100*c2/100),6))",
+        "unit": "num",
+        "tolerance": 0,
+        "hints": [
+          "Нужное число собеседований / произведение конверсий, вверх."
+        ],
+        "report": {
+          "ok": "Нужно {{correct}} откликов. Растёт конверсия — число падает.",
+          "off": "В докладе {{answer}}. Нужное число собеседований делим на произведение конверсий."
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
   }
 ]
