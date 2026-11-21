@@ -796,5 +796,276 @@
       "capital": 300,
       "xp": 100
     }
+  },
+  {
+    "id": "w09-boss",
+    "week": 9,
+    "title": "Развивать, держать или выводить",
+    "story": "Собственник: «Товаров много, толку мало. Давай просто уберём всё, что продаётся хуже лидера». Советник предлагает сначала разложить весь ассортимент по выручке и прибыли.",
+    "vars": {
+      "q1": "p1.orders",
+      "q2": "p2.orders",
+      "q3": "p3.orders"
+    },
+    "jitter": [
+      "q1",
+      "q2",
+      "q3"
+    ],
+    "table": [
+      [
+        "Товар",
+        "Продаж/мес",
+        "Цена",
+        "Прибыль/шт"
+      ],
+      [
+        "{{p1.short}}",
+        "$q1",
+        "$p1.price",
+        "$round((p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))"
+      ],
+      [
+        "{{p3.short}}",
+        "$q3",
+        "$p3.price",
+        "$round((p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))"
+      ],
+      [
+        "{{p2.short}}",
+        "$q2",
+        "$p2.price",
+        "$round((p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))"
+      ],
+      [
+        "{{p5.short}}",
+        "$p5.orders",
+        "$p5.price",
+        "$round((p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))"
+      ],
+      [
+        "{{p4.short}}",
+        "$p4.orders",
+        "$p4.price",
+        "$round((p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))"
+      ],
+      [
+        "{{p6.short}}",
+        "$p6.orders",
+        "$p6.price",
+        "$round((p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))"
+      ],
+      [
+        "{{p7.short}}",
+        "$p7.orders",
+        "$p7.price",
+        "$round((p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))"
+      ],
+      [
+        "{{p8.short}}",
+        "$p8.orders",
+        "$p8.price",
+        "$round((p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery)))"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Какая выручка всего магазина за месяц?",
+        "answerFormula": "((q1*p1.price)+(q3*p3.price)+(q2*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))",
+        "tolerance": 0.005,
+        "hints": [
+          "Продажи × цена по каждой строке, потом сложить."
+        ],
+        "report": {
+          "ok": "Выручка {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Посчитай каждую строку: продажи × цена."
+        }
+      },
+      {
+        "prompt": "Какая доля выручки у {{p1.short}}?",
+        "answerFormula": "(q1*p1.price)/((q1*p1.price)+(q3*p3.price)+(q2*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))",
+        "unit": "pct",
+        "hints": [
+          "Выручка товара / вся выручка."
+        ],
+        "report": {
+          "ok": "По выручке лидер: {{correct|pct}}.",
+          "off": "В докладе {{answer|pct}}. Выручка товара делится на итог."
+        }
+      },
+      {
+        "prompt": "А какая у него доля в прибыли магазина?",
+        "answerFormula": "(q1*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))/((q1*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(q3*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(q2*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))",
+        "unit": "pct",
+        "hints": [
+          "Посчитай прибыль за месяц по всем товарам.",
+          "Прибыль товара / вся прибыль."
+        ],
+        "report": {
+          "ok": "В прибыли всего {{correct|pct}}. Лидер продаж и лидер заработка — разные товары.",
+          "off": "В докладе {{answer|pct}}. Советник: «Теперь берём прибыль, а не выручку. Минус тоже учитываем»."
+        }
+      },
+      {
+        "prompt": "Сколько прибыли в месяц дают товары с маржой от 10%?",
+        "answerFormula": "((p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery))/p1.price>=0.1?(q1*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery))):0)+((p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery))/p3.price>=0.1?(q3*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery))):0)+((p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery))/p2.price>=0.1?(q2*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery))):0)+((p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery))/p5.price>=0.1?(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery))):0)+((p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery))/p4.price>=0.1?(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery))):0)+((p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery))/p6.price>=0.1?(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery))):0)+((p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery))/p7.price>=0.1?(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery))):0)+((p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))/p8.price>=0.1?(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))):0)",
+        "hints": [
+          "Маржа = прибыль/шт / цена.",
+          "Сложи месячную прибыль только таких товаров."
+        ],
+        "report": {
+          "ok": "Они дают {{correct|tg}}. Вот что развивать в первую очередь.",
+          "off": "В докладе {{answer|tg}}. Проверь маржу каждого товара: в сумму идут только те, где она от 10%."
+        }
+      },
+      {
+        "prompt": "Если вывести {{p4.short}} и {{p8.short}}, какую долю выручки потеряет магазин?",
+        "answerFormula": "((p4.orders*p4.price)+(p8.orders*p8.price))/((q1*p1.price)+(q3*p3.price)+(q2*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))",
+        "unit": "pct",
+        "hints": [
+          "Сложи выручку этих двух товаров и раздели на итог."
+        ],
+        "report": {
+          "ok": "Теряем {{correct|pct}} выручки, а прибыль почти не меняется. Деньги из этих остатков можно вложить в сильные товары.",
+          "off": "В докладе {{answer|pct}}. Выручка двух товаров / вся выручка."
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
+  },
+  {
+    "id": "w10-boss",
+    "week": 10,
+    "title": "Какие 2 из 5 карточек добавить",
+    "story": "Поставщик предлагает пять новых товаров, а денег хватит на два. Кандидаты условные. Правило Дома: документы обязательны, маржа от 10%. Из прошедших берём два с самой большой прибылью за месяц.",
+    "vars": {
+      "sa": 4,
+      "sb": 3,
+      "sc": 6,
+      "sd": 3,
+      "se": 2
+    },
+    "jitter": [
+      "sb",
+      "sc",
+      "se"
+    ],
+    "table": [
+      [
+        "Товар",
+        "Цена",
+        "Закуп",
+        "Дост.",
+        "В мес.",
+        "Док."
+      ],
+      [
+        "А",
+        8900,
+        5200,
+        811,
+        "$sa",
+        "Есть"
+      ],
+      [
+        "Б",
+        15500,
+        11000,
+        1275,
+        "$sb",
+        "Есть"
+      ],
+      [
+        "В",
+        6200,
+        3300,
+        811,
+        "$sc",
+        "Нет"
+      ],
+      [
+        "Г",
+        11900,
+        7100,
+        1275,
+        "$sd",
+        "Есть"
+      ],
+      [
+        "Д",
+        5400,
+        3100,
+        811,
+        "$se",
+        "Есть"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Сколько Дом получит с одной продажи товара А?",
+        "answerFormula": "((8900)*(1-fee-tax-pack)-(5200)-(811))",
+        "hints": [
+          "Цена × (1 − комиссия − налог − упаковка) − закуп − доставка."
+        ],
+        "report": {
+          "ok": "С продажи {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Все расходы учтены?"
+        }
+      },
+      {
+        "prompt": "Какая маржа у товара Б?",
+        "answerFormula": "((15500)*(1-fee-tax-pack)-(11000)-(1275))/15500",
+        "unit": "pct",
+        "hints": [
+          "Прибыль с продажи / цена."
+        ],
+        "report": {
+          "ok": "Маржа {{correct|pct}}: ниже порога, несмотря на самую высокую цену.",
+          "off": "В докладе {{answer|pct}}. Раздели прибыль с продажи на цену."
+        }
+      },
+      {
+        "prompt": "Товар В выглядит самым выгодным. Сколько он принёс бы за месяц, если бы прошёл проверку?",
+        "answerFormula": "(((6200)*(1-fee-tax-pack)-(3300)-(811))*sc)",
+        "hints": [
+          "Прибыль с продажи × продажи в месяц."
+        ],
+        "report": {
+          "ok": "{{correct|tg}} в месяц, но документов нет. Такой товар может стоить магазину всей карточки.",
+          "off": "В докладе {{answer|tg}}. Посчитай прибыль товара В и умножь на продажи."
+        }
+      },
+      {
+        "prompt": "Выбери два товара по правилу Дома. Сколько они вместе принесут за месяц?",
+        "answerFormula": "(((8900)*(1-fee-tax-pack)-(5200)-(811))*sa)+(((11900)*(1-fee-tax-pack)-(7100)-(1275))*sd)",
+        "hints": [
+          "Убери товары без документов и с маржой ниже 10%.",
+          "Из оставшихся возьми два с наибольшей прибылью за месяц."
+        ],
+        "report": {
+          "ok": "Выбор — А и Г: {{correct|tg}} в месяц.",
+          "off": "В докладе {{answer|tg}}. Советник: «Проверь документы и маржу каждого, потом сравни месячную прибыль»."
+        }
+      },
+      {
+        "prompt": "Сколько денег нужно на тестовую партию А и Г на один месяц продаж?",
+        "answerFormula": "sa*5200+sd*7100",
+        "tolerance": 0.005,
+        "hints": [
+          "Продажи в месяц × закуп по каждому товару, потом сложить."
+        ],
+        "report": {
+          "ok": "На тест нужно {{correct|tg}}. Решение принято на цифрах, а риск ограничен одной партией.",
+          "off": "В докладе {{answer|tg}}. Считаем закуп только двух выбранных товаров."
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
   }
 ]

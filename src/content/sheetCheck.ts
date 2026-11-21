@@ -33,6 +33,10 @@ export function expectedValues(grid: Grid, task: SheetTask): Record<string, Cell
   return Object.fromEntries(task.targets.map((t) => [t.cell, evalFormula(t.solution, g, new Set([t.cell]))]))
 }
 
+/** Группы ABC: на русской раскладке А, В, С выглядят так же, как латинские A, B, C. */
+const latinLookalikes = (v: CellResult): CellResult =>
+  typeof v === 'string' ? v.toUpperCase().replace(/А/g, 'A').replace(/В/g, 'B').replace(/С/g, 'C') : v
+
 export type SheetVerdict =
   | { ok: true; value: CellResult }
   | { ok: false; reason: 'empty' | 'not_formula' | 'no_refs' | 'missing' | 'error' | 'not_found' | 'value'; value?: CellResult; missing?: string; message?: string }
@@ -54,7 +58,7 @@ export function checkTarget(grid: Grid, cell: string, expected: CellResult, must
   }
   if (miss) return { ok: false, reason: 'missing', missing: miss, value }
   const ok = typeof expected === 'string' || typeof value === 'string'
-    ? looseEq(value, expected)
+    ? looseEq(latinLookalikes(value), latinLookalikes(expected))
     : Math.abs(value - expected) <= Math.max(Math.abs(expected) * 1e-6, 0.005)
   return ok ? { ok: true, value } : { ok: false, reason: 'value', value }
 }

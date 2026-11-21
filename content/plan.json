@@ -196,18 +196,38 @@
     "resource": {
       "title": "Stepik: Excel и Google Таблицы для аналитика",
       "kind": "course"
-    }
+    },
+    "lessonIds": [
+      "w09-l1",
+      "w09-l2",
+      "w09-l3",
+      "w09-l4",
+      "w09-l5"
+    ],
+    "bossId": "w09-boss"
   },
   {
     "n": 10,
     "key": 26,
     "act": "II. Цена и ассортимент",
     "title": "Выбор товара: спрос, конкуренты и прибыль до закупа",
-    "lessonIds": [],
+    "lessonIds": [
+      "w10-l1",
+      "w10-l2",
+      "w10-l3",
+      "w10-l4",
+      "w10-l5"
+    ],
     "bossTitle": "Какие 2 из 5 карточек добавить",
     "contract": {
       "text": "Оцени 5 кандидатов на новые карточки Novelia: спрос, конкуренты, минимальная цена, прибыль, документы. Предложи 2 лучших с расчётом. Скриншот.",
       "proof": "photo"
+    },
+    "bossId": "w10-boss",
+    "resource": {
+      "title": "Kaspi Гид: документы на товар",
+      "url": "https://guide.kaspi.kz/partner/ru/shop/goods/limit/q2224",
+      "kind": "kaspi-guide"
     }
   },
   {

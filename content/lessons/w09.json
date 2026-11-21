@@ -1,0 +1,1278 @@
+[
+  {
+    "id": "w09-l1",
+    "week": 9,
+    "skill": "analytics",
+    "title": "Доля товара в выручке",
+    "why": "Принцип 80/20 начинается с простого вопроса: какой кусок денег приносит каждый товар.",
+    "demo": [
+      {
+        "text": "Выручка товара за месяц = продажи × цена. Здесь три товара Novelia.",
+        "table": [
+          [
+            "Товар",
+            "Выручка",
+            "Доля, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$(p1.orders*p1.price)",
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "$(p3.orders*p3.price)",
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "$(p2.orders*p2.price)",
+            null
+          ],
+          [
+            "Итого",
+            "=СУММ(B2:B4)",
+            null
+          ]
+        ],
+        "highlight": [
+          "B2",
+          "B3",
+          "B4"
+        ]
+      },
+      {
+        "text": "Доля = выручка товара / итог × 100. Итог закрепляем знаками $, потому что он один на всех.",
+        "table": [
+          [
+            "Товар",
+            "Выручка",
+            "Доля, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$(p1.orders*p1.price)",
+            "=B2/$B$5*100"
+          ],
+          [
+            "{{p3.short}}",
+            "$(p3.orders*p3.price)",
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "$(p2.orders*p2.price)",
+            null
+          ],
+          [
+            "Итого",
+            "=СУММ(B2:B4)",
+            null
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "B5"
+        ]
+      },
+      {
+        "text": "Протянули вниз. Сразу видно, кто держит магазин, а кто добавляет понемногу.",
+        "table": [
+          [
+            "Товар",
+            "Выручка",
+            "Доля, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$(p1.orders*p1.price)",
+            "=B2/$B$5*100"
+          ],
+          [
+            "{{p3.short}}",
+            "$(p3.orders*p3.price)",
+            "=B3/$B$5*100"
+          ],
+          [
+            "{{p2.short}}",
+            "$(p2.orders*p2.price)",
+            "=B4/$B$5*100"
+          ],
+          [
+            "Итого",
+            "=СУММ(B2:B4)",
+            null
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "C3",
+          "C4"
+        ]
+      }
+    ],
+    "analogy": "Завод делает пять видов кирпича. Директор смотрит, какой вид даёт половину всей выручки, и на него в первую очередь выделяет цемент.",
+    "guided": {
+      "prompt": "Посчитай долю каждого товара в выручке.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Выручка",
+            "Доля, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$(p1.orders*p1.price)",
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "$(p2.orders*p2.price)",
+            null
+          ],
+          [
+            "{{p6.short}}",
+            "$(p6.orders*p6.price)",
+            null
+          ],
+          [
+            "Итого",
+            "=СУММ(B2:B4)",
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "C2",
+            "solution": "=B2/$B$5*100",
+            "label": "Доля, строка 2",
+            "mustInclude": [
+              "$B$5"
+            ]
+          },
+          {
+            "cell": "C3",
+            "solution": "=B3/$B$5*100",
+            "label": "Доля, строка 3",
+            "mustInclude": [
+              "$B$5"
+            ]
+          },
+          {
+            "cell": "C4",
+            "solution": "=B4/$B$5*100",
+            "label": "Доля, строка 4",
+            "mustInclude": [
+              "$B$5"
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "=B2/$B$5*100",
+        "Итог в B5 закрепляем, чтобы он не уехал при копировании."
+      ]
+    },
+    "solo": {
+      "prompt": "Та же задача для других трёх товаров.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Выручка",
+            "Доля, %"
+          ],
+          [
+            "{{p5.short}}",
+            "$(p5.orders*p5.price)",
+            null
+          ],
+          [
+            "{{p4.short}}",
+            "$(p4.orders*p4.price)",
+            null
+          ],
+          [
+            "{{p7.short}}",
+            "$(p7.orders*p7.price)",
+            null
+          ],
+          [
+            "Итого",
+            "=СУММ(B2:B4)",
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "C2",
+            "solution": "=B2/$B$5*100",
+            "label": "Доля, строка 2",
+            "mustInclude": [
+              "$B$5"
+            ]
+          },
+          {
+            "cell": "C3",
+            "solution": "=B3/$B$5*100",
+            "label": "Доля, строка 3",
+            "mustInclude": [
+              "$B$5"
+            ]
+          },
+          {
+            "cell": "C4",
+            "solution": "=B4/$B$5*100",
+            "label": "Доля, строка 4",
+            "mustInclude": [
+              "$B$5"
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "=B2/$B$5*100 и протянуть вниз."
+      ]
+    },
+    "arsenalCard": {
+      "title": "Доля в выручке",
+      "body": "Выручка = Продажи × Цена.\nДоля = Выручка товара / Итог × 100.\n=B2/$B$5*100"
+    },
+    "reward": {
+      "capital": 100,
+      "xp": 30
+    }
+  },
+  {
+    "id": "w09-l2",
+    "week": 9,
+    "skill": "analytics",
+    "title": "ABC: накопленная доля и три группы",
+    "why": "ABC за минуту показывает, какие товары нельзя упускать ни на день, а какие могут подождать.",
+    "demo": [
+      {
+        "text": "Сортируем товары от большей выручки к меньшей. В Google Таблицах: стрелка фильтра в заголовке → Сортировка Я→А.",
+        "table": [
+          [
+            "Товар",
+            "Доля, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p3.short}}",
+            "$round((p3.orders*p3.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p5.short}}",
+            "$round((p5.orders*p5.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p4.short}}",
+            "$round((p4.orders*p4.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p6.short}}",
+            "$round((p6.orders*p6.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p7.short}}",
+            "$round((p7.orders*p7.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p8.short}}",
+            "$round((p8.orders*p8.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ]
+        ],
+        "highlight": [
+          "B2",
+          "B3"
+        ]
+      },
+      {
+        "text": "Накопленная доля — сумма сверху вниз: первая строка, затем она плюс следующая.",
+        "table": [
+          [
+            "Товар",
+            "Доля, %",
+            "Накоплено"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p3.short}}",
+            "$round((p3.orders*p3.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p5.short}}",
+            "$round((p5.orders*p5.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p4.short}}",
+            "$round((p4.orders*p4.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p6.short}}",
+            "$round((p6.orders*p6.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p7.short}}",
+            "$round((p7.orders*p7.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ],
+          [
+            "{{p8.short}}",
+            "$round((p8.orders*p8.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)"
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "C3",
+          "C4"
+        ]
+      },
+      {
+        "text": "Группа A — до 80% выручки, B — до 95%, C — всё остальное. Такие пороги самые распространённые, их можно менять под свой магазин.",
+        "table": [
+          [
+            "Товар",
+            "Накоплено",
+            "Группа"
+          ],
+          [
+            "{{p1.short}}",
+            "$round(((p1.orders*p1.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B2<=80;\"A\";ЕСЛИ(B2<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p3.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B3<=80;\"A\";ЕСЛИ(B3<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p2.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B4<=80;\"A\";ЕСЛИ(B4<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p5.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B5<=80;\"A\";ЕСЛИ(B5<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p4.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B6<=80;\"A\";ЕСЛИ(B6<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p6.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B7<=80;\"A\";ЕСЛИ(B7<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p7.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B8<=80;\"A\";ЕСЛИ(B8<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p8.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B9<=80;\"A\";ЕСЛИ(B9<=95;\"B\";\"C\"))"
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "C3",
+          "C4"
+        ]
+      },
+      {
+        "text": "В маленьком ассортименте группы условны: из 8 товаров один может дать почти половину выручки. Поэтому ABC — это подсказка, а не приговор товару.",
+        "table": [
+          [
+            "Товар",
+            "Накоплено",
+            "Группа"
+          ],
+          [
+            "{{p1.short}}",
+            "$round(((p1.orders*p1.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B2<=80;\"A\";ЕСЛИ(B2<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p3.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B3<=80;\"A\";ЕСЛИ(B3<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p2.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B4<=80;\"A\";ЕСЛИ(B4<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p5.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B5<=80;\"A\";ЕСЛИ(B5<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p4.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B6<=80;\"A\";ЕСЛИ(B6<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p6.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B7<=80;\"A\";ЕСЛИ(B7<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p7.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B8<=80;\"A\";ЕСЛИ(B8<=95;\"B\";\"C\"))"
+          ],
+          [
+            "{{p8.short}}",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "=ЕСЛИ(B9<=80;\"A\";ЕСЛИ(B9<=95;\"B\";\"C\"))"
+          ]
+        ],
+        "highlight": [
+          "C2"
+        ]
+      }
+    ],
+    "analogy": "На складе кирпич раскладывают так: ходовой у ворот, средний дальше, редкий в глубине. ABC — такая же раскладка, только для денег и внимания.",
+    "guided": {
+      "prompt": "Посчитай накопленную долю и группу: до 80 — A, до 95 — B, иначе C.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Доля, %",
+            "Накоплено",
+            "Группа"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null,
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "$round((p3.orders*p3.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null,
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null,
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "C2",
+            "solution": "=B2",
+            "label": "Накоплено: первая строка"
+          },
+          {
+            "cell": "C3",
+            "solution": "=C2+B3",
+            "label": "Накоплено: прошлая строка + своя доля"
+          },
+          {
+            "cell": "C4",
+            "solution": "=C3+B4",
+            "label": "Накоплено: строка 4"
+          },
+          {
+            "cell": "D2",
+            "solution": "=ЕСЛИ(C2<=80;\"A\";ЕСЛИ(C2<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 2",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D3",
+            "solution": "=ЕСЛИ(C3<=80;\"A\";ЕСЛИ(C3<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 3",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D4",
+            "solution": "=ЕСЛИ(C4<=80;\"A\";ЕСЛИ(C4<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 4",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "C2: =B2, затем C3: =C2+B3",
+        "Группа: =ЕСЛИ(C2<=80;\"A\";ЕСЛИ(C2<=95;\"B\";\"C\"))"
+      ]
+    },
+    "solo": {
+      "prompt": "Накопленная доля уже посчитана. Определи группу каждого товара.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Доля, %",
+            "Накоплено",
+            "Группа"
+          ],
+          [
+            "{{p5.short}}",
+            "$round((p5.orders*p5.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ],
+          [
+            "{{p4.short}}",
+            "$round((p4.orders*p4.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ],
+          [
+            "{{p6.short}}",
+            "$round((p6.orders*p6.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ],
+          [
+            "{{p7.short}}",
+            "$round((p7.orders*p7.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round(((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price))/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "D2",
+            "solution": "=ЕСЛИ(C2<=80;\"A\";ЕСЛИ(C2<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 2",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D3",
+            "solution": "=ЕСЛИ(C3<=80;\"A\";ЕСЛИ(C3<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 3",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D4",
+            "solution": "=ЕСЛИ(C4<=80;\"A\";ЕСЛИ(C4<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 4",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D5",
+            "solution": "=ЕСЛИ(C5<=80;\"A\";ЕСЛИ(C5<=95;\"B\";\"C\"))",
+            "label": "Группа, строка 5",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "=ЕСЛИ(C2<=80;\"A\";ЕСЛИ(C2<=95;\"B\";\"C\"))"
+      ]
+    },
+    "arsenalCard": {
+      "title": "ABC-анализ",
+      "body": "1. Сортируй по выручке.\n2. Накоплено = прошлая строка + доля.\n3. До 80% — A, до 95% — B, остальное — C.\n=ЕСЛИ(C2<=80;\"A\";ЕСЛИ(C2<=95;\"B\";\"C\"))"
+    },
+    "reward": {
+      "capital": 100,
+      "xp": 30
+    }
+  },
+  {
+    "id": "w09-l3",
+    "week": 9,
+    "skill": "analytics",
+    "title": "ABC по прибыли: лидер может оказаться другим",
+    "why": "Выручка льстит. Товар может занимать половину продаж и почти ничего не оставлять в казне.",
+    "vars": {
+      "sr": "(p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))",
+      "sp": "(p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))",
+      "sr2": "(p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))",
+      "sp2": "(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))"
+    },
+    "demo": [
+      {
+        "text": "{{p1.short}} — лидер: {{sr|pct}} всей выручки. По выручке это главный товар магазина.",
+        "table": [
+          [
+            "Товар",
+            "Выручка, %",
+            "Прибыль, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ]
+        ],
+        "highlight": [
+          "B2"
+        ]
+      },
+      {
+        "text": "Теперь посчитаем то же по прибыли: продажи × прибыль с продажи. У {{p1.short}} всего {{sp|pct}} прибыли.",
+        "table": [
+          [
+            "Товар",
+            "Выручка, %",
+            "Прибыль, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))*100,1)"
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            null
+          ]
+        ],
+        "highlight": [
+          "C2"
+        ]
+      },
+      {
+        "text": "А {{p2.short}} с {{sr2|pct}} выручки приносит {{sp2|pct}} прибыли. Смотреть надо на обе колонки, иначе внимание уйдёт не туда.",
+        "table": [
+          [
+            "Товар",
+            "Выручка, %",
+            "Прибыль, %"
+          ],
+          [
+            "{{p1.short}}",
+            "$round((p1.orders*p1.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))*100,1)"
+          ],
+          [
+            "{{p2.short}}",
+            "$round((p2.orders*p2.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))*100,1)",
+            "$round((p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))*100,1)"
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "C3"
+        ]
+      }
+    ],
+    "analogy": "Самый большой заказчик завода может платить так мало, что на нём почти нет заработка. А маленький постоянный клиент кормит всю смену.",
+    "guided": {
+      "prompt": "{{p3.short}}: продаётся {{p3.orders}} шт в месяц по {{p3.price|tg}}. Вся прибыль магазина за месяц — {{((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))|tg}}. Какая у товара доля прибыли?",
+      "steps": [
+        {
+          "label": "Прибыль с продажи, ₸",
+          "formula": "(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery))",
+          "unit": "tg",
+          "hint": "Цена × остаток с тенге − закуп − доставка."
+        },
+        {
+          "label": "Прибыль за месяц, ₸",
+          "formula": "(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))",
+          "unit": "tg",
+          "hint": "Прибыль с продажи × продажи в месяц."
+        },
+        {
+          "label": "Доля прибыли, %",
+          "formula": "(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))",
+          "unit": "pct",
+          "hint": "Прибыль товара / вся прибыль."
+        }
+      ],
+      "answerFormula": "(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))",
+      "unit": "pct",
+      "hints": [
+        "Сначала прибыль товара за месяц."
+      ]
+    },
+    "solo": {
+      "prompt": "{{p6.short}}: {{p6.orders}} шт в месяц. Вся прибыль магазина — {{((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))|tg}}. Какая доля прибыли у товара?",
+      "answerFormula": "(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))/((p1.orders*(p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery)))+(p3.orders*(p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery)))+(p2.orders*(p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery)))+(p5.orders*(p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery)))+(p4.orders*(p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))+(p6.orders*(p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery)))+(p7.orders*(p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery)))+(p8.orders*(p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))))",
+      "unit": "pct",
+      "hints": [
+        "Доля = продажи × прибыль с продажи / вся прибыль."
+      ],
+      "report": {
+        "ok": "Доля прибыли {{correct|pct}}, а доля выручки всего {{(p6.orders*p6.price)/((p1.orders*p1.price)+(p3.orders*p3.price)+(p2.orders*p2.price)+(p5.orders*p5.price)+(p4.orders*p4.price)+(p6.orders*p6.price)+(p7.orders*p7.price)+(p8.orders*p8.price))|pct}}. Малый товар тянет больше своего веса.",
+        "off": "В докладе {{answer|pct}}. Советник: «Берём прибыль, а не выручку товара»."
+      }
+    },
+    "arsenalCard": {
+      "title": "ABC по прибыли",
+      "body": "Доля прибыли = Продажи × Прибыль с продажи / Вся прибыль.\nСравнивай с долей выручки: разрыв показывает, где теряются деньги."
+    },
+    "reward": {
+      "capital": 100,
+      "xp": 30
+    }
+  },
+  {
+    "id": "w09-l4",
+    "week": 9,
+    "skill": "analytics",
+    "title": "Сводная таблица: архив за две минуты",
+    "why": "В архиве сотни строк. Сводная складывает их по товарам сама, и ABC можно делать хоть каждую неделю.",
+    "demo": [
+      {
+        "text": "В архиве один товар встречается много раз. Нужна одна строка на товар с итоговой суммой.",
+        "table": [
+          [
+            "Товар",
+            "Статус",
+            "Сумма",
+            "Свод",
+            "Итог"
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            "{{p1.short}}",
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            "{{p3.short}}",
+            null
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            null,
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            null,
+            null
+          ]
+        ],
+        "highlight": [
+          "A2",
+          "A4"
+        ]
+      },
+      {
+        "text": "В Google Таблицах: выдели данные → Вставка → Сводная таблица. Строки: Товар. Значения: Сумма, SUM. Фильтры: Статус = «Выдан».",
+        "table": [
+          [
+            "Товар",
+            "Статус",
+            "Сумма",
+            "Свод",
+            "Итог"
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            "{{p1.short}}",
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            "{{p3.short}}",
+            null
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            null,
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            null,
+            null
+          ]
+        ],
+        "highlight": [
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "text": "На телефоне сводную делать неудобно, это задача для ноутбука. Логику покажем формулой: СУММЕСЛИ складывает все строки нужного товара.",
+        "table": [
+          [
+            "Товар",
+            "Статус",
+            "Сумма",
+            "Свод",
+            "Итог"
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            "{{p1.short}}",
+            "=СУММЕСЛИ($A$2:$A$5;D2;$C$2:$C$5)"
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            "{{p3.short}}",
+            "=СУММЕСЛИ($A$2:$A$5;D3;$C$2:$C$5)"
+          ],
+          [
+            "{{p1.short}}",
+            "Выдан",
+            "$p1.price",
+            null,
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "Выдан",
+            "$p3.price",
+            null,
+            null
+          ]
+        ],
+        "highlight": [
+          "E2",
+          "E3"
+        ]
+      }
+    ],
+    "analogy": "Вместо стопки накладных за квартал бухгалтер делает одну ведомость: заказчик и общая сумма. Сводная — такая ведомость, которая собирается сама.",
+    "guided": {
+      "prompt": "Собери итог по двум товарам из столбца D.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Статус",
+            "Сумма",
+            "Свод",
+            "Итог"
+          ],
+          [
+            "{{p2.short}}",
+            "Выдан",
+            "$p2.price",
+            "{{p2.short}}",
+            null
+          ],
+          [
+            "{{p5.short}}",
+            "Выдан",
+            "$p5.price",
+            "{{p5.short}}",
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "Выдан",
+            "$p2.price",
+            null,
+            null
+          ],
+          [
+            "{{p2.short}}",
+            "Выдан",
+            "$p2.price",
+            null,
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "E2",
+            "solution": "=СУММЕСЛИ($A$2:$A$5;D2;$C$2:$C$5)",
+            "label": "Итог товара из D2",
+            "mustInclude": [
+              "СУММЕСЛИ(",
+              "$A$2:$A$5",
+              "$C$2:$C$5"
+            ]
+          },
+          {
+            "cell": "E3",
+            "solution": "=СУММЕСЛИ($A$2:$A$5;D3;$C$2:$C$5)",
+            "label": "Итог товара из D3",
+            "mustInclude": [
+              "СУММЕСЛИ(",
+              "$A$2:$A$5",
+              "$C$2:$C$5"
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "=СУММЕСЛИ($A$2:$A$5;D2;$C$2:$C$5)"
+      ]
+    },
+    "solo": {
+      "prompt": "То же для другого архива.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Статус",
+            "Сумма",
+            "Свод",
+            "Итог"
+          ],
+          [
+            "{{p6.short}}",
+            "Выдан",
+            "$p6.price",
+            "{{p6.short}}",
+            null
+          ],
+          [
+            "{{p7.short}}",
+            "Выдан",
+            "$p7.price",
+            "{{p7.short}}",
+            null
+          ],
+          [
+            "{{p7.short}}",
+            "Выдан",
+            "$p7.price",
+            null,
+            null
+          ],
+          [
+            "{{p6.short}}",
+            "Выдан",
+            "$p6.price",
+            null,
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "E2",
+            "solution": "=СУММЕСЛИ($A$2:$A$5;D2;$C$2:$C$5)",
+            "label": "Итог товара из D2",
+            "mustInclude": [
+              "СУММЕСЛИ("
+            ]
+          },
+          {
+            "cell": "E3",
+            "solution": "=СУММЕСЛИ($A$2:$A$5;D3;$C$2:$C$5)",
+            "label": "Итог товара из D3",
+            "mustInclude": [
+              "СУММЕСЛИ("
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "Диапазоны закрепи знаками $, условие — ячейка из столбца D."
+      ]
+    },
+    "arsenalCard": {
+      "title": "Сводная таблица",
+      "body": "Вставка → Сводная таблица.\nСтроки: Товар. Значения: Сумма (SUM).\nФильтр: Статус = Выдан.\nТо же формулой: =СУММЕСЛИ($A$2:$A$5;D2;$C$2:$C$5)"
+    },
+    "reward": {
+      "capital": 100,
+      "xp": 30
+    }
+  },
+  {
+    "id": "w09-l5",
+    "week": 9,
+    "skill": "analytics",
+    "title": "Развивать, держать или выводить",
+    "why": "Анализ ничего не стоит без решения. Управляющий выходит из таблицы с конкретным действием по каждому товару.",
+    "demo": [
+      {
+        "text": "Правило Дома: нет продаж или маржа в минусе — кандидат на вывод. Маржа до 10% — держим и следим. От 10% — развиваем.",
+        "table": [
+          [
+            "Товар",
+            "Продаж/мес",
+            "Маржа, %",
+            "Решение"
+          ],
+          [
+            "{{p2.short}}",
+            "$p2.orders",
+            "$round((p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery))/p2.price*100,1)",
+            null
+          ],
+          [
+            "{{p1.short}}",
+            "$p1.orders",
+            "$round((p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery))/p1.price*100,1)",
+            null
+          ],
+          [
+            "{{p8.short}}",
+            "$p8.orders",
+            "$round((p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))/p8.price*100,1)",
+            null
+          ]
+        ],
+        "highlight": [
+          "B4",
+          "C2",
+          "C3"
+        ]
+      },
+      {
+        "text": "Формула проверяет условия по очереди.",
+        "table": [
+          [
+            "Товар",
+            "Продаж/мес",
+            "Маржа, %",
+            "Решение"
+          ],
+          [
+            "{{p2.short}}",
+            "$p2.orders",
+            "$round((p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery))/p2.price*100,1)",
+            "=ЕСЛИ(B2=0;\"Выводить\";ЕСЛИ(C2<0;\"Выводить\";ЕСЛИ(C2<10;\"Держать\";\"Развивать\")))"
+          ],
+          [
+            "{{p1.short}}",
+            "$p1.orders",
+            "$round((p1.price*(1-fee-tax-pack)-(p1.cost+p1.inbound+p1.delivery))/p1.price*100,1)",
+            "=ЕСЛИ(B3=0;\"Выводить\";ЕСЛИ(C3<0;\"Выводить\";ЕСЛИ(C3<10;\"Держать\";\"Развивать\")))"
+          ],
+          [
+            "{{p8.short}}",
+            "$p8.orders",
+            "$round((p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))/p8.price*100,1)",
+            "=ЕСЛИ(B4=0;\"Выводить\";ЕСЛИ(C4<0;\"Выводить\";ЕСЛИ(C4<10;\"Держать\";\"Развивать\")))"
+          ]
+        ],
+        "highlight": [
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "text": "«Выводить» не значит убрать сегодня. Сначала проверь, спасает ли товар новая цена или закуп: {{p4.short}} уходит в минус всего на {{abs((p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery)))|tg}}, такую разницу часто можно закрыть. И не убирай товар, если его покупают вместе с лидером.",
+        "table": [
+          [
+            "Товар",
+            "Продаж/мес",
+            "Маржа, %",
+            "Решение"
+          ],
+          [
+            "{{p4.short}}",
+            "$p4.orders",
+            "$round((p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery))/p4.price*100,1)",
+            "=ЕСЛИ(B2=0;\"Выводить\";ЕСЛИ(C2<0;\"Выводить\";ЕСЛИ(C2<10;\"Держать\";\"Развивать\")))"
+          ]
+        ],
+        "highlight": [
+          "C2",
+          "D2"
+        ]
+      }
+    ],
+    "analogy": "Убыточную линию не закрывают в тот же день. Сначала смотрят, можно ли поднять цену или снизить расход. Закрывают, только если не помогло.",
+    "guided": {
+      "prompt": "Нет продаж или маржа меньше 0 — «Выводить». Маржа меньше 10 — «Держать». Иначе — «Развивать».",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Продаж/мес",
+            "Маржа, %",
+            "Решение"
+          ],
+          [
+            "{{p6.short}}",
+            "$p6.orders",
+            "$round((p6.price*(1-fee-tax-pack)-(p6.cost+p6.inbound+p6.delivery))/p6.price*100,1)",
+            null
+          ],
+          [
+            "{{p3.short}}",
+            "$p3.orders",
+            "$round((p3.price*(1-fee-tax-pack)-(p3.cost+p3.inbound+p3.delivery))/p3.price*100,1)",
+            null
+          ],
+          [
+            "{{p4.short}}",
+            "$p4.orders",
+            "$round((p4.price*(1-fee-tax-pack)-(p4.cost+p4.inbound+p4.delivery))/p4.price*100,1)",
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "D2",
+            "solution": "=ЕСЛИ(B2=0;\"Выводить\";ЕСЛИ(C2<0;\"Выводить\";ЕСЛИ(C2<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 2",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D3",
+            "solution": "=ЕСЛИ(B3=0;\"Выводить\";ЕСЛИ(C3<0;\"Выводить\";ЕСЛИ(C3<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 3",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D4",
+            "solution": "=ЕСЛИ(B4=0;\"Выводить\";ЕСЛИ(C4<0;\"Выводить\";ЕСЛИ(C4<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 4",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "=ЕСЛИ(B2=0;\"Выводить\";ЕСЛИ(C2<0;\"Выводить\";ЕСЛИ(C2<10;\"Держать\";\"Развивать\")))"
+      ]
+    },
+    "solo": {
+      "prompt": "То же правило для четырёх товаров.",
+      "sheet": {
+        "grid": [
+          [
+            "Товар",
+            "Продаж/мес",
+            "Маржа, %",
+            "Решение"
+          ],
+          [
+            "{{p2.short}}",
+            "$p2.orders",
+            "$round((p2.price*(1-fee-tax-pack)-(p2.cost+p2.inbound+p2.delivery))/p2.price*100,1)",
+            null
+          ],
+          [
+            "{{p5.short}}",
+            "$p5.orders",
+            "$round((p5.price*(1-fee-tax-pack)-(p5.cost+p5.inbound+p5.delivery))/p5.price*100,1)",
+            null
+          ],
+          [
+            "{{p7.short}}",
+            "$p7.orders",
+            "$round((p7.price*(1-fee-tax-pack)-(p7.cost+p7.inbound+p7.delivery))/p7.price*100,1)",
+            null
+          ],
+          [
+            "{{p8.short}}",
+            "$p8.orders",
+            "$round((p8.price*(1-fee-tax-pack)-(p8.cost+p8.inbound+p8.delivery))/p8.price*100,1)",
+            null
+          ]
+        ],
+        "targets": [
+          {
+            "cell": "D2",
+            "solution": "=ЕСЛИ(B2=0;\"Выводить\";ЕСЛИ(C2<0;\"Выводить\";ЕСЛИ(C2<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 2",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D3",
+            "solution": "=ЕСЛИ(B3=0;\"Выводить\";ЕСЛИ(C3<0;\"Выводить\";ЕСЛИ(C3<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 3",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D4",
+            "solution": "=ЕСЛИ(B4=0;\"Выводить\";ЕСЛИ(C4<0;\"Выводить\";ЕСЛИ(C4<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 4",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          },
+          {
+            "cell": "D5",
+            "solution": "=ЕСЛИ(B5=0;\"Выводить\";ЕСЛИ(C5<0;\"Выводить\";ЕСЛИ(C5<10;\"Держать\";\"Развивать\")))",
+            "label": "Решение, строка 5",
+            "mustInclude": [
+              "ЕСЛИ("
+            ]
+          }
+        ]
+      },
+      "hints": [
+        "В конце формулы три закрывающие скобки."
+      ]
+    },
+    "arsenalCard": {
+      "title": "Решение по товару",
+      "body": "Нет продаж или маржа < 0 — кандидат на вывод.\nМаржа до 10% — держать.\nОт 10% — развивать.\nПеред выводом проверь цену, закуп и покупки вместе с лидером."
+    },
+    "reward": {
+      "capital": 100,
+      "xp": 30
+    }
+  }
+]
