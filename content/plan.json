@@ -58,7 +58,15 @@
     "resource": {
       "title": "Stepik: Excel и Google Таблицы для аналитика",
       "kind": "course"
-    }
+    },
+    "lessonIds": [
+      "w03-l1",
+      "w03-l2",
+      "w03-l3",
+      "w03-l4",
+      "w03-l5"
+    ],
+    "bossId": "w03-boss"
   },
   {
     "n": 4,
@@ -74,7 +82,15 @@
     "resource": {
       "title": "Eduson: Unit-экономика и метрики продукта",
       "kind": "course"
-    }
+    },
+    "lessonIds": [
+      "w04-l1",
+      "w04-l2",
+      "w04-l3",
+      "w04-l4",
+      "w04-l5"
+    ],
+    "bossId": "w04-boss"
   },
   {
     "n": 5,

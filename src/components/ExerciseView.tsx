@@ -4,7 +4,7 @@ import { checkSteps, exerciseScope, resolveTable } from '../content/scope'
 import { checkTarget, expectedValues, setCell, type SheetVerdict } from '../content/sheetCheck'
 import { evalNum, type Scope } from '../lib/expr'
 import { closeEnough, fmtNum, fmtUnit, parseUserNumber, toRaw } from '../lib/format'
-import { parseAddr, type Grid } from '../lib/sheet'
+import { parseAddr, type CellResult, type Grid } from '../lib/sheet'
 import { render } from '../lib/template'
 import { TableView } from './TableView'
 import { Advisor, Button, Icon } from './ui'
@@ -108,8 +108,19 @@ function NumberExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = 
 // ---------------- Тренажёр таблицы ----------------
 
 const KEYS = ['=', 'СУММ(', ':', '*', '/', '-', '+', '(', ')', '$']
+const showValue = (v: CellResult) => (typeof v === 'string' ? `«${v}»` : fmtNum(v))
+
+/** Быстрые клавиши под задание: функции и знаки из эталонных формул (на iPhone до «;» и кавычек далеко). */
+function keysFor(solutions: string[]): string[] {
+  const all = solutions.join(' ')
+  const fns = [...new Set(all.match(/[А-ЯЁ]+(?=\()/g) ?? [])].map((f) => `${f}(`)
+  const extra = [';', '"', '<', '>'].filter((k) => all.includes(k))
+  return [...new Set(['=', ...fns, ...extra, ...KEYS])]
+}
 
 function verdictText(cell: string, v: Extract<SheetVerdict, { ok: false }>): string {
+  if (v.reason === 'missing' && v.missing === ';0)') return `Значение в ${cell} сходится случайно. Поставь в конце ВПР 0: без него таблица ищет примерно и на другом товаре подставит чужую цену.`
+  if (v.reason === 'not_found') return `В ${cell} таблица показывает #Н/Д: такого значения нет там, где она ищет. Проверь, что ищешь по нужной ячейке и в нужном диапазоне.`
   switch (v.reason) {
     case 'empty': return `В ${cell} пока пусто.`
     case 'not_formula': return `В ${cell} вписано готовое число. Советнику нужна формула: она начинается с «=» и ссылается на ячейки — тогда таблица пересчитает сама.`
@@ -121,7 +132,7 @@ function verdictText(cell: string, v: Extract<SheetVerdict, { ok: false }>): str
           ? `Число в ${cell} сходится, но здесь тренируем СУММ: так формула выдержит и 300 строк.`
           : `В формуле ${cell} не хватает «${v.missing}».`
     case 'error': return `Формула в ${cell} не считается: ${v.message ?? ''}`
-    case 'value': return `В ${cell} получилось ${fmtNum(v.value ?? 0)}. Советник ждал другое число — проверь, на какие ячейки ссылаешься.`
+    case 'value': return `В ${cell} получилось ${showValue(v.value ?? 0)}. Советник ждал другое число — проверь, на какие ячейки ссылаешься.`
   }
 }
 
@@ -172,7 +183,7 @@ function SheetExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = '
     } else {
       const next = targets.find((t) => !nowVerified.includes(t.cell))
       if (next) { setSel(next.cell); setNote({ tone: 'gain', text: 'Сходится. Дальше — следующая ячейка.' }) }
-      else setNote({ tone: 'gain', text: `Таблица сходится: ${targets.map((t) => `${t.cell} = ${fmtNum(expected[t.cell])}`).join(', ')}. Формулы пересчитают её сами, если поменяются цифры.` })
+      else setNote({ tone: 'gain', text: `Таблица сходится: ${targets.map((t) => `${t.cell} = ${showValue(expected[t.cell])}`).join(', ')}. Формулы пересчитают её сами, если поменяются цифры.` })
     }
   }
 
@@ -200,7 +211,7 @@ function SheetExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = '
             className="min-h-12 w-full rounded-xl border border-line bg-ink px-4 font-mono text-[17px] text-gold-soft outline-none focus:border-gold"
           />
           <div className="flex flex-wrap gap-1.5">
-            {KEYS.map((k) => (
+            {keysFor(targets.map((t) => t.solution)).map((k) => (
               <button key={k} onClick={() => write(raw + k)} className="min-h-10 min-w-10 rounded-lg border border-line bg-panel2 px-2 font-mono text-[15px] text-parch active:bg-line">{k}</button>
             ))}
             <button onClick={() => write(raw.slice(0, -1))} className="min-h-10 min-w-12 rounded-lg border border-line bg-panel2 px-2 text-[15px] text-muted active:bg-line">⌫</button>

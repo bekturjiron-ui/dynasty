@@ -132,7 +132,19 @@ export const BASE_FUNCS: Record<string, Fn> = {
   max: (...a) => Math.max(...a.map(Number)),
 }
 
-export function evaluate(src: string, scope: Scope, funcs: Record<string, Fn> = BASE_FUNCS): unknown {
+/** Сравнение как в таблицах: текст без учёта регистра и краевых пробелов, пустая ячейка равна 0 и "". */
+export function looseEq(a: unknown, b: unknown): boolean {
+  const empty = (x: unknown) => x === null || x === undefined
+  if (empty(a) || empty(b)) {
+    const other = empty(a) ? b : a
+    return empty(other) || other === 0 || other === ''
+  }
+  if (typeof a === 'string' && typeof b === 'string') return a.trim().toLowerCase() === b.trim().toLowerCase()
+  return a === b
+}
+
+/** opts.sheet — правила таблиц: сравнение через looseEq, сложение с текстом не склеивает строки. */
+export function evaluate(src: string, scope: Scope, funcs: Record<string, Fn> = BASE_FUNCS, opts: { sheet?: boolean } = {}): unknown {
   const run = (n: Node): unknown => {
     switch (n.t) {
       case 'num': return n.v
@@ -159,13 +171,15 @@ export function evaluate(src: string, scope: Scope, funcs: Record<string, Fn> = 
         if (n.op === '||') return run(n.a) || run(n.b)
         const a = run(n.a), b = run(n.b)
         switch (n.op) {
-          case '+': return typeof a === 'string' || typeof b === 'string' ? String(a) + String(b) : Number(a) + Number(b)
+          case '+':
+            if (typeof a === 'string' || typeof b === 'string') return opts.sheet ? NaN : String(a) + String(b)
+            return Number(a) + Number(b)
           case '-': return Number(a) - Number(b)
           case '*': return Number(a) * Number(b)
           case '/': return Number(a) / Number(b)
           case '^': return Number(a) ** Number(b)
-          case '==': return a === b
-          case '!=': return a !== b
+          case '==': return opts.sheet ? looseEq(a, b) : a === b
+          case '!=': return opts.sheet ? !looseEq(a, b) : a !== b
           case '<': return Number(a) < Number(b)
           case '>': return Number(a) > Number(b)
           case '<=': return Number(a) <= Number(b)

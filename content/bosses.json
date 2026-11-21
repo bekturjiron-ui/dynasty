@@ -183,5 +183,205 @@
       "xp": 100
     },
     "useRealData": true
+  },
+  {
+    "id": "w03-boss",
+    "week": 3,
+    "title": "Свести заказы с прайсом",
+    "story": "Собственник спрашивает: «Сколько мы реально заработали на этой выгрузке?» В архиве заказы со статусами, закуп уже подтянут из прайса через ВПР. Один заказ отменён, но в общей сумме он сидит. Советник кладёт таблицу на стол.",
+    "vars": {
+      "q1": 6,
+      "q2": 3,
+      "q3": 2,
+      "q4": 2
+    },
+    "jitter": [
+      "q1",
+      "q2",
+      "q3",
+      "q4"
+    ],
+    "table": [
+      [
+        "Товар",
+        "Шт",
+        "Статус",
+        "Цена",
+        "Закуп",
+        "Доставка"
+      ],
+      [
+        "{{p1.short}}",
+        "$q1",
+        "Выдан",
+        "$p1.price",
+        "$p1.cost",
+        "$p1.delivery"
+      ],
+      [
+        "{{p3.short}}",
+        "$q2",
+        "Выдан",
+        "$p3.price",
+        "$p3.cost",
+        "$p3.delivery"
+      ],
+      [
+        "{{p6.short}}",
+        "$q3",
+        "Отменён",
+        "$p6.price",
+        "$p6.cost",
+        "$p6.delivery"
+      ],
+      [
+        "{{p2.short}}",
+        "$q4",
+        "Выдан",
+        "$p2.price",
+        "$p2.cost",
+        "$p2.delivery"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Какая выручка по выданным заказам?",
+        "answerFormula": "q1*p1.price+q2*p3.price+q4*p2.price",
+        "tolerance": 0.005,
+        "hints": [
+          "Только статус «Выдан»: штуки × цена, потом сложить."
+        ],
+        "report": {
+          "ok": "Реальная выручка — {{correct|tg}}. Без фильтра в докладе было бы на {{q3*p6.price|tg}} больше.",
+          "off": "В докладе {{answer|tg}}. Советник: «Отменённый заказ денег не принёс, господин»."
+        }
+      },
+      {
+        "prompt": "Сколько стоил закуп этих выданных товаров?",
+        "answerFormula": "q1*p1.cost+q2*p3.cost+q4*p2.cost",
+        "tolerance": 0.005,
+        "hints": [
+          "Штуки × закуп, только по выданным."
+        ],
+        "report": {
+          "ok": "Закуп проданного — {{correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Проверь, что в расчёт вошли только выданные строки."
+        }
+      },
+      {
+        "prompt": "Сколько Дом заработал на выданных заказах после комиссии {{fee|pct}}, налога {{tax|pct}}, упаковки {{pack|pct}}, закупа и доставки?",
+        "answerFormula": "(q1*p1.price+q2*p3.price+q4*p2.price)*(1-fee-tax-pack)-(q1*p1.cost+q2*p3.cost+q4*p2.cost)-(q1*p1.delivery+q2*p3.delivery+q4*p2.delivery)",
+        "hints": [
+          "Выручка × (1 − комиссия − налог − упаковка) − закуп − доставка за все штуки."
+        ],
+        "report": {
+          "ok": "Чистыми {{correct|tg}}. Вот цифра, которую можно нести собственнику.",
+          "off": "В докладе {{answer|tg}}. Советник: «Доставка считается за каждую штуку. Все статьи учтены?»"
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
+  },
+  {
+    "id": "w04-boss",
+    "week": 4,
+    "title": "Куда вложить 500 000 ₸ закупа",
+    "story": "В казне {{budget|tg}}. Первый совет: «Всё в {{p1.short}} — это же лидер продаж!» Второй совет: взять понемногу товаров с высоким ROI, ровно под спрос на {{months}} мес., а остальное оставить свободным. Посчитай оба варианта.",
+    "vars": {
+      "budget": 500000,
+      "months": 3
+    },
+    "jitter": [
+      "months"
+    ],
+    "table": [
+      [
+        "Товар",
+        "Закуп",
+        "Прибыль/шт",
+        "Продаж/мес"
+      ],
+      [
+        "{{p1.short}}",
+        "$p1.cost",
+        "$round((p1.price*(1-fee-tax-pack)-p1.delivery-p1.cost-p1.inbound))",
+        "$p1.orders"
+      ],
+      [
+        "{{p2.short}}",
+        "$p2.cost",
+        "$round((p2.price*(1-fee-tax-pack)-p2.delivery-p2.cost-p2.inbound))",
+        "$p2.orders"
+      ],
+      [
+        "{{p6.short}}",
+        "$p6.cost",
+        "$round((p6.price*(1-fee-tax-pack)-p6.delivery-p6.cost-p6.inbound))",
+        "$p6.orders"
+      ],
+      [
+        "{{p5.short}}",
+        "$p5.cost",
+        "$round((p5.price*(1-fee-tax-pack)-p5.delivery-p5.cost-p5.inbound))",
+        "$p5.orders"
+      ]
+    ],
+    "rounds": [
+      {
+        "prompt": "Первый совет: сколько целых штук {{p1.short}} можно купить на весь бюджет?",
+        "answerFormula": "floor(budget/p1.cost)",
+        "unit": "num",
+        "tolerance": 0,
+        "hints": [
+          "Бюджет / закуп, вниз до целого."
+        ],
+        "report": {
+          "ok": "{{correct}} штук. При {{p1.orders}} продажах в месяц партия будет уходить {{round(correct/p1.orders,1)}} мес.",
+          "off": "В докладе {{answer}} шт. Раздели бюджет на закуп и отбрось остаток."
+        }
+      },
+      {
+        "prompt": "Сколько прибыли эта партия принесёт за {{months}} мес. при реальном спросе?",
+        "answerFormula": "min(floor(budget/p1.cost),p1.orders*months)*(p1.price*(1-fee-tax-pack)-p1.delivery-p1.cost-p1.inbound)",
+        "hints": [
+          "За период продастся только продажи в месяц × месяцы.",
+          "Эти штуки × прибыль с продажи."
+        ],
+        "report": {
+          "ok": "Всего {{correct|tg}}, а почти весь бюджет лежит на полке.",
+          "off": "В докладе {{answer|tg}}. Советник: «Продастся не вся партия, а только то, что купят за {{months}} мес.»"
+        }
+      },
+      {
+        "prompt": "Второй совет: закупить {{p2.short}}, {{p6.short}} и {{p5.short}} под спрос на {{months}} мес. (продажи × месяцы, вниз до целого). Сколько денег это займёт?",
+        "answerFormula": "floor(p2.orders*months)*p2.cost+floor(p6.orders*months)*p6.cost+floor(p5.orders*months)*p5.cost",
+        "hints": [
+          "Для каждого: продажи в месяц × месяцы, вниз до целого, × закуп.",
+          "Сложи три суммы."
+        ],
+        "report": {
+          "ok": "Нужно {{correct|tg}}. Свободными остаются {{budget-correct|tg}}.",
+          "off": "В докладе {{answer|tg}}. Проверь штуки каждого товара: дробную часть отбрасываем."
+        }
+      },
+      {
+        "prompt": "Сколько прибыли принесёт второй вариант за те же {{months}} мес.?",
+        "answerFormula": "floor(p2.orders*months)*(p2.price*(1-fee-tax-pack)-p2.delivery-p2.cost-p2.inbound)+floor(p6.orders*months)*(p6.price*(1-fee-tax-pack)-p6.delivery-p6.cost-p6.inbound)+floor(p5.orders*months)*(p5.price*(1-fee-tax-pack)-p5.delivery-p5.cost-p5.inbound)",
+        "hints": [
+          "Штуки каждого товара × его прибыль с продажи, потом сложить."
+        ],
+        "report": {
+          "ok": "Прибыль {{correct|tg}}, причём большая часть казны осталась свободной. Лидер продаж и лучшее вложение — разные вещи.",
+          "off": "В докладе {{answer|tg}}. Советник: «Штуки те же, что в прошлом расчёте. Умножь на прибыль каждого товара»."
+        }
+      }
+    ],
+    "reward": {
+      "capital": 300,
+      "xp": 100
+    }
   }
 ]

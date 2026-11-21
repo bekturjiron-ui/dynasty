@@ -51,7 +51,7 @@ function checkExercise(where: string, ex: Exercise, scope0: Scope, mode: 'guided
       const v = checkTarget(g, t.cell, exp[t.cell], t.mustInclude)
       if (!v.ok) fail(where, `эталон ${t.cell} ${t.solution} не проходит проверку (${v.reason})`)
     }
-    console.log(`  ${where}: ${ex.sheet.targets.map((t) => `${t.cell}=${Math.round(exp[t.cell] * 100) / 100}`).join(', ')}`)
+    console.log(`  ${where}: ${ex.sheet.targets.map((t) => `${t.cell}=${typeof exp[t.cell] === 'number' ? Math.round((exp[t.cell] as number) * 100) / 100 : exp[t.cell]}`).join(', ')}`)
     return
   }
   const parts: string[] = []
