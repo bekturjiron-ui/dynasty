@@ -104,7 +104,7 @@ export default function Empire({ game }: { game: Game }) {
           <div className="hero-text font-serif text-[26px] leading-none">Империя</div>
           <div className="hero-text mt-1 text-[13px] text-parch/90">построек {owned} из {buildings.length}</div>
         </div>
-        <p className="hero-text pointer-events-none absolute inset-x-0 bottom-3 px-4 text-center text-[12px] text-parch/80">Тяни, чтобы повернуть · тап по постройке — подробности</p>
+        <p className="hero-text pointer-events-none absolute inset-x-0 bottom-3 px-4 text-center text-[12px] text-parch/80">Тяни — повернуть · щипок — приблизить</p>
       </div>
       {msg && <Advisor tone="gain">{msg}</Advisor>}
 

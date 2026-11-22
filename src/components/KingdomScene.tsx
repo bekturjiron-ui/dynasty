@@ -14,8 +14,9 @@ export type SceneSlot = {
   label: string
 }
 
-type Api = { setSlots: (slots: SceneSlot[]) => void }
+type Api = { setSlots: (slots: SceneSlot[]) => void; zoomBy: (factor: number) => void; resetView: () => void }
 
+const ZOOM_BTN = 'grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-black/45 text-[24px] leading-none text-parch backdrop-blur transition active:scale-95'
 const R = 11 // радиус запасного (программного) острова
 const ISLAND_LEN = 24 // длина модели острова по глубине сцены
 /** Где стоят постройки на модели острова: доли ширины и длины от центра (купол сзади — замок, средняя терраса, нижняя терраса) */
@@ -79,7 +80,8 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enablePan = false
-        controls.enableZoom = false
+        controls.enableZoom = true // щипок двумя пальцами и колесо мыши; пределы задаются при подгонке под размер
+        controls.zoomSpeed = 0.9
         controls.enableDamping = true
         controls.minAzimuthAngle = -0.7
         controls.maxAzimuthAngle = 0.7
@@ -603,7 +605,11 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const order = [...slotMap.values()].sort((a, b) => Number(b.def.state === 'owned') - Number(a.def.state === 'owned'))
         void (async () => { for (const s of order) await loadSlot(s) })()
 
+        let zoomImpl: (f: number) => void = () => {}
+        let resetImpl: () => void = () => {}
         api.current = {
+          zoomBy: (f) => zoomImpl(f),
+          resetView: () => resetImpl(),
           setSlots: (defs) => {
             for (const d of defs) {
               const s = slotMap.get(d.id)
@@ -668,12 +674,32 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
+            const d0 = finalPos.distanceTo(controls.target)
+            controls.minDistance = d0 * 0.42
+            controls.maxDistance = d0 * 1.25
             controls.update()
           }
         }
         const ro = new ResizeObserver(resize)
         ro.observe(el)
         resize()
+
+        // приближение кнопками и «вернуть вид»: плавно двигаем камеру
+        const animCam = (toPos: T.Vector3, ms = 280) => {
+          const from = camera.position.clone()
+          const t0 = performance.now()
+          fx.push((now) => {
+            const k2 = Math.min(1, (now - t0) / ms)
+            camera.position.lerpVectors(from, toPos, 1 - Math.pow(1 - k2, 3))
+            return k2 >= 1
+          })
+        }
+        zoomImpl = (f) => {
+          const offv = camera.position.clone().sub(controls.target)
+          const d = Math.max(controls.minDistance, Math.min(controls.maxDistance, offv.length() * f))
+          animCam(controls.target.clone().add(offv.setLength(d)))
+        }
+        resetImpl = () => animCam(finalPos.clone(), 420)
 
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         let visible = true
@@ -856,6 +882,13 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
       <div ref={moonRef} />
       <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,18,48,0.42) 0%, transparent 24%), linear-gradient(0deg, rgba(10,18,48,0.5) 0%, transparent 20%), radial-gradient(85% 70% at 50% 50%, transparent 55%, rgba(8,10,28,0.3) 100%)' }} />
       <div ref={host} className="absolute inset-0" />
+      <div className="absolute bottom-12 right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
+        <button aria-label="Приблизить" onClick={() => api.current?.zoomBy(0.72)} className={ZOOM_BTN}>+</button>
+        <button aria-label="Отдалить" onClick={() => api.current?.zoomBy(1.38)} className={ZOOM_BTN}>−</button>
+        <button aria-label="Вернуть вид" onClick={() => api.current?.resetView()} className={ZOOM_BTN}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /></svg>
+        </button>
+      </div>
       {!ready && <div className="absolute inset-0 grid place-items-center text-[13px] text-parch/80">Строим королевство…</div>}
     </div>
   )
