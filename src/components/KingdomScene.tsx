@@ -527,15 +527,23 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         }))
         moon.scale.setScalar(4.2)
         moon.renderOrder = 0
-        const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }))
+        const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0 }))
         moonHalo.scale.setScalar(34)
         moonHalo.renderOrder = 0
-        const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9 }))
+        const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0.9 }))
         sunGlow.scale.setScalar(46)
-        sunGlow.renderOrder = 0
-        const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff8e0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1 }))
-        sunCore.scale.setScalar(13)
-        sunCore.renderOrder = 0
+        sunGlow.renderOrder = 1
+        // диск солнца: плотная середина с коротким краем, обычное смешивание, чтобы он читался и на белых облаках
+        const discTex = (() => {
+          const c = document.createElement('canvas'); c.width = c.height = 128
+          const g = c.getContext('2d')!; const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64)
+          gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.62, 'rgba(255,255,255,1)'); gr.addColorStop(0.8, 'rgba(255,255,255,0.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
+          g.fillStyle = gr; g.fillRect(0, 0, 128, 128)
+          return new THREE.CanvasTexture(c)
+        })()
+        const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: discTex, color: 0xffe27a, transparent: true, depthWrite: false, fog: false, opacity: 1 }))
+        sunCore.scale.setScalar(10)
+        sunCore.renderOrder = 1
         // небесные тела бесконечно далеки: группа едет вместе с камерой, поэтому при облёте острова они не «крутятся», а лишь поворачиваются с видом
         const skyG = new THREE.Group()
         skyG.add(moon, moonHalo, sunGlow, sunCore)
@@ -578,7 +586,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           camera.lookAt(controls.target)
           camera.updateMatrixWorld()
           const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
-          at(0.4, 0.7, sunDay); at(0.4, 0.28, sunDusk); at(0.4, 0.7, moonPos)
+          at(0.4, 0.7, sunDay); at(0.55, 0.5, sunDusk); at(0.4, 0.7, moonPos)
           camera.position.copy(keepPos); camera.quaternion.copy(keepQuat); camera.updateMatrixWorld()
           moon.position.copy(moonPos)
           moonHalo.position.copy(moonPos)
@@ -955,7 +963,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           sunCore.position.copy(sunGlow.position)
           ;(sunGlow.material as T.SpriteMaterial).color.setHex(0xffe3a8).lerp(c1.setHex(0xff8c4a), dusk)
           ;(sunGlow.material as T.SpriteMaterial).opacity = 0.9 * sunOp
-          ;(sunCore.material as T.SpriteMaterial).color.setHex(0xfff8e0).lerp(c1.setHex(0xffd08a), dusk)
+          ;(sunCore.material as T.SpriteMaterial).color.setHex(0xffe27a).lerp(c1.setHex(0xff7a35), dusk)
           ;(sunCore.material as T.SpriteMaterial).opacity = sunOp
           const moonOp = Math.max(0, night * 1.2 - 0.2)
           moonU.uOpacity.value = moonOp
