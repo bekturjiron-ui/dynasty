@@ -55,3 +55,9 @@
 - Неделя с negotiationId закрывается только после сыгранного диалога (weekStatus берёт State.negotiations); соперник в rivalCurve для такой недели не получает «типичного босса».
 - Импорт бэкапа проверяет версию и структуру ДО очистки базы (validateBackup в src/game/backup.ts).
 - Карточки Арсенала и урока: pre с break-words, иначе длинные формулы растягивают страницу на iPhone.
+
+## Параллельная работа с другим агентом (Antigravity)
+- Режим указан в docs/PARALLEL-WORK.md (строка «РЕЖИМ»). Режим «ветки»: работай в ветке `claude/work`, коммить туда и пушь только её; в `main` — только через pull request (`gh pr create`), и только по просьбе пользователя («влей», «в main»). Деплой на сайт идёт из main.
+- Перед началом работы: `git fetch origin` и `git merge origin/main`. Конфликты решай в своей ветке, потом `npm run build`.
+- Не трогай чужую зону без согласования (см. таблицу зон в docs/PARALLEL-WORK.md); общие файлы (`src/index.css`, `content/skills.json`, `content/empire.json`, `package.json`) правь аккуратно и коммить сразу.
+- Правила для другого агента лежат в AGENTS.md, GEMINI.md и .agent/rules/dynasty.md. Меняя правила проекта, обнови CLAUDE.md и проверь, что эти файлы не расходятся с ним.
