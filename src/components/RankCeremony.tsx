@@ -253,10 +253,8 @@ export function RankCeremony() {
         </>
       )}
 
-      {/* лучи света, вспышка и волны */}
-      <div className="cer-rays pointer-events-none absolute left-1/2 top-[38%]" style={{ ['--rays' as string]: theme.rays }} />
+      {/* вспышка на весь экран; лучи и волны привязаны к самой эмблеме ниже */}
       <div className="cer-flash pointer-events-none absolute inset-0" />
-      {Array.from({ length: theme.rings }, (_, i) => <div key={i} className="cer-ring pointer-events-none absolute left-1/2 top-[38%]" style={{ animationDelay: `${0.4 + i * 0.28}s` }} />)}
 
       {/* частицы */}
       {theme.fx.includes('embers') && EMBERS.map((m, i) => <i key={`e${i}`} className="cer-ember pointer-events-none absolute top-0" style={{ left: `${m.left}%`, width: m.size, height: m.size, animationDelay: `${m.delay}s`, animationDuration: `${m.dur}s` }} />)}
@@ -267,7 +265,11 @@ export function RankCeremony() {
       {theme.emblem === 'banners' && <><Banner side="l" /><Banner side="r" /></>}
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-        <EmblemView kind={theme.emblem} />
+        <div className="relative flex items-center justify-center">
+          <div className="cer-rays pointer-events-none absolute -z-10" style={{ left: '50%', top: '50%', ['--rays' as string]: theme.rays }} />
+          {Array.from({ length: theme.rings }, (_, i) => <div key={i} className="cer-ring pointer-events-none absolute -z-10" style={{ left: '50%', top: '50%', animationDelay: `${0.4 + i * 0.28}s` }} />)}
+          <EmblemView kind={theme.emblem} />
+        </div>
         <div className="cer-label mt-5 text-[12px] font-semibold uppercase tracking-[0.3em] text-gold-soft">{theme.label}</div>
         <h2 className={`mt-3 font-serif leading-[1.05] ${big ? 'text-[46px]' : 'text-[40px]'}`} aria-label={e.title}>
           {words.map((w, wi) => (
