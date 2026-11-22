@@ -79,7 +79,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         fill.position.set(-6, 3, -4)
         scene.add(fill)
 
-        const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 260)
+        const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 520)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enablePan = false
         controls.enableZoom = true // щипок двумя пальцами и колесо мыши; пределы задаются при подгонке под размер
@@ -91,7 +91,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
         controls.maxPolarAngle = 1.3
-        controls.target.set(0, 1.4, 0.6)
+        controls.target.set(0, 2.6, 0.6)
         renderer.domElement.style.touchAction = 'pan-y'
 
         const world = new THREE.Group()
@@ -329,18 +329,6 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           g.fillStyle = gr; g.fillRect(0, 0, 64, 64)
           return new THREE.CanvasTexture(c)
         })()
-        const cloudTex = (() => {
-          const c = document.createElement('canvas'); c.width = 256; c.height = 128
-          const g = c.getContext('2d')!
-          const r = mulberry32(5)
-          for (let i = 0; i < 16; i++) {
-            const x = 40 + r() * 176, y = 50 + (r() - 0.5) * 30, rad = 22 + r() * 30
-            const gr = g.createRadialGradient(x, y, 0, x, y, rad)
-            gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
-            g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill()
-          }
-          return new THREE.CanvasTexture(c)
-        })()
 
         // море облаков под островом: шум fbm с «объёмом», гуще у скал (карта расстояния до суши из вершин острова)
         const isz = islandSize ?? { w: R * 2, l: R * 2 }
@@ -409,22 +397,47 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           world.add(m)
           return { u, m }
         }
-        const seaTop = mkLayer(1.0, 1.0, 0.0, 0.96, WATER_Y)
-        const seaLow = mkLayer(0.7, 0.6, 0.14, 0.92, WATER_Y - 2.6)
+        const seaTop = mkLayer(1.0, 1.0, 0.0, 0.5, WATER_Y)
+        const seaLow = mkLayer(0.7, 0.6, 0.14, 0.45, WATER_Y - 2.6)
 
-        // облака: плывут мимо, часть позади острова, часть низких впереди
+        // облака: нарисованные спрайты (public/art/clouds). Плывут мимо: высокие позади острова, низкие обнимают скалы и уходят вниз
         const clouds: { s: T.Sprite; v: number; o: number }[] = []
+        const paint: T.MeshBasicMaterial[] = []
         const cr = mulberry32(21)
-        for (let i = 0; i < 7; i++) {
-          const o = 0.22 + cr() * 0.18
-          const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: o, depthWrite: false, fog: false })
-          const s = new THREE.Sprite(mat)
-          const w = 16 + cr() * 14
-          s.scale.set(w, w * 0.4, 1)
-          s.position.set((cr() - 0.5) * 100, 0.5 + cr() * 3, -33 + cr() * 9) // в небе над островом, позади него: плывут по верхней части кадра и не закрывают постройки
-          scene.add(s)
-          clouds.push({ s, v: 1.6 + cr() * 1.4, o })
-        }
+        const ART = import.meta.env.BASE_URL + 'art/clouds/'
+        const texLoader = new THREE.TextureLoader()
+        const loadTex = (name: string) => texLoader.loadAsync(ART + name).then((tx) => { tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 4; return tx })
+        void Promise.all(['cloud-1', 'cloud-2', 'cloud-3', 'cloud-4', 'cloud-5', 'cloud-6', 'sea'].map((n) => loadTex(n + '.webp'))).then(([c1t, c2t, c3t, c4t, c5t, c6t, seaT]) => {
+          if (disposed) return
+          const sprites = [c1t, c2t, c3t, c4t, c5t, c6t]
+          const mk = (tx: T.Texture, w: number, x: number, y: number, z: number, o: number, v: number) => {
+            const img = tx.image as { width: number; height: number }
+            const mat = new THREE.SpriteMaterial({ map: tx, transparent: true, opacity: o, depthWrite: false, fog: false })
+            const s = new THREE.Sprite(mat)
+            s.scale.set(w, w * (img.height / img.width), 1)
+            s.position.set(x, y, z)
+            scene.add(s)
+            clouds.push({ s, v, o })
+          }
+          // высокие, позади острова
+          for (let i = 0; i < 7; i++) mk(sprites[i % 6], 11 + cr() * 11, (cr() - 0.5) * 110, 1 + cr() * 5, -36 + cr() * 8, 0.8 + cr() * 0.2, 0.9 + cr() * 1.2)
+          // низкие, у скал и под островом
+          for (let i = 0; i < 8; i++) mk(sprites[(i * 5 + 2) % 6], 17 + cr() * 14, (cr() - 0.5) * 100, -8 + cr() * 5, -12 + cr() * 30, 0.75 + cr() * 0.25, 0.7 + cr() * 1.1)
+          // две большие гряды, лежащие плашмя под островом
+          const seaGeo = new THREE.PlaneGeometry(112, 112 * ((seaT.image as { height: number }).height / (seaT.image as { width: number }).width)).rotateX(-Math.PI / 2)
+          ;[[WATER_Y + 0.5, 0.92, 0.012], [WATER_Y - 2.6, 0.85, -0.008]].forEach(([y, o, rs], i) => {
+            const m = new THREE.Mesh(seaGeo, new THREE.MeshBasicMaterial({ map: seaT, transparent: true, opacity: o, depthWrite: false, fog: false }))
+            m.position.y = y
+            m.rotation.y = i * 1.3
+            m.renderOrder = -1
+            m.userData.rs = rs
+            world.add(m)
+            paint.push(m.material as T.MeshBasicMaterial)
+            seaMeshes.push(m)
+          })
+          applyTime()
+        }).catch(() => { /* картинок нет — остаётся шейдерное море */ })
+        const seaMeshes: T.Mesh[] = []
 
         // светлячки: мягкие точки, ночью ярче
         const FIREFLIES = 44
@@ -513,17 +526,32 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             }`,
         }))
         moon.scale.setScalar(4.2)
-        moon.renderOrder = -3
-        const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }))
+        moon.renderOrder = 0
+        const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0 }))
         moonHalo.scale.setScalar(34)
-        moonHalo.renderOrder = -4
-        const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9 }))
+        moonHalo.renderOrder = 0
+        const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0.9 }))
         sunGlow.scale.setScalar(46)
-        sunGlow.renderOrder = -4
-        const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff8e0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1 }))
-        sunCore.scale.setScalar(13)
-        sunCore.renderOrder = -3
-        scene.add(moon, moonHalo, sunGlow, sunCore)
+        sunGlow.renderOrder = 1
+        // диск солнца: плотная середина с коротким краем, обычное смешивание, чтобы он читался и на белых облаках
+        const discTex = (() => {
+          const c = document.createElement('canvas'); c.width = c.height = 128
+          const g = c.getContext('2d')!; const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64)
+          gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.62, 'rgba(255,255,255,1)'); gr.addColorStop(0.8, 'rgba(255,255,255,0.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
+          g.fillStyle = gr; g.fillRect(0, 0, 128, 128)
+          return new THREE.CanvasTexture(c)
+        })()
+        const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: discTex, color: 0xffe27a, transparent: true, depthWrite: false, fog: false, opacity: 1 }))
+        sunCore.scale.setScalar(10)
+        sunCore.renderOrder = 1
+        // небесные тела бесконечно далеки: группа едет вместе с камерой, поэтому при облёте острова они не «крутятся», а лишь поворачиваются с видом
+        const skyG = new THREE.Group()
+        skyG.add(moon, moonHalo, sunGlow, sunCore)
+        scene.add(skyG)
+        const Y_AXIS = new THREE.Vector3(0, 1, 0)
+        const moonLight0 = new THREE.Vector3(0.4, 0.3, 0.8)
+        const SKY_K = 3 // небо в SKY_K раз дальше SKY_DIST: дальше самого острова, чтобы тела не «ездили» по орбите при облёте
+        skyG.scale.setScalar(SKY_K)
 
         const STARS = 320
         const stPos = new Float32Array(STARS * 3)
@@ -544,7 +572,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           fragmentShader: 'uniform float uNight; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(0.85, 0.9, 1.0, a * a * vA * uNight); }',
         }))
         stars.frustumCulled = false
-        stars.renderOrder = -5
+        stars.renderOrder = 0
         scene.add(stars)
 
         const sunDay = new THREE.Vector3()
@@ -552,19 +580,24 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const moonPos = new THREE.Vector3()
         /** Ставит небесные тела в мир по экранным координатам исходного вида камеры. Вызывается при смене пропорций. */
         const placeSky = () => {
+          // считаем по исходному виду (finalPos → цель), даже если сейчас идёт облёт камеры при открытии
+          const keepPos = camera.position.clone(); const keepQuat = camera.quaternion.clone()
+          camera.position.copy(finalPos)
+          camera.lookAt(controls.target)
           camera.updateMatrixWorld()
-          const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(camera.position).add(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
-          at(0.42, 0.64, sunDay); at(0.4, 0.1, sunDusk); at(-0.34, 0.6, moonPos)
+          const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
+          at(0.4, 0.7, sunDay); at(0.55, 0.5, sunDusk); at(0.4, 0.7, moonPos)
+          camera.position.copy(keepPos); camera.quaternion.copy(keepQuat); camera.updateMatrixWorld()
           moon.position.copy(moonPos)
           moonHalo.position.copy(moonPos)
           // фаза луны по дате: доля освещённого диска, но не меньше 42%, чтобы ночью луна не пропадала
-          const toCam = camera.position.clone().sub(moonPos).normalize()
+          const toCam = moonPos.clone().negate().normalize()
           const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), toCam).normalize()
           const age = ((((Date.now() / 86400000 - 10957.76) % 29.530588) + 29.530588) % 29.530588)
           const th0 = (2 * Math.PI * age) / 29.530588
           const frac = Math.max(0.42, (1 - Math.cos(th0)) / 2)
           const th = Math.acos(1 - 2 * frac) * (Math.sin(th0) >= 0 ? 1 : -1)
-          moonU.uLight.value.copy(toCam).multiplyScalar(-Math.cos(th)).addScaledVector(right, Math.sin(th)).addScaledVector(new THREE.Vector3(0, 1, 0), 0.25).normalize()
+          moonLight0.copy(toCam).multiplyScalar(-Math.cos(th)).addScaledVector(right, Math.sin(th)).addScaledVector(new THREE.Vector3(0, 1, 0), 0.25).normalize()
         }
 
         // ---------- парящие камни вокруг острова (модель flyingstones, несколько копий) ----------
@@ -842,7 +875,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = (a > 1.2 ? 43 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = (a > 1.2 ? 47 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.85)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
             controls.update()
@@ -915,6 +948,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           seaLow.u.uLight.value.copy(seaTop.u.uLight.value).multiplyScalar(0.95)
           seaLow.u.uShade.value.copy(seaTop.u.uShade.value).multiplyScalar(0.9)
           for (const c of clouds) (c.s.material as T.SpriteMaterial).color.setHex(0xffffff).lerp(c1.setHex(0xffb98a), dusk).lerp(c1.setHex(0x4a5578), night)
+          for (const m of paint) m.color.setHex(0xffffff).lerp(c1.setHex(0xffc9a0), dusk).lerp(c1.setHex(0x55608a), night)
           birdMat.opacity = 1 - night
           const sky = skyRef.current
           if (sky) {
@@ -929,7 +963,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           sunCore.position.copy(sunGlow.position)
           ;(sunGlow.material as T.SpriteMaterial).color.setHex(0xffe3a8).lerp(c1.setHex(0xff8c4a), dusk)
           ;(sunGlow.material as T.SpriteMaterial).opacity = 0.9 * sunOp
-          ;(sunCore.material as T.SpriteMaterial).color.setHex(0xfff8e0).lerp(c1.setHex(0xffd08a), dusk)
+          ;(sunCore.material as T.SpriteMaterial).color.setHex(0xffe27a).lerp(c1.setHex(0xff7a35), dusk)
           ;(sunCore.material as T.SpriteMaterial).opacity = sunOp
           const moonOp = Math.max(0, night * 1.2 - 0.2)
           moonU.uOpacity.value = moonOp
@@ -972,6 +1006,15 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             if (c.s.position.x > 56) c.s.position.x = -56
             ;(c.s.material as T.SpriteMaterial).opacity = c.o * (1 - smooth(34, 56, Math.abs(c.s.position.x)))
           }
+          skyG.position.copy(camera.position)
+          // небо стоит на месте при облёте: поворачиваем его вместе с азимутом камеры (с лёгким отставанием, как далёкий объект)
+          const az = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z) * 0.96
+          skyG.rotation.y = az
+          stars.rotation.y = az
+          moonU.uLight.value.copy(moonLight0).applyAxisAngle(Y_AXIS, az)
+          stars.position.copy(camera.position)
+          stars.scale.setScalar(SKY_K)
+          for (const m of seaMeshes) m.rotation.y += m.userData.rs * dt * 0.001
           for (const b of birds) {
             b.a += b.sp * dt * 0.001
             b.g.position.set(Math.cos(b.a) * b.r, b.y + Math.sin(b.a * 3) * 0.4, -6 + Math.sin(b.a) * b.r * 0.6)
@@ -1050,7 +1093,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
       <div ref={skyRef} className="absolute inset-0" style={{ background: 'linear-gradient(180deg,#3f8fe3,#8fc9f6 52%,#ffe8c6)' }} />
       <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,18,48,0.42) 0%, transparent 24%), linear-gradient(0deg, rgba(10,18,48,0.5) 0%, transparent 20%), radial-gradient(85% 70% at 50% 50%, transparent 55%, rgba(8,10,28,0.3) 100%)' }} />
       <div ref={host} className="absolute inset-0" />
-      <div className="absolute bottom-12 right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
+      <div className="absolute bottom-[calc(8rem+env(safe-area-inset-bottom))] right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
         <button aria-label="Приблизить" onClick={() => api.current?.zoomBy(0.72)} className={ZOOM_BTN}>+</button>
         <button aria-label="Отдалить" onClick={() => api.current?.zoomBy(1.38)} className={ZOOM_BTN}>−</button>
         <button aria-label="Вернуть вид" onClick={() => api.current?.resetView()} className={ZOOM_BTN}>

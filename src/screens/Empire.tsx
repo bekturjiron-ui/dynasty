@@ -66,10 +66,10 @@ export default function Empire({ game }: { game: Game }) {
   return (
     <div className="space-y-3">
       {/* Империя — это картинка: сцена на весь экран, без графиков и таблиц */}
-      <div className="relative overflow-hidden rounded-3xl border border-gold/40 shadow-[0_0_40px_-10px_rgba(201,162,39,0.5)]">
+      <div className={sceneFailed ? 'relative overflow-hidden rounded-3xl border border-gold/40' : 'fixed inset-0 z-0 md:left-56'}>
         {!sceneFailed ? (
-          <Suspense fallback={<div className="h-[72dvh] min-h-[460px] md:h-[calc(100dvh-8rem)] md:min-h-[560px]" />}>
-            <KingdomScene slots={slots} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[72dvh] min-h-[460px] md:h-[calc(100dvh-8rem)] md:min-h-[560px]" />
+          <Suspense fallback={<div className="h-dvh" />}>
+            <KingdomScene slots={slots} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-dvh" />
           </Suspense>
         ) : (
           <Card className="p-2">
@@ -100,13 +100,13 @@ export default function Empire({ game }: { game: Game }) {
             <p className="px-2 pb-1 text-[12px] text-muted">Тап по постройке — подробности. Строится за Капитал, но только с нужным титулом.</p>
           </Card>
         )}
-        <div className="pointer-events-none absolute left-4 top-4 md:left-6 md:top-5">
+        <div className="pointer-events-none absolute left-4 top-[calc(4.5rem+env(safe-area-inset-top))] md:left-6 md:top-20">
           <div className="hero-text font-serif text-[26px] leading-none">Империя</div>
           <div className="hero-text mt-1 text-[13px] text-parch/90">построек {owned} из {buildings.length}</div>
         </div>
-        <p className="hero-text pointer-events-none absolute inset-x-0 bottom-3 px-4 text-center text-[12px] text-parch/80">Тяни — повернуть · щипок — приблизить</p>
+        <p className="hero-text pointer-events-none absolute inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] px-4 md:bottom-4 text-center text-[12px] text-parch/80">Тяни — повернуть · щипок — приблизить</p>
       </div>
-      {msg && <Advisor tone="gain">{msg}</Advisor>}
+      {msg && <div className="relative z-10"><Advisor tone="gain">{msg}</Advisor></div>}
 
       {sel && (
         <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setSel(null)}>
