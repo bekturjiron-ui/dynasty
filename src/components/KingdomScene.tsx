@@ -16,7 +16,12 @@ export type SceneSlot = {
 
 type Api = { setSlots: (slots: SceneSlot[]) => void }
 
-const R = 11 // радиус острова
+const R = 11 // радиус запасного (программного) острова
+const ISLAND_LEN = 24 // длина модели острова по глубине сцены
+/** Где стоят постройки на модели острова: доли ширины и длины от центра (купол сзади — замок, средняя терраса, нижняя терраса) */
+const LAYOUT: Record<string, [number, number]> = {
+  castle: [0, -0.31], bank: [0, -0.12], birzha: [-0.21, -0.03], 'torgovy-dom': [0.21, -0.03], kontora: [0.25, 0.2], sklad: [0, 0.23], lavka: [-0.25, 0.2],
+}
 const smooth = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t) }
 const easeOutElastic = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -9 * x) * Math.sin((x * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1)
 function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
@@ -76,18 +81,46 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
         controls.maxPolarAngle = 1.3
-        controls.target.set(0, 1.0, -3)
+        controls.target.set(0, -0.4, 0.2)
         renderer.domElement.style.touchAction = 'pan-y'
 
         const world = new THREE.Group()
         scene.add(world)
 
-        // ---------- рельеф ----------
-        const anchors = latest.current.slots.map((s) => ({ x: s.x, z: s.z }))
+        // ---------- остров: модель из Meshy, иначе программный рельеф ----------
+        let height: (x: number, z: number) => number = () => 0
+        const islandMeshes: T.Mesh[] = []
+        let islandSize: { w: number; l: number } | null = null
+        const placed = new Map<string, { x: number; z: number }>()
+        const ray0 = new THREE.Raycaster()
+        const DOWN = new THREE.Vector3(0, -1, 0)
+        try {
+          const model = await loadModel(t, 'island')
+          if (disposed) return
+          const isl = model.clone(true)
+          const box = new THREE.Box3().setFromObject(isl)
+          const size = box.getSize(new THREE.Vector3())
+          const ctr = box.getCenter(new THREE.Vector3())
+          isl.position.set(-ctr.x, -ctr.y, -ctr.z)
+          const holder = new THREE.Group()
+          holder.add(isl)
+          const sc = ISLAND_LEN / size.z
+          holder.scale.setScalar(sc)
+          holder.position.y = -1
+          holder.traverse((o) => { const m = o as T.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; islandMeshes.push(m) } })
+          world.add(holder)
+          world.updateMatrixWorld(true)
+          islandSize = { w: size.x * sc, l: ISLAND_LEN }
+          height = (x, z) => { ray0.set(new THREE.Vector3(x, 60, z), DOWN); const h = ray0.intersectObjects(islandMeshes, false)[0]; return h ? h.point.y : -3 }
+          for (const d of latest.current.slots) { const f = LAYOUT[d.id]; if (f) placed.set(d.id, { x: f[0] * islandSize.w, z: f[1] * islandSize.l }) }
+        } catch { /* острова нет — рисуем программный */ }
+        const at = (d: SceneSlot) => placed.get(d.id) ?? { x: d.x, z: d.z }
+        const anchors = latest.current.slots.map((s) => at(s))
+        if (!islandSize) {
         const castle = latest.current.slots.find((s) => s.id === 'castle')
         const hill = (x: number, z: number) => (castle ? 2.7 * Math.exp(-((x - castle.x) ** 2 + (z - castle.z) ** 2) / 20) : 0) + 0.45 * Math.exp(-((x - 5.5) ** 2 + (z + 2.5) ** 2) / 26)
         const noise = (x: number, z: number) => 0.16 * Math.sin(x * 0.9 + 1.3) * Math.cos(z * 0.8) + 0.09 * Math.sin(x * 2.1 + z * 1.7)
-        const height = (x: number, z: number) => {
+        height = (x: number, z: number) => {
           let dmin = Infinity
           let near = anchors[0]
           for (const a of anchors) { const d = Math.hypot(x - a.x, z - a.z); if (d < dmin) { dmin = d; near = a } }
@@ -178,6 +211,51 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         })
         cone.castShadow = true
         world.add(cone, trunk)
+        }
+
+        // ---------- деревья из моделей Meshy (tree1, tree2) ----------
+        if (islandSize) {
+          const isz = islandSize
+          const addTrees = async (name: string, count: number, seed: number, targetH: number) => {
+            try {
+              const tm = await loadModel(t, name)
+              if (disposed) return
+              const g = tm.clone(true)
+              g.updateMatrixWorld(true)
+              const meshes: T.Mesh[] = []
+              g.traverse((o) => { if ((o as T.Mesh).isMesh) meshes.push(o as T.Mesh) })
+              if (!meshes.length) return
+              const box = new THREE.Box3().setFromObject(g)
+              const sz = box.getSize(new THREE.Vector3())
+              const c = box.getCenter(new THREE.Vector3())
+              const k = targetH / sz.y
+              const base = new THREE.Matrix4().makeScale(k, k, k).multiply(new THREE.Matrix4().makeTranslation(-c.x, -box.min.y, -c.z)).multiply(meshes[0].matrixWorld)
+              const rnd2 = mulberry32(seed)
+              const mats: T.Matrix4[] = []
+              for (let tries = 0; tries < 600 && mats.length < count; tries++) {
+                const x = (rnd2() - 0.5) * isz.w
+                const z = (rnd2() - 0.5) * isz.l
+                if (z > isz.l * 0.36) continue // песчаный берег впереди
+                if (anchors.some((p) => Math.hypot(x - p.x, z - p.z) < 3.4)) continue
+                ray0.set(new THREE.Vector3(x, 60, z), DOWN)
+                const hit = ray0.intersectObjects(islandMeshes, false)[0]
+                if (!hit || hit.point.y < -0.3) continue
+                const n = hit.face ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld) : DOWN
+                if (n.y < 0.6) continue
+                const sc2 = 0.8 + rnd2() * 0.5
+                const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd2() * Math.PI * 2)
+                mats.push(new THREE.Matrix4().compose(hit.point, q, new THREE.Vector3(sc2, sc2, sc2)).multiply(base))
+              }
+              const inst = new THREE.InstancedMesh(meshes[0].geometry, meshes[0].material, mats.length)
+              mats.forEach((m, i) => inst.setMatrixAt(i, m))
+              inst.castShadow = true
+              inst.receiveShadow = true
+              world.add(inst)
+            } catch { /* дерево не загрузилось — сцена работает без него */ }
+          }
+          void addTrees('tree1', 16, 11, 2.6)
+          void addTrees('tree2', 14, 29, 2.4)
+        }
 
         // ---------- постройки ----------
         type Slot = {
@@ -218,7 +296,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           s.solid.visible = next === 'owned'
           s.ghost.visible = next !== 'owned'
           for (const m of s.ghostMats) {
-            m.opacity = next === 'ready' ? 0.5 : next === 'capital' ? 0.32 : 0.2
+            m.opacity = next === 'ready' ? 0.55 : next === 'capital' ? 0.4 : 0.3
             m.emissive.setHex(next === 'ready' ? 0xd8aa42 : 0x000000)
             m.emissiveIntensity = next === 'ready' ? 0.18 : 0
           }
@@ -298,7 +376,8 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
 
         const setup = (def: SceneSlot) => {
           const root = new THREE.Group()
-          root.position.set(def.x, height(def.x, def.z) - 0.02, def.z)
+          const pp = at(def)
+          root.position.set(pp.x, height(pp.x, pp.z) - 0.02, pp.z)
           world.add(root)
           const label = document.createElement('div')
           labelLayer.appendChild(label)
@@ -392,7 +471,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = 21.5 * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = 30 * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             controls.update()
           }

@@ -15,7 +15,7 @@ const ModelViewer = lazy(() => import('../components/ModelViewer'))
 const KingdomScene = lazy(() => import('../components/KingdomScene'))
 
 /** Размеры построек в диораме (мир) и положение на острове: карта 360×300 из empire.json → мир */
-const SIZES: Record<string, number> = { lavka: 2.8, sklad: 3.2, kontora: 3.0, 'torgovy-dom': 3.5, birzha: 3.6, bank: 3.6, castle: 6.2 }
+const SIZES: Record<string, number> = { lavka: 3.4, sklad: 3.9, kontora: 3.6, 'torgovy-dom': 4.3, birzha: 4.5, bank: 4.3, castle: 7.5 }
 const toWorld = (x: number, y: number) => ({ x: (x - 180) / 30, z: (y - 150) / 30 })
 
 type Status = 'owned' | 'ready' | 'capital' | 'rank'
@@ -82,8 +82,8 @@ export default function Empire({ game }: { game: Game }) {
       {/* Королевство: единая 3D-сцена. Без WebGL — плоская карта */}
       {!sceneFailed ? (
         <Card tone="gold" className="overflow-hidden !p-0">
-          <Suspense fallback={<div className="h-[420px] md:h-[540px]" />}>
-            <KingdomScene slots={slots} stage={p.rank} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[420px] md:h-[540px]" />
+          <Suspense fallback={<div className="h-[460px] md:h-[580px]" />}>
+            <KingdomScene slots={slots} stage={p.rank} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[460px] md:h-[580px]" />
           </Suspense>
           <p className="px-4 py-3 text-[12px] text-parch/80">Тяни, чтобы повернуть. Тап по постройке — подробности. Прозрачные ещё не построены: нужны титул и Капитал. Замок достроится на высшем титуле.</p>
         </Card>
