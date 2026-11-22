@@ -6,7 +6,13 @@
 - Контент только в `content/*.json`; после правок `npm run validate`. Цифры из контента не хардкодить.
 - Формулы только через `src/lib/expr.ts` и `src/lib/sheet.ts`, никогда `eval` или `new Function`.
 - Перед коммитом `npm run build` без ошибок.
-- **Git:** работайте в своей ветке `ag/work` (своя папка `Dynasty-AG`), пушьте её на GitHub, в `main` только через pull request. Не пушьте в `main` напрямую. Перед началом: `git fetch origin` и `git merge origin/main`.
+- **Git:** работайте в своей ветке `ag/work` (своя папка `Dynasty-AG`). Не пушьте в `main` напрямую, в `main` только через pull request.
+- **Перед каждой задачей** подтяните main сами: `git fetch origin` и `git merge origin/main`.
+- **Когда задача готова:** закоммитьте (`Агент: Antigravity` в конце сообщения) и запустите `node tools/ship.mjs`. Скрипт сам проверит сборку, запушит ветку, откроет PR и:
+  - если изменены **только** `content/`, `docs/`, `public/art/` и проверка Check зелёная, **сам вольёт** PR в main и подтянет main обратно;
+  - если затронуто что-то ещё (`src/`, `package.json`, `.github/`, `scripts/` и т. п.), **остановится** после открытия PR и будет ждать владельца («влей»). В таком случае сами не вливайте.
+  - при конфликте с main или красной проверке скрипт останавливается: не обходите это, сообщите владельцу.
+  Сначала можно посмотреть план: `node tools/ship.mjs --dry`.
 - Не добавляйте в git папку `Models/` и данные из `data/`.
 - Все анимации учитывают `prefers-reduced-motion`.
 - Если не уверены, спросите пользователя, а не меняйте общие файлы (`src/index.css`, `content/skills.json`, `content/empire.json`, `package.json`).
