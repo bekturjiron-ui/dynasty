@@ -7,7 +7,14 @@ import { Button } from './ui'
 const ModelViewer = lazy(() => import('./ModelViewer'))
 
 const BASE = import.meta.env.BASE_URL
-const stageImg = (n: number) => `${BASE}art/stage-${Math.max(1, Math.min(7, n))}-p.webp`
+const stageSrc = (n: number, v: 'p' | 'l') => `${BASE}art/stage-${Math.max(1, Math.min(7, n))}-${v}.webp`
+/** Фон стадии: вертикальная картинка на телефоне, широкая на ПК (чтобы не было прямоугольника посреди экрана). */
+const StageImg = ({ n, className }: { n: number; className: string }) => (
+  <picture>
+    <source media="(min-width: 768px)" srcSet={stageSrc(n, 'l')} />
+    <img src={stageSrc(n, 'p')} alt="" className={className} onError={(ev) => (ev.currentTarget.style.display = 'none')} />
+  </picture>
+)
 
 type Emblem = 'seal' | 'stamp' | 'coins' | 'key' | 'scroll' | 'banners' | 'castle'
 type Fx = 'embers' | 'confetti' | 'coins' | 'petals'
@@ -222,8 +229,8 @@ export function RankCeremony() {
   return (
     <div className="cer fixed inset-0 z-50 overflow-hidden bg-ink" role="dialog" aria-label="Новый титул" style={{ ['--shake' as string]: theme.shake }}>
       {/* старый мир → новый мир */}
-      {reveal !== 'doors' && <img src={stageImg(e.rank - 1)} alt="" className="cer-old absolute inset-0 h-full w-full object-cover" onError={(ev) => (ev.currentTarget.style.display = 'none')} />}
-      <img src={stageImg(e.rank)} alt="" className={`absolute inset-0 h-full w-full object-cover ${reveal === 'circle' ? 'cer-new' : reveal === 'wipe' ? 'cer-new-wipe' : 'cer-new-static'}`} onError={(ev) => (ev.currentTarget.style.display = 'none')} />
+      {reveal !== 'doors' && <StageImg n={e.rank - 1} className="cer-old absolute inset-0 h-full w-full object-cover" />}
+      <StageImg n={e.rank} className={`absolute inset-0 h-full w-full object-cover ${reveal === 'circle' ? 'cer-new' : reveal === 'wipe' ? 'cer-new-wipe' : 'cer-new-static'}`} />
       <div className="absolute inset-0" style={{ background: 'radial-gradient(90% 60% at 50% 42%, rgba(17,17,20,0.15) 0%, rgba(17,17,20,0.78) 100%)' }} />
 
       {reveal === 'wipe' && <div className="cer-wipe-line pointer-events-none absolute inset-x-0" />}

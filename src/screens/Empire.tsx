@@ -12,7 +12,7 @@ const ModelViewer = lazy(() => import('../components/ModelViewer'))
 const KingdomScene = lazy(() => import('../components/KingdomScene'))
 
 /** Размеры построек в диораме (мир) и положение на острове: карта 360×300 из empire.json → мир */
-const SIZES: Record<string, number> = { lavka: 3.4, sklad: 3.9, kontora: 3.6, 'torgovy-dom': 4.3, birzha: 4.5, bank: 4.3, castle: 7.5 }
+const SIZES: Record<string, number> = { lavka: 3.0, sklad: 3.4, kontora: 3.2, 'torgovy-dom': 3.7, birzha: 3.9, bank: 3.7, castle: 6.6 }
 const toWorld = (x: number, y: number) => ({ x: (x - 180) / 30, z: (y - 150) / 30 })
 
 type Status = 'owned' | 'ready' | 'capital' | 'rank'
