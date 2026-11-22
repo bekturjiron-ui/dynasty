@@ -91,7 +91,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
         controls.maxPolarAngle = 1.3
-        controls.target.set(0, 1.4, 0.6)
+        controls.target.set(0, 2.6, 0.6)
         renderer.domElement.style.touchAction = 'pan-y'
 
         const world = new THREE.Group()
@@ -842,7 +842,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = (a > 1.2 ? 43 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = (a > 1.2 ? 47 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.85)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
             controls.update()
@@ -1050,7 +1050,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
       <div ref={skyRef} className="absolute inset-0" style={{ background: 'linear-gradient(180deg,#3f8fe3,#8fc9f6 52%,#ffe8c6)' }} />
       <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,18,48,0.42) 0%, transparent 24%), linear-gradient(0deg, rgba(10,18,48,0.5) 0%, transparent 20%), radial-gradient(85% 70% at 50% 50%, transparent 55%, rgba(8,10,28,0.3) 100%)' }} />
       <div ref={host} className="absolute inset-0" />
-      <div className="absolute bottom-12 right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
+      <div className="absolute bottom-[calc(8rem+env(safe-area-inset-bottom))] right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
         <button aria-label="Приблизить" onClick={() => api.current?.zoomBy(0.72)} className={ZOOM_BTN}>+</button>
         <button aria-label="Отдалить" onClick={() => api.current?.zoomBy(1.38)} className={ZOOM_BTN}>−</button>
         <button aria-label="Вернуть вид" onClick={() => api.current?.resetView()} className={ZOOM_BTN}>
