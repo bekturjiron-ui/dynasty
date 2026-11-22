@@ -25,18 +25,21 @@ export default function Today({ game }: { game: Game }) {
       {contentError && <Card className="border-loss/60 text-[13px] text-loss">Контент не прошёл проверку: {contentError}</Card>}
 
       {/* Титул и ресурсы */}
-      <div className="relative -mx-4 flex min-h-[30dvh] flex-col justify-end px-4 pb-1 pt-10 md:min-h-[34dvh]">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%]" style={{ background: 'linear-gradient(to top, rgba(17,17,20,0.85) 0%, rgba(17,17,20,0.5) 55%, transparent 100%)' }} />
-        <Label tone="gold"><span className="hero-text relative">{player.houseName}</span></Label>
-        <h1 className="gold-text relative mt-1 font-serif text-[44px] leading-none">{rank.rank?.title}</h1>
-        {(() => {
-          const lead = player.xp - rivalXpAt(rivalCurve(plan), daysBetween(player.startedAt, dayKey()) + 1, player.planOffsetWeeks ?? 0)
-          return (
-            <button onClick={() => nav('/empire')} className="hero-text relative mt-2 text-left text-[14px] text-parch/90">
-              {content.empire.rival.name}: {lead >= 0 ? <span className="text-gain">ты впереди на {fmtNum(lead)} XP</span> : <span className="text-loss">впереди тебя на {fmtNum(-lead)} XP</span>} ›
-            </button>
-          )
-        })()}
+      <div className="relative flex min-h-[30dvh] flex-col items-start justify-end pb-1 pt-10 md:min-h-[34dvh]">
+        {/* плашка только под текстом титула: картинка стадии остаётся чистой */}
+        <div className="surface surface-gold relative max-w-full rounded-2xl border px-5 py-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)]">
+          <span className="pointer-events-none absolute inset-y-4 left-0 w-[3px] rounded-r bg-gradient-to-b from-gold-soft via-gold to-gold/20" aria-hidden />
+          <Label tone="gold"><span className="relative">{player.houseName}</span></Label>
+          <h1 className="gold-text relative mt-1 font-serif text-[40px] leading-none md:text-[44px]">{rank.rank?.title}</h1>
+          {(() => {
+            const lead = player.xp - rivalXpAt(rivalCurve(plan), daysBetween(player.startedAt, dayKey()) + 1, player.planOffsetWeeks ?? 0)
+            return (
+              <button onClick={() => nav('/empire')} className="relative mt-2.5 block text-left text-[14px] text-parch/90">
+                {content.empire.rival.name}: {lead >= 0 ? <span className="text-gain">ты впереди на {fmtNum(lead)} XP</span> : <span className="text-loss">впереди тебя на {fmtNum(-lead)} XP</span>}&nbsp;›
+              </button>
+            )
+          })()}
+        </div>
       </div>
 
       {rank.next && (
