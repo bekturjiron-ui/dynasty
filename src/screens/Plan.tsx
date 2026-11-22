@@ -35,7 +35,7 @@ export default function Plan({ game }: { game: Game }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-6">
       <div className="pt-2">
         <Title>План на {c.weeks.length} недель</Title>
         <p className="mt-1 text-[14px] text-muted">
@@ -53,9 +53,9 @@ export default function Plan({ game }: { game: Game }) {
         return (
           <section key={key} className={newAct ? 'space-y-2 pt-2' : 'space-y-2'}>
             {newAct && <Label>{w.act}</Label>}
-            <div className={`rounded-2xl border ${isFocus ? 'border-gold/60' : 'border-line'} bg-panel`}>
+            <div className={`rounded-2xl border ${isFocus ? 'surface-gold' : 'surface border-line'}`}>
               <button className="flex w-full items-center gap-3 p-4 text-left" onClick={() => setOpen(isOpen ? null : key)}>
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-[14px] font-semibold ${s.complete ? 'border-gain text-gain' : isFocus ? 'border-gold text-gold' : 'border-line text-muted'}`}>
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-[14px] font-semibold ${s.complete ? 'border-gain bg-gain/10 text-gain' : isFocus ? 'border-gold bg-gold/15 text-gold-soft' : 'border-line text-muted'}`}>
                   {s.complete ? <Icon name="check" size={18} /> : w.n}
                 </span>
                 <span className="flex-1">
@@ -78,7 +78,7 @@ export default function Plan({ game }: { game: Game }) {
                         const l = c.lessons[id]
                         const pr = game.st.progress.get(id)
                         return (
-                          <div className="flex items-center gap-2 rounded-xl bg-panel2 pl-1">
+                          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] pl-1">
                             <span {...h.handle} className="flex h-11 w-8 items-center justify-center"><Grip /></span>
                             <button onClick={() => nav(`/lesson/${id}`)} className="flex flex-1 items-center gap-3 py-3 pr-3 text-left">
                               <span className={pr ? 'text-gain' : 'text-muted'}>{pr ? <Icon name="check" size={18} /> : <span className="inline-block w-[18px] text-center text-[13px]">{i + 1}</span>}</span>
@@ -91,13 +91,13 @@ export default function Plan({ game }: { game: Game }) {
                     />
                   )}
                   {s.bossReady && (
-                    <button disabled={!s.bossUnlocked} onClick={() => nav(`/boss/${w.bossId}`)} className="flex w-full items-center gap-3 rounded-xl bg-panel2 px-3 py-3 text-left active:bg-line disabled:opacity-50">
+                    <button disabled={!s.bossUnlocked} onClick={() => nav(`/boss/${w.bossId}`)} className="choice flex w-full items-center gap-3 rounded-xl border border-ruby/30 bg-ruby/[0.07] px-3 py-3 text-left disabled:opacity-50">
                       <span className={s.bossDone ? 'text-gain' : 'text-gold'}>{s.bossDone ? <Icon name="check" size={18} /> : s.bossUnlocked ? <Icon name="shield" size={18} /> : <Icon name="lock" size={18} />}</span>
                       <span className="flex-1 text-[14px]">Босс: {c.bosses[w.bossId!].title}</span>
                     </button>
                   )}
                   {w.negotiationId && c.negotiations[w.negotiationId] && (
-                    <button onClick={() => nav(`/negotiation/${w.negotiationId}`)} className="flex w-full items-center gap-3 rounded-xl border border-gold/30 bg-panel2 px-3 py-3 text-left active:bg-line">
+                    <button onClick={() => nav(`/negotiation/${w.negotiationId}`)} className="flex w-full items-center gap-3 choice rounded-xl border border-copper/40 bg-copper/[0.07] px-3 py-3 text-left">
                       <span className={game.negotiations.has(w.negotiationId) ? 'text-gain' : 'text-gold'}>{game.negotiations.has(w.negotiationId) ? <Icon name="check" size={18} /> : <Icon name="council" size={18} />}</span>
                       <span className="flex-1 text-[14px]">Переговоры: {c.negotiations[w.negotiationId].title}</span>
                       <span className="text-[11px] text-muted">открыто всегда</span>
@@ -120,7 +120,7 @@ export default function Plan({ game }: { game: Game }) {
 
       {pinAsk && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setPinAsk(false)}>
-          <div className="pb-safe animate-rise w-full rounded-t-3xl border-t border-gold/40 bg-panel px-5 pt-5" onClick={(e) => e.stopPropagation()}>
+          <div className="pb-safe animate-rise w-full surface rounded-t-3xl border-t border-gold/40 px-5 pt-5" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
             <div className="font-serif text-[22px]">Редактор плана</div>
             <p className="mt-1 text-[14px] text-muted">Только для наставника. Введи PIN.</p>

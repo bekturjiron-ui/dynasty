@@ -13,7 +13,7 @@ export default function Arsenal({ game }: { game: Game }) {
   const shown = needle ? cards.filter((l) => `${l.arsenalCard.title} ${l.arsenalCard.body} ${l.title}`.toLowerCase().includes(needle)) : cards
 
   return (
-    <div className="space-y-4">
+    <div className="stagger space-y-4">
       <div className="pt-2">
         <Title>Арсенал</Title>
         <p className="mt-1 text-[14px] text-muted">Карточки остаются навсегда. Открыто: {cards.length}.</p>
@@ -22,7 +22,7 @@ export default function Arsenal({ game }: { game: Game }) {
       {shown.length === 0 && <p className="text-[14px] text-muted">{cards.length ? 'Ничего не нашлось.' : 'Пройди первый урок — его формула ляжет сюда.'}</p>}
       {shown.map((l) => (
         <Card key={l.id}>
-          <Label>Неделя {l.week} · {l.title}</Label>
+          <Label tone="gold">Неделя {l.week} · {l.title}</Label>
           <div className="mt-1 font-serif text-[20px] text-gold">{l.arsenalCard.title}</div>
           <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{l.arsenalCard.body}</pre>
         </Card>

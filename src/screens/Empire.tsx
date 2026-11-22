@@ -36,7 +36,7 @@ export default function Empire({ game }: { game: Game }) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="stagger space-y-5">
       <div className="pt-2">
         <Title>Империя</Title>
         <p className="mt-1 text-[14px] text-muted">{p.houseName} · построек {owned} из {buildings.length} · казна <b className="text-gold">{fmtNum(p.capital)} ₸</b></p>
@@ -133,7 +133,7 @@ export default function Empire({ game }: { game: Game }) {
 
       {sel && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setSel(null)}>
-          <div className="pb-safe animate-rise w-full rounded-t-3xl border-t border-gold/40 bg-panel px-5 pt-5" onClick={(e) => e.stopPropagation()}>
+          <div className="pb-safe animate-rise w-full surface rounded-t-3xl border-t border-gold/40 px-5 pt-5" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
             <div className="flex items-center gap-3">
               <svg viewBox="-30 -30 60 60" className="h-14 w-14"><BuildingShape kind={sel.kind} status={status(sel)} /></svg>

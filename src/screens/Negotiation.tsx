@@ -80,10 +80,10 @@ export default function NegotiationScreen() {
   const claudePrompt = `Сыграй роль ${n.supplier.name}, ${n.supplier.role} компании «${n.supplier.company}». Я — менеджер магазина Novelia на Kaspi. Обсуждаем закуп «${product.short}»: сейчас ${fmtTg(scope.start as number)} за штуку, партия ${n.volume} шт. У тебя есть скрытый минимум цены и терпение; на давление и грубость реагируй холоднее, на честные аргументы и выгоду для обеих сторон — теплее. После 8–10 реплик выйди из роли и разбери мои переговоры: где я давил, где влиял, что можно было выжать.`
 
   return (
-    <div className="pt-safe mx-auto flex min-h-dvh max-w-xl flex-col px-4 pb-6">
+    <div className="scene-copper pt-safe mx-auto flex min-h-dvh max-w-xl flex-col px-4 pb-6">
       <div className="mb-3 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/50 font-serif text-[18px] text-gold">{n.supplier.name[0]}</div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-copper/60 bg-copper/10 font-serif text-[18px] text-copper">{n.supplier.name[0]}</div>
         <div className="leading-tight">
           <div className="text-[15px]">{n.supplier.name}</div>
           <div className="text-[12px] text-muted">{n.supplier.role}, «{n.supplier.company}»</div>
@@ -95,7 +95,7 @@ export default function NegotiationScreen() {
         <div className="sticky top-0 z-10 -mx-4 mb-3 space-y-2 border-b border-line bg-ink/95 px-4 py-3 backdrop-blur">
           <div>
             <div className="flex justify-between text-[12px]"><span className="text-muted">Цена закупа</span><span className="tabular-nums text-parch">{fmtTg(scope.price as number)} <span className="text-gold">−{st.discount}%</span></span></div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-gold transition-[width] duration-500" style={{ width: `${Math.min(1, st.discount / 15) * 100}%` }} /></div>
+            <div className="mt-1 h-2 overflow-hidden rounded-full bg-line"><div className="bar-shine h-full rounded-full bg-gradient-to-r from-[#9c7c17] to-gold-soft transition-[width] duration-500" style={{ width: `${Math.min(1, st.discount / 15) * 100}%` }} /></div>
           </div>
           <div>
             <div className="flex justify-between text-[12px]"><span className="text-muted">Лояльность партнёра</span><span className={`tabular-nums ${st.loyalty < n.coldBelow ? 'text-loss' : st.loyalty >= 70 ? 'text-gain' : 'text-parch'}`}>{st.loyalty}</span></div>
@@ -109,7 +109,7 @@ export default function NegotiationScreen() {
 
       {!st && (
         <div className="animate-rise space-y-4">
-          <Label>Переговоры · неделя {n.week}</Label>
+          <Label tone="copper">Переговоры · неделя {n.week}</Label>
           <h1 className="font-serif text-[26px] leading-tight">{n.title}</h1>
           <Advisor>{render(n.intro, scope)}</Advisor>
           <p className="text-[14px] leading-relaxed text-muted">
@@ -126,7 +126,7 @@ export default function NegotiationScreen() {
               <div key={i} className="animate-rise mx-auto max-w-[90%] rounded-xl border border-loss/40 bg-loss/5 px-3 py-2 text-center text-[13px] text-loss">{l.text}</div>
             ) : (
               <div key={i} className={`animate-rise flex flex-col ${l.who === 'me' ? 'items-end' : 'items-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${l.who === 'me' ? 'rounded-br-md bg-gold/15 text-parch' : 'rounded-bl-md bg-panel2 text-parch'}`}>{l.text}</div>
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${l.who === 'me' ? 'rounded-br-md bg-gradient-to-br from-gold/25 to-gold/10 text-parch shadow-[inset_0_1px_0_rgba(255,240,180,0.12)]' : 'surface rounded-bl-md border border-line text-parch'}`}>{l.text}</div>
                 {l.who === 'me' && l.loyalty !== undefined && l.loyalty !== 0 && (
                   <span className={`mt-1 text-[11px] ${l.loyalty > 0 ? 'text-gain' : 'text-loss'}`}>лояльность {l.loyalty > 0 ? '+' : ''}{l.loyalty}</span>
                 )}
@@ -137,7 +137,7 @@ export default function NegotiationScreen() {
           {!st.end && (
             <div className="space-y-2 pt-2">
               {nodes[st.node].options.map((o, i) => (
-                <button key={`${st.moves}-${i}`} onClick={() => pick(o)} className="w-full rounded-xl border border-line bg-panel px-4 py-3 text-left text-[15px] leading-snug active:border-gold active:bg-panel2">
+                <button key={`${st.moves}-${i}`} onClick={() => pick(o)} className="choice surface w-full rounded-xl border border-line px-4 py-3.5 text-left text-[15px] leading-snug">
                   {render(o.text, scope)}
                 </button>
               ))}
@@ -147,7 +147,7 @@ export default function NegotiationScreen() {
           {result && (
             <div className="animate-rise space-y-3 pt-2">
               <Advisor tone={result.o.saving > 0 ? 'gain' : 'loss'}>{result.o.verdict}</Advisor>
-              <div className="rounded-2xl border border-line bg-panel p-4">
+              <div className="surface rounded-2xl border border-line p-4">
                 <Label>Что это даст Дому за {n.orders} партии по {n.volume} шт.</Label>
                 <div className="mt-2 divide-y divide-line text-[14px]">
                   {result.o.orders.map((o) => (

@@ -60,7 +60,7 @@ export function Sortable<T>({ items, keyOf, onChange, render, className = '' }: 
   return (
     <div className={className}>
       {list.map((it, i) => (
-        <div key={keyOf(it)} ref={(el) => { refs.current[i] = el }} className={drag === i ? 'relative z-10 scale-[1.02] opacity-90 shadow-lg transition-transform' : 'transition-transform'}>
+        <div key={keyOf(it)} ref={(el) => { refs.current[i] = el }} className={`drag-item ${drag === i ? 'is-dragging relative z-10' : ''}`}>
           {render(it, i, {
             dragging: drag === i,
             handle: { onPointerDown: (e) => start(i, e), style: { touchAction: 'none', cursor: 'grab' }, 'aria-label': 'Перетащить' },

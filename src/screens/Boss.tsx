@@ -56,16 +56,16 @@ export default function BossScreen() {
   }
 
   return (
-    <div className="pt-safe min-h-dvh px-4 pb-16">
+    <div className="scene-boss pt-safe min-h-dvh px-4 pb-16">
       <div className="mb-4 flex items-center justify-between">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
         <div className="flex gap-1.5" aria-label={`Жизней: ${lives}`}>
           {[0, 1, 2].map((i) => (
-            <span key={i} className={i < lives ? 'text-gold' : 'text-line'}><Icon name="shield" size={22} /></span>
+            <span key={`${i}-${i < lives}`} className={i < lives ? 'text-gold-soft drop-shadow-[0_0_6px_rgba(232,205,114,0.5)]' : 'life-lost text-line'}><Icon name="shield" size={22} /></span>
           ))}
         </div>
       </div>
-      <Label>Босс недели {boss.week}</Label>
+      <Label tone="boss">Босс недели {boss.week}</Label>
       <h1 className="mt-1 font-serif text-[26px] leading-tight">{boss.title}</h1>
 
       {!result && (
@@ -79,7 +79,7 @@ export default function BossScreen() {
 
       {result === 'won' && (
         <div className="animate-rise mt-8 space-y-4 text-center">
-          <div className="animate-crown mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-gold text-gold"><Icon name="check" size={48} /></div>
+          <div className="animate-crown surface-gold mx-auto flex h-24 w-24 items-center justify-center rounded-full border text-gold-soft"><Icon name="check" size={48} /></div>
           <p className="font-serif text-[24px]">Вылазка удалась</p>
           <Advisor tone="gain">
             {gain && gain.capital ? <>В казну: <b className="text-gold">+{gain.capital} ₸ Капитала</b>, <b className="text-gold">+{gain.xp} XP</b>. Жизней осталось: {lives}.</> : <>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}

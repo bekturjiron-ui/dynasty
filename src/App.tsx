@@ -51,14 +51,15 @@ export default function App() {
 }
 
 function Shell({ children }: { children: ReactNode }) {
+  const loc = useLocation()
   return (
     <div className="mx-auto min-h-dvh max-w-xl">
-      <main className="pt-safe px-4 pb-28">{children}</main>
+      <main key={loc.pathname} className="animate-rise pt-safe px-4 pb-28">{children}</main>
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-10 border-t border-line bg-ink/95 backdrop-blur">
         <div className="mx-auto flex max-w-xl">
           {TABS.map((t) => (
-            <NavLink key={t.to} to={t.to} end className={({ isActive }) => `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[10.5px] ${isActive ? 'text-gold' : 'text-muted'}`}>
-              <Icon name={t.icon} size={22} />
+            <NavLink key={t.to} to={t.to} end className={({ isActive }) => `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${isActive ? 'tab-active text-gold-soft' : 'text-muted'}`}>
+              <span className="tab-icon inline-flex"><Icon name={t.icon} size={22} /></span>
               {t.label}
             </NavLink>
           ))}

@@ -6,12 +6,14 @@ import { dayKey, daysBetween } from '../lib/dates'
 import { rivalCurve, rivalXpAt } from '../game/rival'
 import { ContractCard } from '../components/ContractCard'
 import { MissionCard } from '../components/MissionCard'
-import { Bar, Button, Card, Icon, Label } from '../components/ui'
+import { Bar, Button, Card, Icon, Label, Sparks, useCountUp } from '../components/ui'
 
 export default function Today({ game }: { game: Game }) {
   const nav = useNavigate()
   const { player, streak, focus, rank, st, weekNow } = game
   const plan = game.content
+  const xpShown = useCountUp(player?.xp ?? 0)
+  const capShown = useCountUp(player?.capital ?? 0)
   if (!player || !focus || !rank) return null
 
   const lesson = focus.nextLessonId ? content.lessons[focus.nextLessonId] : undefined
@@ -21,16 +23,17 @@ export default function Today({ game }: { game: Game }) {
   const review = lastDone ? content.lessons[lastDone.lessonId] : undefined
 
   return (
-    <div className="space-y-4">
+    <div className="stagger space-y-4">
       {contentError && <Card className="border-loss/60 text-[13px] text-loss">Контент не прошёл проверку: {contentError}</Card>}
 
       {/* Титул и ресурсы */}
-      <div className="pt-2">
-        <Label>{player.houseName}</Label>
-        <h1 className="gold-text mt-1 font-serif text-[34px] leading-none">{rank.rank?.title}</h1>
+      <div className="relative pt-2">
+        <Sparks burst={player.xp} />
+        <Label tone="gold">{player.houseName}</Label>
+        <h1 className="gold-text mt-1 font-serif text-[38px] leading-none">{rank.rank?.title}</h1>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-muted">
-          <span><b className="text-parch">{fmtNum(player.capital)}</b> ₸ Капитала</span>
-          <span><b className="text-parch">{fmtNum(player.xp)}</b> XP</span>
+          <span><b className="text-parch">{fmtNum(capShown)}</b> ₸ Капитала</span>
+          <span><b className="text-gold-soft">{fmtNum(xpShown)}</b> XP</span>
           <span>Репутация <b className="text-parch">{player.reputation}</b></span>
         </div>
         {(() => {
@@ -59,21 +62,21 @@ export default function Today({ game }: { game: Game }) {
       {/* Серия со щитом */}
       <div className="flex gap-3">
         <Card className="flex flex-1 items-center gap-3">
-          <span className={streak.activeToday ? 'text-gold' : 'text-muted'}><Icon name="flame" size={28} /></span>
+          <span className={`grid h-11 w-11 place-items-center rounded-xl ${streak.activeToday ? 'bg-gold/15 text-gold-soft' : 'bg-white/5 text-muted'}`}><span className={streak.activeToday ? 'animate-flame' : 'inline-flex'}><Icon name="flame" size={28} /></span></span>
           <div>
-            <div className="text-[22px] font-semibold leading-none">{streak.streak}</div>
+            <div className="text-[24px] font-semibold leading-none">{streak.streak}</div>
             <div className="text-[12px] text-muted">{streak.activeToday ? 'день в деле, сегодня засчитан' : 'дней в деле · сделай урок сегодня'}</div>
           </div>
         </Card>
         <Card className="flex w-[42%] items-center gap-3">
-          <span className={streak.shieldUsedThisWeek ? 'text-muted' : 'text-gold'}><Icon name="shield" size={26} /></span>
-          <div className="text-[12px] leading-snug text-muted">{streak.shieldUsedThisWeek ? 'Щит недели потрачен' : 'Щит на месте: 1 пропуск в неделю не сбросит серию'}</div>
+          <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${streak.shieldUsedThisWeek ? 'bg-white/5 text-muted' : 'bg-gold/15 text-gold-soft'}`}><span className="animate-shield"><Icon name="shield" size={26} /></span></span>
+          <div className="text-[12px] leading-snug text-muted">{streak.shieldUsedThisWeek ? 'Щит недели потрачен' : 'Щит на месте: один пропуск не собьёт серию'}</div>
         </Card>
       </div>
 
       {heir && review && (
-        <Card className="border-gold/50">
-          <Label>Возвращение наследника</Label>
+        <Card tone="gold">
+          <Label tone="gold">Возвращение наследника</Label>
           <p className="mt-1 text-[15px] leading-relaxed">Дом ждал {streak.daysAway} дн. Вспомним последнее и разомнёмся лёгкой миссией — без давления.</p>
           <div className="mt-3 rounded-xl bg-panel2 p-3">
             <div className="font-serif text-[17px] text-gold">{review.arsenalCard.title}</div>
@@ -90,13 +93,13 @@ export default function Today({ game }: { game: Game }) {
       </div>
 
       {lesson ? (
-        <Card className="border-gold/40">
+        <Card tone="gold" className="p-5">
           <div className="flex items-center justify-between">
-            <Label>Урок дня · {focus.lessonsDone + 1} из {focus.lessonsTotal}</Label>
+            <Label tone="gold">Урок дня · {focus.lessonsDone + 1} из {focus.lessonsTotal}</Label>
             <span className="text-[12px] text-muted">~10–15 мин</span>
           </div>
-          <div className="mt-1 font-serif text-[22px] leading-snug">{lesson.title}</div>
-          <p className="mt-1 text-[14px] text-muted">{lesson.why}</p>
+          <div className="mt-2 font-serif text-[24px] leading-snug">{lesson.title}</div>
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">{lesson.why}</p>
           <Button full className="mt-4" onClick={() => nav(`/lesson/${lesson.id}`)}>Начать</Button>
         </Card>
       ) : focus.lessonsTotal > 0 ? (
@@ -107,9 +110,9 @@ export default function Today({ game }: { game: Game }) {
 
       {/* Миссии: босс и контракт */}
       {boss && !focus.bossDone && (
-        <Card className={focus.bossUnlocked ? 'border-gold/40' : 'opacity-70'}>
+        <Card tone={focus.bossUnlocked ? 'boss' : 'plain'} className={focus.bossUnlocked ? '' : 'opacity-70'}>
           <div className="flex items-center justify-between">
-            <Label>Босс недели · 3 жизни</Label>
+            <Label tone={focus.bossUnlocked ? 'boss' : undefined}>Босс недели · 3 жизни</Label>
             {!focus.bossUnlocked && <span className="text-muted"><Icon name="lock" size={18} /></span>}
           </div>
           <div className="mt-1 font-serif text-[19px]">{boss.title}</div>

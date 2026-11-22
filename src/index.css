@@ -2,17 +2,21 @@
 
 @theme {
   --color-ink: #0e0e10;
-  --color-panel: #17171a;
-  --color-panel2: #1f1f23;
-  --color-line: #2c2c31;
+  --color-panel: #18171a;
+  --color-panel2: #222024;
+  --color-line: #33302f;
   --color-gold: #c9a227;
-  --color-gold-soft: #e3c766;
-  --color-parch: #ede7d9;
-  --color-muted: #9a9486;
-  --color-gain: #86b77e;
-  --color-loss: #d88a6e;
-  --font-serif: Georgia, 'Times New Roman', 'PT Serif', serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  --color-gold-soft: #e8cd72;
+  --color-parch: #f1ebdd;
+  --color-muted: #b3ad9e;
+  --color-gain: #8fc287;
+  --color-loss: #e09478;
+  --color-ruby: #d0586b;
+  --color-emerald: #52b890;
+  --color-copper: #d28a4a;
+  --font-serif: 'PT Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  --shadow-glow: 0 0 0 1px rgba(232, 205, 114, 0.35), 0 8px 32px -8px rgba(201, 162, 39, 0.45);
 }
 
 :root {
@@ -24,12 +28,21 @@ body {
   background: var(--color-ink);
   color: var(--color-parch);
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
 
+/* Тёплое «свечение зала» сверху: фон перестаёт быть плоским */
 body {
   min-height: 100dvh;
+  background:
+    radial-gradient(120% 55% at 50% -8%, rgba(201, 162, 39, 0.16) 0%, rgba(201, 162, 39, 0.04) 45%, transparent 70%),
+    radial-gradient(90% 40% at 100% 100%, rgba(150, 60, 70, 0.08) 0%, transparent 70%),
+    var(--color-ink);
+  background-attachment: fixed;
 }
 
 input,
@@ -43,6 +56,13 @@ input {
   font-size: 16px;
 }
 
+h1,
+h2,
+h3,
+.font-serif {
+  letter-spacing: -0.005em;
+}
+
 .pt-safe {
   padding-top: max(env(safe-area-inset-top), 12px);
 }
@@ -51,19 +71,64 @@ input {
 }
 
 .gold-text {
-  background: linear-gradient(180deg, #f0d77a 0%, #c9a227 55%, #9c7c17 100%);
+  background: linear-gradient(180deg, #f6e08a 0%, #d4ae2f 52%, #9c7c17 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 2px 14px rgba(201, 162, 39, 0.35));
 }
 
+/* ---------- Поверхности ---------- */
+.surface {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 60%), var(--color-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 20px -12px rgba(0, 0, 0, 0.8);
+}
+.surface-gold {
+  border-color: rgba(232, 205, 114, 0.4);
+  background: linear-gradient(160deg, rgba(201, 162, 39, 0.2) 0%, rgba(201, 162, 39, 0.04) 55%, transparent 100%), var(--color-panel);
+  box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255, 240, 180, 0.12);
+}
+.surface-boss {
+  border-color: rgba(208, 88, 107, 0.45);
+  background: linear-gradient(160deg, rgba(208, 88, 107, 0.2) 0%, rgba(208, 88, 107, 0.04) 55%, transparent 100%), var(--color-panel);
+  box-shadow: 0 0 0 1px rgba(208, 88, 107, 0.15), 0 8px 28px -10px rgba(208, 88, 107, 0.45);
+}
+.surface-contract {
+  border-color: rgba(82, 184, 144, 0.4);
+  background: linear-gradient(160deg, rgba(82, 184, 144, 0.16) 0%, rgba(82, 184, 144, 0.03) 55%, transparent 100%), var(--color-panel);
+  box-shadow: 0 8px 28px -12px rgba(82, 184, 144, 0.4);
+}
+.surface-copper {
+  border-color: rgba(210, 138, 74, 0.42);
+  background: linear-gradient(160deg, rgba(210, 138, 74, 0.18) 0%, rgba(210, 138, 74, 0.03) 55%, transparent 100%), var(--color-panel);
+  box-shadow: 0 8px 28px -12px rgba(210, 138, 74, 0.4);
+}
+
+.btn-gold {
+  background: linear-gradient(180deg, #e8cd72 0%, #c9a227 55%, #a78416 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 245, 200, 0.55), 0 6px 18px -6px rgba(201, 162, 39, 0.6);
+}
+
+/* ---------- Анимации ---------- */
 @keyframes rise {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
   to { opacity: 1; transform: none; }
 }
 .animate-rise {
-  animation: rise 0.35s ease-out both;
+  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+/* Дети появляются по очереди */
+.stagger > * {
+  animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+.stagger > *:nth-child(n + 7) { animation-delay: 340ms; }
 
 @keyframes crown {
   0% { opacity: 0; transform: scale(0.6) rotate(-8deg); }
@@ -74,9 +139,167 @@ input {
   animation: crown 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
+/* Пламя серии */
+@keyframes flicker {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 4px rgba(232, 160, 50, 0.6)); }
+  25% { transform: scale(1.06, 1.1) rotate(-3deg); filter: drop-shadow(0 0 8px rgba(240, 180, 60, 0.85)); }
+  55% { transform: scale(0.97, 1.04) rotate(2deg); filter: drop-shadow(0 0 5px rgba(232, 160, 50, 0.65)); }
+  80% { transform: scale(1.04, 1.08) rotate(-1deg); filter: drop-shadow(0 0 9px rgba(240, 180, 60, 0.9)); }
+}
+.animate-flame {
+  display: inline-flex;
+  transform-origin: 50% 90%;
+  animation: flicker 1.8s ease-in-out infinite;
+}
+
+/* Щит: вспышка один раз */
+@keyframes shield-flash {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: none; opacity: 1; }
+}
+.animate-shield {
+  display: inline-flex;
+  animation: shield-flash 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Галочка рисуется */
+@keyframes draw {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+.animate-check path {
+  stroke-dasharray: 24;
+  animation: draw 0.45s ease-out 0.1s both;
+}
+
+/* Блик на заполненной полосе */
+@keyframes shine {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(320%); }
+}
+.bar-shine {
+  position: relative;
+  overflow: hidden;
+}
+.bar-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: shine 2.8s ease-in-out infinite;
+}
+
+/* Искры награды */
+@keyframes spark {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); }
+}
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff3b0 0%, #e8cd72 55%, transparent 70%);
+  animation: spark 0.9s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Перетаскивание: пружинящая карточка */
+.drag-item {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.drag-item.is-dragging {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 1px rgba(232, 205, 114, 0.6), 0 16px 36px -10px rgba(201, 162, 39, 0.55);
+  border-radius: 1rem;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+/* Нажатие и иконки вкладок */
+.tab-icon {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s;
+}
+.tab-active .tab-icon {
+  transform: translateY(-2px) scale(1.12);
+  filter: drop-shadow(0 0 6px rgba(201, 162, 39, 0.6));
+}
+a:active .tab-icon {
+  transform: scale(0.9);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
-  .animate-crown {
+  .animate-crown,
+  .animate-flame,
+  .animate-shield,
+  .animate-check path,
+  .bar-shine::after,
+  .spark,
+  .stagger > * {
     animation: none;
+  }
+  .drag-item,
+  .tab-icon {
+    transition: none;
+  }
+}
+
+/* ---------- Сцены: цветной «свет» сверху по типу экрана ---------- */
+.scene-boss {
+  background: radial-gradient(110% 40% at 50% 0%, rgba(208, 88, 107, 0.2) 0%, transparent 70%);
+}
+.scene-copper {
+  background: radial-gradient(110% 40% at 50% 0%, rgba(210, 138, 74, 0.18) 0%, transparent 70%);
+}
+.scene-lesson {
+  background: radial-gradient(110% 40% at 50% 0%, rgba(201, 162, 39, 0.14) 0%, transparent 70%);
+}
+
+/* Утрата жизни: щит гаснет с лёгкой тряской */
+@keyframes life-lost {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.25) rotate(-8deg); }
+  60% { transform: scale(0.9) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+.life-lost {
+  animation: life-lost 0.5s ease-out;
+}
+
+/* Фазы урока: активная пульсирует мягким золотом */
+@keyframes phase-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 205, 114, 0.5); }
+  50% { box-shadow: 0 0 10px 2px rgba(232, 205, 114, 0.45); }
+}
+.phase-active {
+  animation: phase-glow 2s ease-in-out infinite;
+}
+
+/* Варианты ответа в переговорах и общие «нажимаемые» панели */
+.choice {
+  transition: transform 0.12s ease-out, border-color 0.15s, background-color 0.15s;
+}
+.choice:active {
+  transform: scale(0.985);
+  border-color: rgba(232, 205, 114, 0.7);
+  background-color: var(--color-panel2);
+}
+
+/* Поля ввода: золотое свечение при фокусе */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-lost,
+  .phase-active {
+    animation: none;
+  }
+  .choice {
+    transition: none;
   }
 }

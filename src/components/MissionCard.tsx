@@ -29,14 +29,14 @@ export function MissionCard({ mission: m, result }: { mission: Mission; result?:
   }
 
   return (
-    <div className={`rounded-2xl border p-4 ${result ? 'border-gain/40 bg-gain/5' : 'border-line bg-panel'}`}>
+    <div className={`rounded-2xl border p-4 ${result ? 'surface border-gain/40' : 'surface border-line'}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <Label>Миссия от наставника</Label>
           <div className="mt-1 text-[16px] leading-snug">{m.title}</div>
           {m.description && <p className="mt-1 text-[14px] leading-relaxed text-muted">{m.description}</p>}
         </div>
-        {result ? <span className="text-gain"><Icon name="check" /></span> : <span className="shrink-0 rounded-full bg-gold/15 px-2 py-1 text-[12px] font-semibold text-gold">+{m.reward.xp} XP</span>}
+        {result ? <span className="animate-check text-gain"><Icon name="check" /></span> : <span className="shrink-0 rounded-full bg-gold/15 px-2 py-1 text-[12px] font-semibold text-gold">+{m.reward.xp} XP</span>}
       </div>
       {result && (
         <div className="mt-3 flex items-center gap-3 text-[14px] text-gain">

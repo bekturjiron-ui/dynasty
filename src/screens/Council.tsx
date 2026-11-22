@@ -46,7 +46,7 @@ export default function Council({ game }: { game: Game }) {
   )
 
   return (
-    <div className="space-y-5">
+    <div className="stagger space-y-5">
       <div className="pt-2">
         <Title>Совет Дома</Title>
         <p className="mt-1 text-[14px] text-muted">Раз в неделю Дом сверяет цифры: что продано, сколько заработано, куда ушла реклама.</p>

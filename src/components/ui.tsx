@@ -1,35 +1,90 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'gold' | 'ghost' | 'quiet'; full?: boolean }
 
 export function Button({ variant = 'gold', full, className = '', ...rest }: BtnProps) {
-  const base = 'min-h-12 rounded-xl px-5 text-[15px] font-semibold transition active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100'
+  const base = 'min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
   const look =
     variant === 'gold'
-      ? 'bg-gold text-ink shadow-[0_0_0_1px_rgba(255,230,150,0.25)_inset]'
+      ? 'btn-gold text-ink'
       : variant === 'ghost'
-        ? 'border border-gold/50 text-gold'
+        ? 'border border-gold/60 text-gold-soft active:bg-gold/10'
         : 'text-muted'
   return <button className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} {...rest} />
 }
 
-export function Card({ children, className = '', onClick }: { children: ReactNode; className?: string; onClick?: () => void }) {
+export type Tone = 'plain' | 'gold' | 'boss' | 'contract' | 'copper'
+const SURFACE: Record<Tone, string> = {
+  plain: 'surface border-line',
+  gold: 'surface-gold',
+  boss: 'surface-boss',
+  contract: 'surface-contract',
+  copper: 'surface-copper',
+}
+
+/** Карточка. tone задаёт цветовой акцент по типу задачи: урок — золото, босс — рубин, контракт — изумруд, переговоры — медь. */
+export function Card({ children, className = '', onClick, tone = 'plain' }: { children: ReactNode; className?: string; onClick?: () => void; tone?: Tone }) {
   return (
-    <div onClick={onClick} className={`rounded-2xl border border-line bg-panel p-4 ${onClick ? 'cursor-pointer active:bg-panel2' : ''} ${className}`}>
+    <div onClick={onClick} className={`rounded-2xl border p-4 ${SURFACE[tone]} ${onClick ? 'cursor-pointer transition active:brightness-125' : ''} ${className}`}>
       {children}
     </div>
   )
 }
 
-export function Label({ children }: { children: ReactNode }) {
-  return <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{children}</div>
+export function Label({ children, tone }: { children: ReactNode; tone?: Exclude<Tone, 'plain'> }) {
+  const color = tone === 'gold' ? 'text-gold-soft' : tone === 'boss' ? 'text-ruby' : tone === 'contract' ? 'text-emerald' : tone === 'copper' ? 'text-copper' : 'text-muted'
+  return <div className={`text-[11.5px] font-semibold uppercase tracking-[0.14em] ${color}`}>{children}</div>
 }
 
 export function Bar({ value, className = '' }: { value: number; className?: string }) {
+  const v = Math.max(0, Math.min(1, value))
   return (
-    <div className={`h-2 overflow-hidden rounded-full bg-line ${className}`}>
-      <div className="h-full rounded-full bg-gradient-to-r from-[#9c7c17] to-gold-soft transition-[width] duration-500" style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }} />
+    <div className={`h-2.5 overflow-hidden rounded-full bg-black/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.6)] ${className}`}>
+      <div className={`h-full rounded-full bg-gradient-to-r from-[#9c7c17] via-gold to-gold-soft transition-[width] duration-700 ease-out ${v > 0 ? 'bar-shine' : ''}`} style={{ width: `${v * 100}%` }} />
     </div>
+  )
+}
+
+/** Число плавно «накручивается» до значения. При смене значения идёт от прошлого к новому. */
+export function useCountUp(target: number, ms = 800) {
+  const [v, setV] = useState(target)
+  const from = useRef(target)
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || from.current === target) { from.current = target; setV(target); return }
+    const start = performance.now()
+    const a = from.current
+    let raf = 0
+    const tick = (t: number) => {
+      const k = Math.min(1, (t - start) / ms)
+      const e = 1 - Math.pow(1 - k, 3)
+      setV(Math.round(a + (target - a) * e))
+      if (k < 1) raf = requestAnimationFrame(tick)
+      else from.current = target
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, ms])
+  return v
+}
+
+/** Золотые искры: показать на миг, когда сменился key (награда получена). */
+export function Sparks({ burst }: { burst: number }) {
+  const [show, setShow] = useState(false)
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) { first.current = false; return }
+    setShow(true)
+    const t = setTimeout(() => setShow(false), 950)
+    return () => clearTimeout(t)
+  }, [burst])
+  if (!show) return null
+  return (
+    <span className="pointer-events-none absolute inset-0" aria-hidden>
+      {Array.from({ length: 10 }, (_, i) => {
+        const ang = (i / 10) * Math.PI * 2
+        return <i key={i} className="spark left-1/2 top-1/2" style={{ ['--dx' as string]: `${Math.cos(ang) * 46}px`, ['--dy' as string]: `${Math.sin(ang) * 30}px` }} />
+      })}
+    </span>
   )
 }
 

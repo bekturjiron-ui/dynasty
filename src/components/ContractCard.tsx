@@ -32,13 +32,13 @@ export function ContractCard({ week, result }: { week: Week; result?: ContractRe
   const canSubmit = proof === 'checkbox' || (proof === 'number' && parseUserNumber(num) !== null) || (proof === 'photo' && !!photo)
 
   return (
-    <div className={`rounded-2xl border p-4 ${result ? 'border-gain/40 bg-gain/5' : 'border-gold/40 bg-gradient-to-br from-gold/10 to-panel'}`}>
+    <div className={`rounded-2xl border p-4 ${result ? 'surface border-gain/40' : 'surface-contract'}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Label>Реальный контракт · неделя {week.n}</Label>
+          <Label tone="contract">Реальный контракт · неделя {week.n}</Label>
           <p className="mt-1 text-[15px] leading-relaxed">{week.contract.text}</p>
         </div>
-        {result ? <span className="text-gain"><Icon name="check" /></span> : <span className="shrink-0 rounded-full bg-gold/15 px-2 py-1 text-[12px] font-semibold text-gold">+{CONTRACT_REWARD.xp} XP</span>}
+        {result ? <span className="animate-check text-gain"><Icon name="check" /></span> : <span className="shrink-0 rounded-full bg-emerald/15 px-2.5 py-1 text-[12px] font-semibold text-emerald">+{CONTRACT_REWARD.xp} XP</span>}
       </div>
 
       {result && (

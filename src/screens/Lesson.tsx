@@ -94,7 +94,7 @@ export default function LessonScreen() {
   }
 
   return (
-    <div className="pt-safe min-h-dvh px-4 pb-28">
+    <div className="scene-lesson pt-safe min-h-dvh px-4 pb-28">
       {/* Шапка: закрыть + 5 фаз цикла */}
       <div className="mb-5 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel">
@@ -103,7 +103,7 @@ export default function LessonScreen() {
         <div className="flex flex-1 gap-1.5">
           {PHASES.map((p, i) => (
             <div key={p.key} className="flex-1">
-              <div className={`h-1.5 rounded-full ${i < phaseIdx ? 'bg-gold' : i === phaseIdx ? 'bg-gold-soft' : 'bg-line'}`} />
+              <div className={`h-1.5 rounded-full transition-colors duration-500 ${i < phaseIdx ? 'bg-gold' : i === phaseIdx ? 'phase-active bg-gold-soft' : 'bg-line'}`} />
               <div className={`mt-1 text-center text-[10px] ${i === phaseIdx ? 'text-gold' : 'text-muted'}`}>{p.label}</div>
             </div>
           ))}
@@ -155,7 +155,7 @@ export default function LessonScreen() {
               ? <>Урок закрыт{soloHints ? ' с помощью советника' : ' без подсказок'}. В казну Дома: <b className="text-gold">+{gain.capital} ₸ Капитала</b>{gain.xp ? <>, <b className="text-gold">+{gain.xp} XP</b></> : null}.{soloHints ? ' Пройди «Сам» ещё раз без подсказок — советник доплатит вторую половину Капитала.' : ''}</>
               : <>Повтор засчитан в серию дней. Награда за этот урок уже в казне.</>}
           </Advisor>
-          <div className="rounded-2xl border border-gold/50 bg-gradient-to-b from-gold/10 to-transparent p-4">
+          <div className="surface-gold rounded-2xl border p-4">
             <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-gold"><Icon name="arsenal" size={16} /> В Арсенал добавлено навсегда</div>
             <div className="font-serif text-[20px] text-parch">{lesson.arsenalCard.title}</div>
             <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{lesson.arsenalCard.body}</pre>
@@ -172,11 +172,11 @@ export default function LessonScreen() {
       )}
       {sheetOpen && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setSheetOpen(false)}>
-          <div className="pb-safe animate-rise max-h-[80dvh] w-full overflow-y-auto rounded-t-3xl border-t border-gold/40 bg-panel px-4 pt-5" onClick={(e) => e.stopPropagation()}>
+          <div className="pb-safe animate-rise max-h-[80dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-4 pt-5" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
             <div className="space-y-3">
               {helpItems.slice(0, Math.max(helpIdx, 1)).filter((h) => h.kind !== 'reveal').map((h, i) => (
-                <div key={i} className="rounded-xl bg-panel2 p-4">
+                <div key={i} className="rounded-xl bg-white/[0.05] p-4">
                   <Label>{h.kind === 'analogy' ? 'По-заводскому' : `Подсказка советника`}</Label>
                   <p className="mt-1 text-[16px] leading-relaxed">{h.text}</p>
                 </div>
