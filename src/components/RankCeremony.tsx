@@ -115,6 +115,17 @@ const CrownSvg = ({ w = 116 }: { w?: number }) => (
   <svg width={w} height={w * 0.76} viewBox="0 0 120 90" aria-hidden><path d="M10 70 22 20l24 30 14-40 14 40 24-30 12 50z" fill="currentColor" /><rect x="10" y="74" width="100" height="10" fill="currentColor" /></svg>
 )
 
+/** Восковая печать: симметричный край с мягкими волнами вокруг центра (60, 60) */
+const WAX_PATH = (() => {
+  const pts: string[] = []
+  for (let i = 0; i <= 96; i++) {
+    const a = (i / 96) * Math.PI * 2
+    const r = 52 + 2.6 * Math.sin(a * 8)
+    pts.push((i ? 'L' : 'M') + (60 + r * Math.cos(a)).toFixed(2) + ' ' + (60 + r * Math.sin(a)).toFixed(2))
+  }
+  return pts.join('') + 'Z'
+})()
+
 /** Эмблемы: у каждого титула свой символ. */
 function EmblemView({ kind }: { kind: Emblem }) {
   switch (kind) {
@@ -124,7 +135,7 @@ function EmblemView({ kind }: { kind: Emblem }) {
         <div className={`${kind === 'stamp' ? 'cer-stamp' : 'cer-crown'} drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]`}>
           <svg width="116" height="116" viewBox="0 0 120 120" aria-hidden>
             <defs><radialGradient id="wax" cx="40%" cy="35%"><stop offset="0" stopColor="#e0525c" /><stop offset="1" stopColor="#8e1c27" /></radialGradient></defs>
-            <path d="M60 6c10 0 14 8 23 9s16 8 15 18 6 16 4 25-9 14-10 23-9 14-18 15-14 8-24 8-15-8-24-8-16-5-18-15-9-14-10-23-3-15 4-25 5-9 15-18 14-9 23-9z" fill="url(#wax)" />
+            <path d={WAX_PATH} fill="url(#wax)" />
             <circle cx="60" cy="60" r="38" fill="none" stroke="#f3a0a6" strokeOpacity="0.55" strokeWidth="2.5" />
             <g transform="translate(34 40) scale(0.43)" fill="#ffe9ea"><path d="M10 70 22 20l24 30 14-40 14 40 24-30 12 50z" /><rect x="10" y="74" width="100" height="10" /></g>
           </svg>
