@@ -79,7 +79,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         fill.position.set(-6, 3, -4)
         scene.add(fill)
 
-        const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 260)
+        const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 520)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enablePan = false
         controls.enableZoom = true // щипок двумя пальцами и колесо мыши; пределы задаются при подгонке под размер
@@ -526,17 +526,24 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             }`,
         }))
         moon.scale.setScalar(4.2)
-        moon.renderOrder = -3
+        moon.renderOrder = 0
         const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }))
         moonHalo.scale.setScalar(34)
-        moonHalo.renderOrder = -4
+        moonHalo.renderOrder = 0
         const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9 }))
         sunGlow.scale.setScalar(46)
-        sunGlow.renderOrder = -4
+        sunGlow.renderOrder = 0
         const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff8e0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1 }))
         sunCore.scale.setScalar(13)
-        sunCore.renderOrder = -3
-        scene.add(moon, moonHalo, sunGlow, sunCore)
+        sunCore.renderOrder = 0
+        // небесные тела бесконечно далеки: группа едет вместе с камерой, поэтому при облёте острова они не «крутятся», а лишь поворачиваются с видом
+        const skyG = new THREE.Group()
+        skyG.add(moon, moonHalo, sunGlow, sunCore)
+        scene.add(skyG)
+        const Y_AXIS = new THREE.Vector3(0, 1, 0)
+        const moonLight0 = new THREE.Vector3(0.4, 0.3, 0.8)
+        const SKY_K = 3 // небо в SKY_K раз дальше SKY_DIST: дальше самого острова, чтобы тела не «ездили» по орбите при облёте
+        skyG.scale.setScalar(SKY_K)
 
         const STARS = 320
         const stPos = new Float32Array(STARS * 3)
@@ -557,7 +564,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           fragmentShader: 'uniform float uNight; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(0.85, 0.9, 1.0, a * a * vA * uNight); }',
         }))
         stars.frustumCulled = false
-        stars.renderOrder = -5
+        stars.renderOrder = 0
         scene.add(stars)
 
         const sunDay = new THREE.Vector3()
@@ -565,19 +572,24 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const moonPos = new THREE.Vector3()
         /** Ставит небесные тела в мир по экранным координатам исходного вида камеры. Вызывается при смене пропорций. */
         const placeSky = () => {
+          // считаем по исходному виду (finalPos → цель), даже если сейчас идёт облёт камеры при открытии
+          const keepPos = camera.position.clone(); const keepQuat = camera.quaternion.clone()
+          camera.position.copy(finalPos)
+          camera.lookAt(controls.target)
           camera.updateMatrixWorld()
-          const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(camera.position).add(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
-          at(0.42, 0.64, sunDay); at(0.4, 0.1, sunDusk); at(-0.34, 0.6, moonPos)
+          const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
+          at(0.4, 0.7, sunDay); at(0.4, 0.28, sunDusk); at(0.4, 0.7, moonPos)
+          camera.position.copy(keepPos); camera.quaternion.copy(keepQuat); camera.updateMatrixWorld()
           moon.position.copy(moonPos)
           moonHalo.position.copy(moonPos)
           // фаза луны по дате: доля освещённого диска, но не меньше 42%, чтобы ночью луна не пропадала
-          const toCam = camera.position.clone().sub(moonPos).normalize()
+          const toCam = moonPos.clone().negate().normalize()
           const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), toCam).normalize()
           const age = ((((Date.now() / 86400000 - 10957.76) % 29.530588) + 29.530588) % 29.530588)
           const th0 = (2 * Math.PI * age) / 29.530588
           const frac = Math.max(0.42, (1 - Math.cos(th0)) / 2)
           const th = Math.acos(1 - 2 * frac) * (Math.sin(th0) >= 0 ? 1 : -1)
-          moonU.uLight.value.copy(toCam).multiplyScalar(-Math.cos(th)).addScaledVector(right, Math.sin(th)).addScaledVector(new THREE.Vector3(0, 1, 0), 0.25).normalize()
+          moonLight0.copy(toCam).multiplyScalar(-Math.cos(th)).addScaledVector(right, Math.sin(th)).addScaledVector(new THREE.Vector3(0, 1, 0), 0.25).normalize()
         }
 
         // ---------- парящие камни вокруг острова (модель flyingstones, несколько копий) ----------
@@ -986,6 +998,14 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             if (c.s.position.x > 56) c.s.position.x = -56
             ;(c.s.material as T.SpriteMaterial).opacity = c.o * (1 - smooth(34, 56, Math.abs(c.s.position.x)))
           }
+          skyG.position.copy(camera.position)
+          // небо стоит на месте при облёте: поворачиваем его вместе с азимутом камеры (с лёгким отставанием, как далёкий объект)
+          const az = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z) * 0.96
+          skyG.rotation.y = az
+          stars.rotation.y = az
+          moonU.uLight.value.copy(moonLight0).applyAxisAngle(Y_AXIS, az)
+          stars.position.copy(camera.position)
+          stars.scale.setScalar(SKY_K)
           for (const m of seaMeshes) m.rotation.y += m.userData.rs * dt * 0.001
           for (const b of birds) {
             b.a += b.sp * dt * 0.001
