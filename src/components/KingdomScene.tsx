@@ -146,8 +146,8 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             if (!d || !base) continue
             const half = d.size * 0.5
             let best: { x: number; z: number; y: number; score: number } | null = null
-            for (let dx = -3; dx <= 3.01; dx += GRID) {
-              for (let dz = -3; dz <= 3.01; dz += GRID) {
+            for (let dx = -0.9; dx <= 0.91; dx += GRID) {
+              for (let dz = -0.9; dz <= 0.91; dz += GRID) {
                 const x = base.x + dx, z = base.z + dz
                 let mn = 1e9, mx = -1e9, ok = true
                 for (const [ox, oz] of PTS) {
@@ -158,7 +158,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
                 if (!ok) continue
                 let pen = 0
                 for (const o of done) { const need = (half + o.r) * 0.9; const dist = Math.hypot(x - o.x, z - o.z); if (dist < need) pen += (need - dist) * 6 }
-                const score = (mx - mn) * 3 + Math.hypot(dx, dz) * 0.15 + pen
+                const score = (mx - mn) * 3 + Math.hypot(dx, dz) * 0.9 + pen
                 if (!best || score < best.score) best = { x, z, y: mx, score }
               }
             }
@@ -288,8 +288,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
               for (let tries = 0; tries < 600 && mats.length < count; tries++) {
                 const x = (rnd2() - 0.5) * isz.w
                 const z = (rnd2() - 0.5) * isz.l
-                if (z > isz.l * 0.36) continue // песчаный берег впереди
-                if (anchors.some((p) => Math.hypot(x - p.x, z - p.z) < 3.4)) continue
+                if (anchors.some((p) => Math.hypot(x - p.x, z - p.z) < 4.8)) continue
                 ray0.set(new THREE.Vector3(x, 60, z), DOWN)
                 const hit = ray0.intersectObjects(islandMeshes, false)[0]
                 if (!hit || hit.point.y < -0.3) continue
