@@ -59,7 +59,7 @@ export function StageBackdrop({ stage }: { stage: number }) {
         <source media="(min-width: 768px)" srcSet={`${BASE}art/stage-${n}-l.webp`} />
         <img src={`${BASE}art/stage-${n}-p.webp`} alt="" onLoad={() => setLoaded(n)} onError={() => setLoaded(null)} className="h-full w-full object-cover" style={{ opacity: img ? 1 : 0, objectPosition: "50% 62%" }} />
       </picture>
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(17,17,20,0.05) 0%, rgba(17,17,20,0.3) 60%, #111114 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(17,17,20,0.35) 0%, rgba(17,17,20,0.55) 45%, #111114 100%)' }} />
     </div>
   )
 }

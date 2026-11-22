@@ -128,6 +128,8 @@ export const NegotiationSchema = z.object({
 })
 
 // ---------- Империя ----------
+/** Навык, который «питает» постройку: weeks — постоянные ключи недель плана (Week.key), прогресс считается по их урокам */
+export const BuildingSkillSchema = z.object({ title: z.string(), weeks: z.array(z.number().int()).min(1) })
 export const BuildingSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -140,6 +142,7 @@ export const BuildingSchema = z.object({
   y: z.number(),
   kind: z.enum(['shop', 'warehouse', 'office', 'house', 'exchange', 'bank']),
   text: z.string(),
+  skills: z.array(BuildingSkillSchema).min(1),
 })
 export const EmpireSchema = z.object({
   rival: z.object({ name: z.string(), motto: z.string(), news: z.array(z.object({ week: z.number().int(), text: z.string() })) }),

@@ -2,12 +2,12 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { content } from '../content'
 import type { Building } from '../content/schema'
-import { buyBuilding } from '../game/engine'
+import { buyBuilding, weekStatus } from '../game/engine'
 import { duelSeries, weekOverWeek } from '../game/rival'
 import type { Game } from '../game/useGame'
 import { dayKey } from '../lib/dates'
 import { fmtNum } from '../lib/format'
-import { Advisor, Button, Card, Icon, Label, Title } from '../components/ui'
+import { Advisor, Bar, Button, Card, Icon, Label, Sparks, Title } from '../components/ui'
 
 // three.js тяжёлый: грузим отдельным куском, только когда нужна модель
 const ModelViewer = lazy(() => import('../components/ModelViewer'))
@@ -18,6 +18,7 @@ export default function Empire({ game }: { game: Game }) {
   const p = game.player!
   const [sel, setSel] = useState<Building | null>(null)
   const [msg, setMsg] = useState('')
+  const [burst, setBurst] = useState(0) // растёт при постройке: запускает вспышку и искры
   const today = dayKey()
   const { buildings, rival } = content.empire
   const rankTitle = (n: number) => content.ranks.find((r) => r.n === n)?.title ?? `титул ${n}`
@@ -31,10 +32,21 @@ export default function Empire({ game }: { game: Game }) {
   const wow = weekOverWeek(game.activity, today)
   const news = rival.news.filter((x) => x.week <= game.weekNow).slice(-2).reverse()
   const owned = buildings.filter((b) => status(b) === 'owned').length
+  /** Прогресс навыка: пройденные уроки его недель / все уроки этих недель */
+  const skillProgress = (weeks: number[]) => {
+    let done = 0, total = 0
+    for (const k of weeks) {
+      const w = game.content.weeks.find((x) => (x.key ?? x.n) === k)
+      if (!w) continue
+      const s = weekStatus(w, game.content, game.st)
+      done += s.lessonsDone; total += s.lessonsTotal
+    }
+    return { done, total, ratio: total ? done / total : 0 }
+  }
 
   async function buy(b: Building) {
     const r = await buyBuilding(content, b.id)
-    if (r.ok) { setMsg(`${b.title} построен. Казна: ${fmtNum(p.capital - b.cost)} ₸.`); setSel(null) }
+    if (r.ok) { setMsg(`${b.title} построен. Казна: ${fmtNum(p.capital - b.cost)} ₸.`); setBurst((n) => n + 1) }
     else setMsg(r.reason === 'capital' ? 'Не хватает Капитала.' : r.reason === 'rank' ? `Нужен титул «${rankTitle(b.minRank)}».` : 'Уже построено.')
   }
 
@@ -147,7 +159,11 @@ export default function Empire({ game }: { game: Game }) {
         <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setSel(null)}>
           <div className="pb-safe animate-rise max-h-[92dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-5 pt-3 md:mx-auto md:max-w-xl" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-line" />
-            <Suspense fallback={<div className="h-56" />}><ModelViewer name={sel.id} dim={status(sel) !== 'owned'} className="h-56 md:h-72" /></Suspense>
+            <div className="relative">
+              <Suspense fallback={<div className="h-56" />}><ModelViewer name={sel.id} dim={status(sel) !== 'owned'} className="h-56 md:h-72" /></Suspense>
+              {burst > 0 && status(sel) === 'owned' && <div key={burst} className="unlock-flash" aria-hidden />}
+              <Sparks burst={burst} big />
+            </div>
             <div className="flex items-center gap-3">
               <div>
                 <div className="font-serif text-[22px]">{sel.title}</div>
@@ -155,10 +171,28 @@ export default function Empire({ game }: { game: Game }) {
               </div>
             </div>
             <p className="mt-3 text-[15px] leading-relaxed">{sel.text}</p>
+            <div className="mt-4">
+              <Label>Связанные навыки</Label>
+              <div className="mt-2 space-y-2">
+                {sel.skills.map((sk) => {
+                  const pr = skillProgress(sk.weeks)
+                  const full = pr.total > 0 && pr.done === pr.total
+                  return (
+                    <div key={sk.title} className="rounded-xl bg-white/[0.05] px-3 py-2">
+                      <div className="flex items-center justify-between gap-2 text-[14px]">
+                        <span className={full ? 'text-gain' : ''}>{sk.title}</span>
+                        <span className="flex shrink-0 items-center gap-1 text-[12px] text-muted">{full && <span className="animate-check text-gain"><Icon name="check" size={16} /></span>}{pr.total ? `${pr.done}/${pr.total}` : 'готовится'}</span>
+                      </div>
+                      <Bar value={pr.ratio} className="mt-1.5 !h-1.5" />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
             <div className="mt-4 space-y-2">
               {(() => {
                 const s = status(sel)
-                if (s === 'owned') return <p className="flex items-center gap-2 text-gain"><Icon name="check" size={18} />Построено</p>
+                if (s === 'owned') return <p className="flex items-center gap-2 text-gain"><span className={burst > 0 ? 'animate-check' : ''}><Icon name="check" size={18} /></span>Построено</p>
                 if (s === 'rank') return <p className="text-[14px] text-muted">Нужен титул «{rankTitle(sel.minRank)}». Титулы дают реальные контракты, не Капитал.</p>
                 if (s === 'capital') return <p className="text-[14px] text-muted">Не хватает {fmtNum(sel.cost - p.capital)} ₸ Капитала. Урок без подсказок — +100, босс — +300, контракт — +500.</p>
                 return <Button full onClick={() => buy(sel)}>Построить за {fmtNum(sel.cost)} ₸</Button>

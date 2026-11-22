@@ -68,7 +68,7 @@ export function useCountUp(target: number, ms = 800) {
 }
 
 /** Золотые искры: показать на миг, когда сменился key (награда получена). */
-export function Sparks({ burst }: { burst: number }) {
+export function Sparks({ burst, big = false }: { burst: number; big?: boolean }) {
   const [show, setShow] = useState(false)
   const first = useRef(true)
   useEffect(() => {
@@ -80,9 +80,11 @@ export function Sparks({ burst }: { burst: number }) {
   if (!show) return null
   return (
     <span className="pointer-events-none absolute inset-0" aria-hidden>
-      {Array.from({ length: 10 }, (_, i) => {
-        const ang = (i / 10) * Math.PI * 2
-        return <i key={i} className="spark left-1/2 top-1/2" style={{ ['--dx' as string]: `${Math.cos(ang) * 46}px`, ['--dy' as string]: `${Math.sin(ang) * 30}px` }} />
+      {Array.from({ length: big ? 22 : 10 }, (_, i) => {
+        const n = big ? 22 : 10
+        const ang = (i / n) * Math.PI * 2
+        const r = big ? (i % 2 ? 150 : 100) : 46
+        return <i key={i} className="spark left-1/2 top-1/2" style={{ ['--dx' as string]: `${Math.cos(ang) * r}px`, ['--dy' as string]: `${Math.sin(ang) * r * 0.65}px` }} />
       })}
     </span>
   )

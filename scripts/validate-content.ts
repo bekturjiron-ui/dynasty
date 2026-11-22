@@ -170,6 +170,9 @@ for (const n of Object.values(content.negotiations)) {
     capByWeek.push(capByWeek[n - 1] + (ls.length ? ls.reduce((s, l) => s + l.reward.capital, 0) : 500) + (boss ? boss.reward.capital : w?.bossTitle !== '—' ? 300 : 0) + 500)
   }
   let spent = 0
+  for (const b of content.empire.buildings) {
+    for (const s of b.skills) for (const k of s.weeks) if (!content.weeks.some((w) => (w.key ?? w.n) === k)) fail(b.id, `навык «${s.title}»: в плане нет недели с ключом ${k}`)
+  }
   for (const b of [...content.empire.buildings].sort((a, z) => a.cost - z.cost)) {
     if (!b.cost) continue
     const rank = content.ranks.find((r) => r.n === b.minRank)!
