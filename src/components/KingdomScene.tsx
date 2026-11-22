@@ -329,18 +329,6 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           g.fillStyle = gr; g.fillRect(0, 0, 64, 64)
           return new THREE.CanvasTexture(c)
         })()
-        const cloudTex = (() => {
-          const c = document.createElement('canvas'); c.width = 256; c.height = 128
-          const g = c.getContext('2d')!
-          const r = mulberry32(5)
-          for (let i = 0; i < 16; i++) {
-            const x = 40 + r() * 176, y = 50 + (r() - 0.5) * 30, rad = 22 + r() * 30
-            const gr = g.createRadialGradient(x, y, 0, x, y, rad)
-            gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
-            g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill()
-          }
-          return new THREE.CanvasTexture(c)
-        })()
 
         // море облаков под островом: шум fbm с «объёмом», гуще у скал (карта расстояния до суши из вершин острова)
         const isz = islandSize ?? { w: R * 2, l: R * 2 }
@@ -409,22 +397,47 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           world.add(m)
           return { u, m }
         }
-        const seaTop = mkLayer(1.0, 1.0, 0.0, 0.96, WATER_Y)
-        const seaLow = mkLayer(0.7, 0.6, 0.14, 0.92, WATER_Y - 2.6)
+        const seaTop = mkLayer(1.0, 1.0, 0.0, 0.5, WATER_Y)
+        const seaLow = mkLayer(0.7, 0.6, 0.14, 0.45, WATER_Y - 2.6)
 
-        // облака: плывут мимо, часть позади острова, часть низких впереди
+        // облака: нарисованные спрайты (public/art/clouds). Плывут мимо: высокие позади острова, низкие обнимают скалы и уходят вниз
         const clouds: { s: T.Sprite; v: number; o: number }[] = []
+        const paint: T.MeshBasicMaterial[] = []
         const cr = mulberry32(21)
-        for (let i = 0; i < 7; i++) {
-          const o = 0.22 + cr() * 0.18
-          const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: o, depthWrite: false, fog: false })
-          const s = new THREE.Sprite(mat)
-          const w = 16 + cr() * 14
-          s.scale.set(w, w * 0.4, 1)
-          s.position.set((cr() - 0.5) * 100, 0.5 + cr() * 3, -33 + cr() * 9) // в небе над островом, позади него: плывут по верхней части кадра и не закрывают постройки
-          scene.add(s)
-          clouds.push({ s, v: 1.6 + cr() * 1.4, o })
-        }
+        const ART = import.meta.env.BASE_URL + 'art/clouds/'
+        const texLoader = new THREE.TextureLoader()
+        const loadTex = (name: string) => texLoader.loadAsync(ART + name).then((tx) => { tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 4; return tx })
+        void Promise.all(['cloud-1', 'cloud-2', 'cloud-3', 'cloud-4', 'cloud-5', 'cloud-6', 'sea'].map((n) => loadTex(n + '.webp'))).then(([c1t, c2t, c3t, c4t, c5t, c6t, seaT]) => {
+          if (disposed) return
+          const sprites = [c1t, c2t, c3t, c4t, c5t, c6t]
+          const mk = (tx: T.Texture, w: number, x: number, y: number, z: number, o: number, v: number) => {
+            const img = tx.image as { width: number; height: number }
+            const mat = new THREE.SpriteMaterial({ map: tx, transparent: true, opacity: o, depthWrite: false, fog: false })
+            const s = new THREE.Sprite(mat)
+            s.scale.set(w, w * (img.height / img.width), 1)
+            s.position.set(x, y, z)
+            scene.add(s)
+            clouds.push({ s, v, o })
+          }
+          // высокие, позади острова
+          for (let i = 0; i < 7; i++) mk(sprites[i % 6], 11 + cr() * 11, (cr() - 0.5) * 110, 1 + cr() * 5, -36 + cr() * 8, 0.8 + cr() * 0.2, 0.9 + cr() * 1.2)
+          // низкие, у скал и под островом
+          for (let i = 0; i < 8; i++) mk(sprites[(i * 5 + 2) % 6], 17 + cr() * 14, (cr() - 0.5) * 100, -8 + cr() * 5, -12 + cr() * 30, 0.75 + cr() * 0.25, 0.7 + cr() * 1.1)
+          // две большие гряды, лежащие плашмя под островом
+          const seaGeo = new THREE.PlaneGeometry(112, 112 * ((seaT.image as { height: number }).height / (seaT.image as { width: number }).width)).rotateX(-Math.PI / 2)
+          ;[[WATER_Y + 0.5, 0.92, 0.012], [WATER_Y - 2.6, 0.85, -0.008]].forEach(([y, o, rs], i) => {
+            const m = new THREE.Mesh(seaGeo, new THREE.MeshBasicMaterial({ map: seaT, transparent: true, opacity: o, depthWrite: false, fog: false }))
+            m.position.y = y
+            m.rotation.y = i * 1.3
+            m.renderOrder = -1
+            m.userData.rs = rs
+            world.add(m)
+            paint.push(m.material as T.MeshBasicMaterial)
+            seaMeshes.push(m)
+          })
+          applyTime()
+        }).catch(() => { /* картинок нет — остаётся шейдерное море */ })
+        const seaMeshes: T.Mesh[] = []
 
         // светлячки: мягкие точки, ночью ярче
         const FIREFLIES = 44
@@ -915,6 +928,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           seaLow.u.uLight.value.copy(seaTop.u.uLight.value).multiplyScalar(0.95)
           seaLow.u.uShade.value.copy(seaTop.u.uShade.value).multiplyScalar(0.9)
           for (const c of clouds) (c.s.material as T.SpriteMaterial).color.setHex(0xffffff).lerp(c1.setHex(0xffb98a), dusk).lerp(c1.setHex(0x4a5578), night)
+          for (const m of paint) m.color.setHex(0xffffff).lerp(c1.setHex(0xffc9a0), dusk).lerp(c1.setHex(0x55608a), night)
           birdMat.opacity = 1 - night
           const sky = skyRef.current
           if (sky) {
@@ -972,6 +986,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             if (c.s.position.x > 56) c.s.position.x = -56
             ;(c.s.material as T.SpriteMaterial).opacity = c.o * (1 - smooth(34, 56, Math.abs(c.s.position.x)))
           }
+          for (const m of seaMeshes) m.rotation.y += m.userData.rs * dt * 0.001
           for (const b of birds) {
             b.a += b.sp * dt * 0.001
             b.g.position.set(Math.cos(b.a) * b.r, b.y + Math.sin(b.a * 3) * 0.4, -6 + Math.sin(b.a) * b.r * 0.6)
