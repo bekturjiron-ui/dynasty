@@ -82,7 +82,7 @@ function Shell({ children, game }: { children: ReactNode; game: Game }) {
         {p && <div className="mt-auto text-[12px] text-muted">{p.houseName}</div>}
       </aside>
       <div className="relative mx-auto min-h-dvh max-w-xl md:ml-56 md:max-w-none">
-        <main key={loc.pathname} className="animate-rise mx-auto max-w-xl px-4 pb-28 md:max-w-4xl md:pb-10">
+        <main key={loc.pathname} className={`animate-rise mx-auto max-w-xl px-4 pb-28 md:pb-10 ${loc.pathname === '/empire' ? 'md:max-w-6xl' : 'md:max-w-4xl'}`}>
           {p && <ResourceBar capital={p.capital} xp={p.xp} reputation={p.reputation} />}
           {children}
         </main>
