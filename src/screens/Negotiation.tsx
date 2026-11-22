@@ -80,7 +80,7 @@ export default function NegotiationScreen() {
   const claudePrompt = `Сыграй роль ${n.supplier.name}, ${n.supplier.role} компании «${n.supplier.company}». Я — менеджер магазина Novelia на Kaspi. Обсуждаем закуп «${product.short}»: сейчас ${fmtTg(scope.start as number)} за штуку, партия ${n.volume} шт. У тебя есть скрытый минимум цены и терпение; на давление и грубость реагируй холоднее, на честные аргументы и выгоду для обеих сторон — теплее. После 8–10 реплик выйди из роли и разбери мои переговоры: где я давил, где влиял, что можно было выжать.`
 
   return (
-    <div className="scene-copper pt-safe mx-auto flex min-h-dvh max-w-xl flex-col px-4 pb-6">
+    <div className="scene-copper pt-safe mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-6">
       <div className="mb-3 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-copper/60 bg-copper/10 font-serif text-[18px] text-copper">{n.supplier.name[0]}</div>
