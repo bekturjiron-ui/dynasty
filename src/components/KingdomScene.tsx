@@ -32,9 +32,6 @@ function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0
 export default function KingdomScene({ slots, onSelect, onFail, className = '' }: { slots: SceneSlot[]; onSelect: (id: string) => void; onFail?: () => void; className?: string }) {
   const host = useRef<HTMLDivElement>(null)
   const skyRef = useRef<HTMLDivElement>(null)
-  const starsRef = useRef<HTMLCanvasElement>(null)
-  const sunRef = useRef<HTMLDivElement>(null)
-  const moonRef = useRef<HTMLDivElement>(null)
   const api = useRef<Api | null>(null)
   const latest = useRef({ slots, onSelect, onFail })
   latest.current = { slots, onSelect, onFail }
@@ -77,12 +74,14 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         fill.position.set(-6, 3, -4)
         scene.add(fill)
 
-        const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
+        const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 260)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enablePan = false
         controls.enableZoom = true // щипок двумя пальцами и колесо мыши; пределы задаются при подгонке под размер
         controls.zoomSpeed = 0.9
         controls.enableDamping = true
+        controls.dampingFactor = 0.07
+        controls.rotateSpeed = 0.7
         controls.minAzimuthAngle = -0.7
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
@@ -426,6 +425,102 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const glows: T.Sprite[] = []
         let refreshEmitters = () => {}
 
+        // ---------- небо в мире сцены: луна (шейдер), солнце, звёзды. Они далеко за островом и стоят на месте в мире,
+        // поэтому при вращении камеры смещаются, как настоящие, а не едут вместе с экраном ----------
+        const SKY_DIST = 86
+        const moonU = { uLight: { value: new THREE.Vector3(0.4, 0.3, 0.8) }, uOpacity: { value: 0 } }
+        const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 56, 40), new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, uniforms: moonU,
+          vertexShader: 'varying vec3 vObj; varying vec3 vN; varying vec3 vW; void main(){ vObj = position; vN = normalize(mat3(modelMatrix) * normal); vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
+          fragmentShader: `
+            uniform vec3 uLight; uniform float uOpacity;
+            varying vec3 vObj; varying vec3 vN; varying vec3 vW;
+            float hash3(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+            float noise3(vec3 x){ vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+              return mix(mix(mix(hash3(i), hash3(i + vec3(1.0,0.0,0.0)), f.x), mix(hash3(i + vec3(0.0,1.0,0.0)), hash3(i + vec3(1.0,1.0,0.0)), f.x), f.y),
+                         mix(mix(hash3(i + vec3(0.0,0.0,1.0)), hash3(i + vec3(1.0,0.0,1.0)), f.x), mix(hash3(i + vec3(0.0,1.0,1.0)), hash3(i + vec3(1.0,1.0,1.0)), f.x), f.y), f.z); }
+            float fbm3(vec3 p){ float v = 0.0; float a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise3(p); p *= 2.03; a *= 0.5; } return v; }
+            // расстояние до ближайшего центра кратера (ячейки Вороного в 3D)
+            float crater(vec3 p, float sc){ vec3 g = floor(p * sc); vec3 f = fract(p * sc); float d = 1.0;
+              for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+                vec3 o = vec3(float(x), float(y), float(z));
+                vec3 c = o + vec3(hash3(g + o), hash3(g + o + 7.1), hash3(g + o + 13.3));
+                d = min(d, length(f - c)); }
+              return d; }
+            void main(){
+              vec3 n = normalize(vObj);
+              float maria = smoothstep(0.46, 0.64, fbm3(n * 2.1 + 3.0));
+              float c1 = crater(n, 5.0); float c2 = crater(n + 4.0, 11.0);
+              float floorC = (1.0 - smoothstep(0.10, 0.30, c1)) * 0.22 + (1.0 - smoothstep(0.08, 0.26, c2)) * 0.14;
+              float rimC = smoothstep(0.30, 0.36, c1) * (1.0 - smoothstep(0.36, 0.44, c1)) * 0.10 + smoothstep(0.26, 0.32, c2) * (1.0 - smoothstep(0.32, 0.38, c2)) * 0.07;
+              vec3 col = mix(vec3(0.90, 0.89, 0.84), vec3(0.46, 0.49, 0.58), maria * 0.75);
+              col = col * (1.0 - floorC) + rimC;
+              col *= 0.86 + 0.28 * fbm3(n * 14.0);
+              vec3 N = normalize(vN); vec3 V = normalize(cameraPosition - vW); vec3 L = normalize(uLight);
+              float ndl = dot(N, L);
+              float lit = smoothstep(-0.02, 0.22, ndl);
+              float ndv = max(dot(N, V), 0.0);
+              col *= 1.0 - 0.32 * pow(1.0 - ndv, 2.2);
+              vec3 shade = col * (0.05 + 0.95 * lit) + vec3(0.04, 0.05, 0.09) * (1.0 - lit);
+              float edge = smoothstep(0.0, 0.06, ndv);
+              gl_FragColor = vec4(shade, uOpacity * edge);
+            }`,
+        }))
+        moon.scale.setScalar(4.2)
+        moon.renderOrder = -3
+        const moonHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xaebfff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }))
+        moonHalo.scale.setScalar(34)
+        moonHalo.renderOrder = -4
+        const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe3a8, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.9 }))
+        sunGlow.scale.setScalar(46)
+        sunGlow.renderOrder = -4
+        const sunCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff8e0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 1 }))
+        sunCore.scale.setScalar(13)
+        sunCore.renderOrder = -3
+        scene.add(moon, moonHalo, sunGlow, sunCore)
+
+        const STARS = 320
+        const stPos = new Float32Array(STARS * 3)
+        const stMag = new Float32Array(STARS)
+        const sr = mulberry32(3)
+        for (let i = 0; i < STARS; i++) {
+          const d = new THREE.Vector3((sr() - 0.5) * 2, 0.08 + sr() * 0.92, -0.25 - sr() * 0.75).normalize().multiplyScalar(SKY_DIST + 6)
+          stPos.set([d.x, d.y, d.z], i * 3)
+          stMag[i] = sr()
+        }
+        const stGeo = new THREE.BufferGeometry()
+        stGeo.setAttribute('position', new THREE.BufferAttribute(stPos, 3))
+        stGeo.setAttribute('aMag', new THREE.BufferAttribute(stMag, 1))
+        const starU = { uTime: timeU, uNight: { value: 0 }, uPx: { value: renderer.getPixelRatio() } }
+        const stars = new THREE.Points(stGeo, new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: starU,
+          vertexShader: 'attribute float aMag; uniform float uTime; uniform float uPx; varying float vA; void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_PointSize = uPx * (1.4 + aMag * 2.6); vA = 0.45 + 0.55 * sin(uTime * (0.8 + aMag * 2.0) + aMag * 40.0); }',
+          fragmentShader: 'uniform float uNight; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(0.85, 0.9, 1.0, a * a * vA * uNight); }',
+        }))
+        stars.frustumCulled = false
+        stars.renderOrder = -5
+        scene.add(stars)
+
+        const sunDay = new THREE.Vector3()
+        const sunDusk = new THREE.Vector3()
+        const moonPos = new THREE.Vector3()
+        /** Ставит небесные тела в мир по экранным координатам исходного вида камеры. Вызывается при смене пропорций. */
+        const placeSky = () => {
+          camera.updateMatrixWorld()
+          const at = (nx: number, ny: number, out: T.Vector3) => { const v = new THREE.Vector3(nx, ny, 0.5).unproject(camera); out.copy(camera.position).add(v.sub(camera.position).normalize().multiplyScalar(SKY_DIST)) }
+          at(0.42, 0.64, sunDay); at(0.4, 0.1, sunDusk); at(-0.34, 0.6, moonPos)
+          moon.position.copy(moonPos)
+          moonHalo.position.copy(moonPos)
+          // фаза луны по дате: доля освещённого диска, но не меньше 42%, чтобы ночью луна не пропадала
+          const toCam = camera.position.clone().sub(moonPos).normalize()
+          const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), toCam).normalize()
+          const age = ((((Date.now() / 86400000 - 10957.76) % 29.530588) + 29.530588) % 29.530588)
+          const th0 = (2 * Math.PI * age) / 29.530588
+          const frac = Math.max(0.42, (1 - Math.cos(th0)) / 2)
+          const th = Math.acos(1 - 2 * frac) * (Math.sin(th0) >= 0 ? 1 : -1)
+          moonU.uLight.value.copy(toCam).multiplyScalar(-Math.cos(th)).addScaledVector(right, Math.sin(th)).addScaledVector(new THREE.Vector3(0, 1, 0), 0.25).normalize()
+        }
+
         // ---------- парящие камни вокруг острова (модель flyingstones, несколько копий) ----------
         const floaters: { g: T.Group; y0: number; ph: number; spin: number }[] = []
         void (async () => {
@@ -704,6 +799,8 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
+            controls.update()
+            placeSky()
             const d0 = finalPos.distanceTo(controls.target)
             controls.minDistance = d0 * 0.42
             controls.maxDistance = d0 * 1.25
@@ -780,25 +877,18 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             const bot = new THREE.Color(0xffe8c6).lerp(c1.setHex(0xff9b5b), dusk).lerp(c1.setHex(0x223a73), night)
             sky.style.background = 'linear-gradient(180deg,' + top.getStyle() + ' 0%,' + mid.getStyle() + ' 52%,' + bot.getStyle() + ' 100%)'
           }
-          if (starsRef.current) starsRef.current.style.opacity = String(Math.max(0, night * 1.2 - 0.2))
-          const sunEl = sunRef.current
-          if (sunEl) {
-            const size = 74 + 70 * dusk
-            sunEl.style.cssText = 'position:absolute;border-radius:9999px;pointer-events:none;transform:translate(-50%,-50%);left:' + (66 + 8 * dusk) + '%;top:' + (9 + 30 * dusk) + '%;width:' + size + 'px;height:' + size + 'px;opacity:' + Math.max(0, 1 - night * 1.3) + ';background:radial-gradient(circle,rgba(255,252,232,1) 0%,rgba(255,' + Math.round(222 - 60 * dusk) + ',' + Math.round(150 - 50 * dusk) + ',0.85) 28%,rgba(255,170,90,0) 70%)'
-          }
-          const moonEl = moonRef.current
-          if (moonEl) moonEl.style.cssText = 'position:absolute;border-radius:9999px;pointer-events:none;transform:translate(-50%,-50%);left:24%;top:15%;width:54px;height:54px;opacity:' + Math.max(0, night * 1.2 - 0.2) + ';background:radial-gradient(circle at 38% 34%,#fffdf2 0%,#e9eefc 55%,#b9c4e6 100%);box-shadow:0 0 40px 14px rgba(190,205,255,0.45)'
-        }
-        {
-          const sc = starsRef.current
-          const g = sc?.getContext('2d')
-          if (sc && g) {
-            const r = mulberry32(3)
-            for (let i = 0; i < 170; i++) {
-              g.fillStyle = 'rgba(255,255,255,' + (0.35 + r() * 0.65) + ')'
-              g.beginPath(); g.arc(r() * sc.width, r() * sc.height * 0.7, r() < 0.12 ? 2.1 : 1.1, 0, Math.PI * 2); g.fill()
-            }
-          }
+          // небесные тела: положение солнца плавно уходит к горизонту на закате, ночью видны луна и звёзды
+          const sunOp = Math.max(0, 1 - night * 1.3)
+          sunGlow.position.lerpVectors(sunDay, sunDusk, dusk)
+          sunCore.position.copy(sunGlow.position)
+          ;(sunGlow.material as T.SpriteMaterial).color.setHex(0xffe3a8).lerp(c1.setHex(0xff8c4a), dusk)
+          ;(sunGlow.material as T.SpriteMaterial).opacity = 0.9 * sunOp
+          ;(sunCore.material as T.SpriteMaterial).color.setHex(0xfff8e0).lerp(c1.setHex(0xffd08a), dusk)
+          ;(sunCore.material as T.SpriteMaterial).opacity = sunOp
+          const moonOp = Math.max(0, night * 1.2 - 0.2)
+          moonU.uOpacity.value = moonOp
+          ;(moonHalo.material as T.SpriteMaterial).opacity = 0.6 * moonOp
+          starU.uNight.value = moonOp
         }
         applyTime()
         let lastTime = performance.now()
@@ -808,6 +898,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const UP = new THREE.Vector3(0, 1, 0)
         const off = new THREE.Vector3()
         let ema = 16
+        let swayK = 1
         let degraded = false
         let frames = 0
         const degrade = () => {
@@ -843,11 +934,14 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             b.wl.rotation.z = f; b.wr.rotation.z = -f
             b.g.visible = night < 0.9 && !degraded
           }
+          moon.rotation.y += dt * 0.000015
           for (const f of floaters) { f.g.position.y = f.y0 + Math.sin(now * 0.0007 + f.ph) * 0.4; f.g.rotation.y += f.spin * dt }
           glows.forEach((g, i) => { (g.material as T.SpriteMaterial).opacity = night * (0.55 + 0.3 * Math.sin(now * 0.006 + i * 1.7)) })
-          if (!reduce && !dragging) {
-            world.rotation.y = Math.sin(now * 0.00018) * 0.08
-            world.position.y = Math.sin(now * 0.0009) * 0.05
+          // покачивание острова плавно выключается на время перетаскивания и так же плавно возвращается (раньше оно замирало и «прыгало»)
+          swayK += ((dragging ? 0 : 1) - swayK) * (1 - Math.exp(-dt / 260))
+          if (!reduce) {
+            world.rotation.y = Math.sin(now * 0.00018) * 0.08 * swayK
+            world.position.y = Math.sin(now * 0.0009) * 0.05 * swayK
           }
           for (let i = fx.length - 1; i >= 0; i--) if (fx[i](now)) fx.splice(i, 1)
           for (const s of slotMap.values()) {
@@ -906,11 +1000,8 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      {/* небо: цвета, солнце, луна и звёзды зависят от времени суток; остров парит над морем облаков */}
+      {/* небо: градиент зависит от времени суток; солнце, луна и звёзды лежат в 3D-мире сцены */}
       <div ref={skyRef} className="absolute inset-0" style={{ background: 'linear-gradient(180deg,#3f8fe3,#8fc9f6 52%,#ffe8c6)' }} />
-      <canvas ref={starsRef} width={1024} height={1024} className="pointer-events-none absolute inset-0 h-full w-full" style={{ opacity: 0 }} />
-      <div ref={sunRef} />
-      <div ref={moonRef} />
       <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,18,48,0.42) 0%, transparent 24%), linear-gradient(0deg, rgba(10,18,48,0.5) 0%, transparent 20%), radial-gradient(85% 70% at 50% 50%, transparent 55%, rgba(8,10,28,0.3) 100%)' }} />
       <div ref={host} className="absolute inset-0" />
       <div className="absolute bottom-12 right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
