@@ -94,7 +94,7 @@ export default function LessonScreen() {
   }
 
   return (
-    <div className="scene-lesson pt-safe min-h-dvh px-4 pb-28">
+    <div className="scene-lesson pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-28 md:pt-8">
       {/* Шапка: закрыть + 5 фаз цикла */}
       <div className="mb-5 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel">
@@ -104,7 +104,7 @@ export default function LessonScreen() {
           {PHASES.map((p, i) => (
             <div key={p.key} className="flex-1">
               <div className={`h-1.5 rounded-full transition-colors duration-500 ${i < phaseIdx ? 'bg-gold' : i === phaseIdx ? 'phase-active bg-gold-soft' : 'bg-line'}`} />
-              <div className={`mt-1 text-center text-[10px] ${i === phaseIdx ? 'text-gold' : 'text-muted'}`}>{p.label}</div>
+              <div className={`mt-1 text-center text-[10px] md:text-[12px] ${i === phaseIdx ? 'text-gold' : 'text-muted'}`}>{p.label}</div>
             </div>
           ))}
         </div>
@@ -167,12 +167,12 @@ export default function LessonScreen() {
       {/* «Не понял» — другой способ объяснить */}
       {phase !== 'why' && phase !== 'report' && (
         <div className="pb-safe fixed inset-x-0 bottom-0 z-20 border-t border-line bg-ink/95 px-4 pt-3 backdrop-blur">
-          <Button variant="ghost" full onClick={openHelp}>Не понял</Button>
+          <div className="mx-auto max-w-2xl"><Button variant="ghost" full onClick={openHelp}>Не понял</Button></div>
         </div>
       )}
       {sheetOpen && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setSheetOpen(false)}>
-          <div className="pb-safe animate-rise max-h-[80dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-4 pt-5" onClick={(e) => e.stopPropagation()}>
+          <div className="pb-safe animate-rise max-h-[80dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-4 pt-5 md:mx-auto md:max-w-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
             <div className="space-y-3">
               {helpItems.slice(0, Math.max(helpIdx, 1)).filter((h) => h.kind !== 'reveal').map((h, i) => (

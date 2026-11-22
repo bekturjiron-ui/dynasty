@@ -56,7 +56,7 @@ export default function BossScreen() {
   }
 
   return (
-    <div className="scene-boss pt-safe min-h-dvh px-4 pb-16">
+    <div className="scene-boss pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
       <div className="mb-4 flex items-center justify-between">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
         <div className="flex gap-1.5" aria-label={`Жизней: ${lives}`}>

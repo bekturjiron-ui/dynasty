@@ -375,17 +375,17 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         world.add(water)
 
         // облака: плывут мимо, часть позади острова, часть низких впереди
-        const clouds: { s: T.Sprite; v: number }[] = []
+        const clouds: { s: T.Sprite; v: number; o: number }[] = []
         const cr = mulberry32(21)
-        for (let i = 0; i < 9; i++) {
-          const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.5 + cr() * 0.25, depthWrite: false, fog: false })
+        for (let i = 0; i < 7; i++) {
+          const o = 0.22 + cr() * 0.18
+          const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: o, depthWrite: false, fog: false })
           const s = new THREE.Sprite(mat)
-          const front = i % 3 === 2
-          const w = 14 + cr() * 14
-          s.scale.set(w, w * 0.45, 1)
-          s.position.set((cr() - 0.5) * 80, front ? 4 + cr() * 2 : 9 + cr() * 7, front ? 14 + cr() * 6 : -26 + cr() * 14)
+          const w = 16 + cr() * 14
+          s.scale.set(w, w * 0.4, 1)
+          s.position.set((cr() - 0.5) * 100, 0.5 + cr() * 3, -33 + cr() * 9) // в небе над островом, позади него: плывут по верхней части кадра и не закрывают постройки
           scene.add(s)
-          clouds.push({ s, v: 0.25 + cr() * 0.45 })
+          clouds.push({ s, v: 1.6 + cr() * 1.4, o })
         }
 
         // светлячки: мягкие точки, ночью ярче
@@ -674,7 +674,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = 30 * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
             controls.update()
@@ -759,7 +759,11 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           ema = ema * 0.95 + dt * 0.05
           if (!degraded && ++frames > 150 && ema > 42) degrade()
           if (now - lastTime < 0 || Math.floor(now / 1000) !== Math.floor((now - dt) / 1000)) applyTime()
-          for (const c of clouds) { c.s.position.x += c.v * dt * 0.001; if (c.s.position.x > 48) c.s.position.x = -48 }
+          for (const c of clouds) {
+            c.s.position.x += c.v * dt * 0.001
+            if (c.s.position.x > 56) c.s.position.x = -56
+            ;(c.s.material as T.SpriteMaterial).opacity = c.o * (1 - smooth(34, 56, Math.abs(c.s.position.x)))
+          }
           for (const b of birds) {
             b.a += b.sp * dt * 0.001
             b.g.position.set(Math.cos(b.a) * b.r, b.y + Math.sin(b.a * 3) * 0.4, -6 + Math.sin(b.a) * b.r * 0.6)
@@ -831,7 +835,10 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {imgOk && (
-        <img src={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-p.webp`} alt="" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '50% 30%', filter: 'brightness(0.85) saturate(1.1)' }} />
+        <picture>
+          <source media="(min-width: 768px)" srcSet={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-l.webp`} />
+          <img src={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-p.webp`} alt="" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '50% 30%', filter: 'brightness(0.85) saturate(1.1)' }} />
+        </picture>
       )}
       <div className="absolute inset-0" style={{ background: 'radial-gradient(80% 60% at 50% 55%, transparent 0%, rgba(17,17,20,0.55) 100%)' }} />
       <div ref={tintRef} className="pointer-events-none absolute inset-0" />
