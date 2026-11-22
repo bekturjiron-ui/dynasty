@@ -116,6 +116,26 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           holder.traverse((o) => { const m = o as T.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; islandMeshes.push(m) } })
           world.add(holder)
           world.updateMatrixWorld(true)
+          // убираем песчаную «плиту» берега, которая висела под передним обрывом: треугольники ниже и дальше линии обрыва
+          {
+            const CUT_Z = 8.0
+            const CUT_Y = -1.3
+            const vt = new THREE.Vector3()
+            for (const m of islandMeshes) {
+              const g = m.geometry
+              const idx = g.getIndex()
+              const pos = g.attributes.position
+              if (!idx) continue
+              const keep: number[] = []
+              for (let i = 0; i < idx.count; i += 3) {
+                let cz = 0, cy = 0
+                for (let j = 0; j < 3; j++) { vt.fromBufferAttribute(pos, idx.getX(i + j)).applyMatrix4(m.matrixWorld); cz += vt.z; cy += vt.y }
+                if (cz / 3 > CUT_Z && cy / 3 < CUT_Y) continue
+                keep.push(idx.getX(i), idx.getX(i + 1), idx.getX(i + 2))
+              }
+              g.setIndex(keep)
+            }
+          }
           islandSize = { w: size.x * sc, l: ISLAND_LEN }
           height = (x, z) => { ray0.set(new THREE.Vector3(x, 60, z), DOWN); const h = ray0.intersectObjects(islandMeshes, false)[0]; return h ? h.point.y : -3 }
           for (const d of latest.current.slots) { const f = LAYOUT[d.id]; if (f) placed.set(d.id, { x: f[0] * islandSize.w, z: f[1] * islandSize.l }) }
