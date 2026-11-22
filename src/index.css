@@ -117,12 +117,12 @@ h3,
   to { opacity: 1; transform: none; }
 }
 .animate-rise {
-  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 /* Дети появляются по очереди */
 .stagger > * {
-  animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 .stagger > *:nth-child(1) { animation-delay: 0ms; }
 .stagger > *:nth-child(2) { animation-delay: 60ms; }
@@ -327,4 +327,9 @@ select:focus-visible {
   .sk-flicker {
     animation: none;
   }
+}
+
+/* Окна поверх экрана (fixed) не участвуют в поочерёдном появлении */
+.stagger > .fixed {
+  animation: none;
 }

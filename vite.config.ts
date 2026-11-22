@@ -32,7 +32,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webmanifest,woff2}'],
         // Фоны стадий кэшируем по мере открытия, чтобы они работали офлайн
-        runtimeCaching: [{ urlPattern: /\/art\/.*\.webp$/, handler: 'CacheFirst', options: { cacheName: 'art', expiration: { maxEntries: 20 } } }],
+        runtimeCaching: [
+          { urlPattern: /\/art\/.*\.webp$/, handler: 'CacheFirst', options: { cacheName: 'art', expiration: { maxEntries: 20 } } },
+          { urlPattern: /\/models\/.*\.glb$/, handler: 'CacheFirst', options: { cacheName: 'models', expiration: { maxEntries: 10 } } },
+        ],
       },
     }),
   ],

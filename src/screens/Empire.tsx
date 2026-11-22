@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { content } from '../content'
 import type { Building } from '../content/schema'
@@ -8,6 +8,9 @@ import type { Game } from '../game/useGame'
 import { dayKey } from '../lib/dates'
 import { fmtNum } from '../lib/format'
 import { Advisor, Button, Card, Icon, Label, Title } from '../components/ui'
+
+// three.js тяжёлый: грузим отдельным куском, только когда нужна модель
+const ModelViewer = lazy(() => import('../components/ModelViewer'))
 
 type Status = 'owned' | 'ready' | 'capital' | 'rank'
 
@@ -41,6 +44,15 @@ export default function Empire({ game }: { game: Game }) {
         <Title>Империя</Title>
         <p className="mt-1 text-[14px] text-muted">{p.houseName} · построек {owned} из {buildings.length} · казна <b className="text-gold">{fmtNum(p.capital)} ₸</b></p>
       </div>
+
+      {/* Замок Дома: открывается на высшем титуле */}
+      <Card tone="gold" className="overflow-hidden p-0">
+        <Suspense fallback={<div className="h-64" />}><ModelViewer name="castle" dim={p.rank < 7} className="h-64 md:h-80" /></Suspense>
+        <div className="px-4 pb-4">
+          <Label tone="gold">Замок Дома</Label>
+          <p className="mt-1 text-[14px] text-muted">{p.rank >= 7 ? 'Дом достроен. Ты — Глава Дома.' : `Достроится на титуле «${rankTitle(7)}». Сейчас у тебя «${rankTitle(p.rank)}».`}</p>
+        </div>
+      </Card>
 
       {/* Карта построек */}
       <Card className="p-2">
@@ -132,11 +144,11 @@ export default function Empire({ game }: { game: Game }) {
       </div>
 
       {sel && (
-        <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setSel(null)}>
-          <div className="pb-safe animate-rise w-full surface rounded-t-3xl border-t border-gold/40 px-5 pt-5" onClick={(e) => e.stopPropagation()}>
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
+        <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setSel(null)}>
+          <div className="pb-safe animate-rise max-h-[92dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-5 pt-3 md:mx-auto md:max-w-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-line" />
+            <Suspense fallback={<div className="h-56" />}><ModelViewer name={sel.id} dim={status(sel) !== 'owned'} className="h-56 md:h-72" /></Suspense>
             <div className="flex items-center gap-3">
-              <svg viewBox="-30 -30 60 60" className="h-14 w-14"><BuildingShape kind={sel.kind} status={status(sel)} /></svg>
               <div>
                 <div className="font-serif text-[22px]">{sel.title}</div>
                 <div className="text-[13px] text-muted">{sel.cost ? `${fmtNum(sel.cost)} ₸ Капитала · титул «${rankTitle(sel.minRank)}»` : 'Есть с основания Дома'}</div>

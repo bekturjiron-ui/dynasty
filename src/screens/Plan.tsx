@@ -119,7 +119,7 @@ export default function Plan({ game }: { game: Game }) {
       })}
 
       {pinAsk && (
-        <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setPinAsk(false)}>
+        <div className="fixed inset-0 z-40 flex items-end bg-black/60" onClick={() => setPinAsk(false)}>
           <div className="pb-safe animate-rise w-full surface rounded-t-3xl border-t border-gold/40 px-5 pt-5" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-line" />
             <div className="font-serif text-[22px]">Редактор плана</div>
