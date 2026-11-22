@@ -120,6 +120,47 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           height = (x, z) => { ray0.set(new THREE.Vector3(x, 60, z), DOWN); const h = ray0.intersectObjects(islandMeshes, false)[0]; return h ? h.point.y : -3 }
           for (const d of latest.current.slots) { const f = LAYOUT[d.id]; if (f) placed.set(d.id, { x: f[0] * islandSize.w, z: f[1] * islandSize.l }) }
         } catch { /* острова нет — рисуем программный */ }
+        // Площадка под каждым зданием: ищем рядом с заданным местом точку, где земля ровная на всю ширину основания,
+        // под всеми углами есть остров (основание не свисает над обрывом) и нет наезда на уже поставленные здания.
+        const placedY = new Map<string, number>()
+        if (islandSize) {
+          const GRID = 0.6
+          const memo = new Map<string, number>()
+          const hq = (x: number, z: number) => {
+            const gx = Math.round(x / GRID), gz = Math.round(z / GRID), key = gx + ',' + gz
+            let v = memo.get(key)
+            if (v === undefined) { v = height(gx * GRID, gz * GRID); memo.set(key, v) }
+            return v
+          }
+          const PTS: [number, number][] = [[0, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]]
+          const done: { x: number; z: number; r: number }[] = []
+          for (const id of ['castle', 'bank', 'birzha', 'torgovy-dom', 'kontora', 'sklad', 'lavka']) {
+            const d = latest.current.slots.find((s) => s.id === id)
+            const base = placed.get(id)
+            if (!d || !base) continue
+            const half = d.size * 0.5
+            let best: { x: number; z: number; y: number; score: number } | null = null
+            for (let dx = -3; dx <= 3.01; dx += GRID) {
+              for (let dz = -3; dz <= 3.01; dz += GRID) {
+                const x = base.x + dx, z = base.z + dz
+                let mn = 1e9, mx = -1e9, ok = true
+                for (const [ox, oz] of PTS) {
+                  const h = hq(x + ox * half * 0.92, z + oz * half * 0.92)
+                  if (h < -2) { ok = false; break }
+                  mn = Math.min(mn, h); mx = Math.max(mx, h)
+                }
+                if (!ok) continue
+                let pen = 0
+                for (const o of done) { const need = (half + o.r) * 0.9; const dist = Math.hypot(x - o.x, z - o.z); if (dist < need) pen += (need - dist) * 6 }
+                const score = (mx - mn) * 3 + Math.hypot(dx, dz) * 0.15 + pen
+                if (!best || score < best.score) best = { x, z, y: mx, score }
+              }
+            }
+            if (best) { placed.set(id, { x: best.x, z: best.z }); placedY.set(id, best.y - 0.08) }
+            const p = placed.get(id)!
+            done.push({ x: p.x, z: p.z, r: half })
+          }
+        }
         const at = (d: SceneSlot) => placed.get(d.id) ?? { x: d.x, z: d.z }
         const anchors = latest.current.slots.map((s) => at(s))
         if (!islandSize) {
@@ -351,7 +392,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             float c2 = fbm(q + vec2(0.06, -0.05));
             float lit = clamp((c - c2) * 7.0 + 0.55, 0.0, 1.0);
             vec3 col = mix(uShade, uLight, lit);
-            float fade = 1.0 - smoothstep(12.0, 46.0, length(p * vec2(0.75, 0.6)));
+            float fade = 1.0 - smoothstep(22.0, 60.0, length(p * vec2(0.7, 0.55)));
             gl_FragColor = vec4(col, cover * fade * uOpacity);
           }`
         const cloudVert = 'varying vec3 vLocal; void main(){ vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
@@ -398,14 +439,14 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
 
         // птицы: пять тёмных силуэтов кружат вдали днём
         const birds: { g: T.Group; wl: T.Mesh; wr: T.Mesh; r: number; a: number; sp: number; y: number }[] = []
-        const birdMat = new THREE.MeshBasicMaterial({ color: 0x2a2230, side: THREE.DoubleSide, transparent: true })
+        const birdMat = new THREE.MeshBasicMaterial({ color: 0x3a3a52, side: THREE.DoubleSide, transparent: true })
         const wingGeo = new THREE.BufferGeometry()
         wingGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1.1, 0.05, 0.25, 0.9, 0, -0.2], 3))
         const br = mulberry32(99)
         for (let i = 0; i < 5; i++) {
           const g = new THREE.Group(); const wl = new THREE.Mesh(wingGeo, birdMat); const wr = new THREE.Mesh(wingGeo, birdMat)
-          wr.scale.x = -1; g.add(wl, wr); g.scale.setScalar(0.55); scene.add(g)
-          birds.push({ g, wl, wr, r: 15 + br() * 9, a: br() * Math.PI * 2, sp: 0.1 + br() * 0.08, y: 8 + br() * 4 })
+          wr.scale.x = -1; g.add(wl, wr); g.scale.setScalar(0.34); scene.add(g)
+          birds.push({ g, wl, wr, r: 30 + br() * 12, a: br() * Math.PI * 2, sp: 0.06 + br() * 0.05, y: 12 + br() * 6 })
         }
 
         // дым из труб и тёплые окна у купленных построек
@@ -576,7 +617,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const st = s.def.state
           s.label.textContent = s.def.label
           s.label.style.cssText = `position:absolute;left:0;top:0;white-space:nowrap;transform:translate(-9999px,-9999px);padding:2px 9px;border-radius:9999px;font:600 11px/1.5 Inter Variable,system-ui,sans-serif;` +
-            (st === 'owned' ? 'background:rgba(17,17,20,.7);color:#f1ebdd;border:1px solid rgba(255,255,255,.18);'
+            (st === 'owned' ? 'background:rgba(17,17,20,.55);color:#f1ebdd;border:1px solid rgba(255,255,255,.14);font-size:10px;padding:1px 7px;'
               : st === 'ready' ? 'background:rgba(216,170,66,.92);color:#111114;border:1px solid #fff1b0;box-shadow:0 0 14px rgba(232,205,114,.8);'
                 : 'background:rgba(17,17,20,.6);color:#b3ad9e;border:1px solid rgba(255,255,255,.1);')
         }
@@ -672,7 +713,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const setup = (def: SceneSlot) => {
           const root = new THREE.Group()
           const pp = at(def)
-          root.position.set(pp.x, height(pp.x, pp.z) - 0.02, pp.z)
+          root.position.set(pp.x, placedY.get(def.id) ?? height(pp.x, pp.z) - 0.02, pp.z)
           world.add(root)
           const label = document.createElement('div')
           labelLayer.appendChild(label)
@@ -857,17 +898,17 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const h = hourNow()
           night = Math.max(0, Math.min(1, smooth(18, 20.5, h) + (1 - smooth(4.5, 6.5, h))))
           dusk = Math.max(smooth(16.2, 18.2, h) * (1 - smooth(19.2, 20.8, h)), smooth(4.6, 5.6, h) * (1 - smooth(6.2, 7.4, h)) * 0.8)
-          hemi.intensity = 1.1 - 0.45 * night
+          hemi.intensity = 0.95 - 0.4 * night
           hemi.color.setHex(0xfff0d0).lerp(c1.setHex(0x7d8cff), night * 0.8)
-          sun.intensity = 2.6 - 1.9 * night
+          sun.intensity = 2.15 - 1.65 * night
           sun.color.setHex(0xffd9a0).lerp(c1.setHex(0xff8c4a), dusk).lerp(c1.setHex(0x8c9cff), night)
           fill.intensity = 0.5 + 0.2 * night
-          renderer.toneMappingExposure = 1.05 - 0.05 * night
+          renderer.toneMappingExposure = 0.98 - 0.03 * night
           ffU.uNight.value = night; smU.uNight.value = night
           seaTop.u.uLight.value.setHex(0xffffff).lerp(c1.setHex(0xffc9a0), dusk).lerp(c1.setHex(0x7c8bbf), night)
           seaTop.u.uShade.value.setHex(0xb9d4f2).lerp(c1.setHex(0xb06a8a), dusk).lerp(c1.setHex(0x1a2450), night)
-          seaLow.u.uLight.value.copy(seaTop.u.uLight.value).multiplyScalar(0.86)
-          seaLow.u.uShade.value.copy(seaTop.u.uShade.value).multiplyScalar(0.78)
+          seaLow.u.uLight.value.copy(seaTop.u.uLight.value).multiplyScalar(0.95)
+          seaLow.u.uShade.value.copy(seaTop.u.uShade.value).multiplyScalar(0.9)
           for (const c of clouds) (c.s.material as T.SpriteMaterial).color.setHex(0xffffff).lerp(c1.setHex(0xffb98a), dusk).lerp(c1.setHex(0x4a5578), night)
           birdMat.opacity = 1 - night
           const sky = skyRef.current
