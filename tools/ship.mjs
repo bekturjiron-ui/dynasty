@@ -16,9 +16,10 @@ const say = (...a) => console.log(...a)
 const die = (msg, code = 1) => { console.error('СТОП: ' + msg); process.exit(code) }
 
 function run(cmd, args, opts = {}) {
-  const r = spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32' && cmd === 'npm', ...opts })
-  return r
+  return spawnSync(cmd, args, { encoding: 'utf8', ...opts })
 }
+// npm на Windows запускается через оболочку: передаём одной строкой (массив аргументов вместе с shell даёт предупреждение DEP0190 в stderr)
+const npm = (script) => spawnSync(`npm run ${script}`, { encoding: 'utf8', shell: true })
 const git = (...a) => {
   const r = run('git', a)
   if (r.status !== 0) die(`git ${a.join(' ')}\n${r.stderr || r.stdout}`)
@@ -53,10 +54,10 @@ say(`2/6 изменено файлов: ${changed.length}. Вне зоны: ${ou
 
 say('3/6 проверки (validate + build)…')
 if (changed.some((f) => f.startsWith('content/'))) {
-  const v = run('npm', ['run', 'validate'])
+  const v = npm('validate')
   if (v.status !== 0) die('validate не прошёл:\n' + (v.stdout || '') + (v.stderr || ''))
 }
-const b = run('npm', ['run', 'build'])
+const b = npm('build')
 if (b.status !== 0) die('build не прошёл:\n' + (b.stdout || '').slice(-1500) + (b.stderr || ''))
 
 if (dry) {
