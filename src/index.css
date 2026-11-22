@@ -359,3 +359,96 @@ select:focus-visible {
     opacity: 0;
   }
 }
+
+/* ---------- Церемония нового титула ---------- */
+.cer { animation: cer-shake 0.5s ease-out 0.35s both; }
+@keyframes cer-shake {
+  0%, 100% { transform: none; }
+  20% { transform: translate(-6px, 3px); }
+  40% { transform: translate(5px, -4px); }
+  60% { transform: translate(-3px, 2px); }
+  80% { transform: translate(2px, -1px); }
+}
+/* старый мир: медленно приближается и гаснет */
+.cer-old { animation: cer-old 1.6s ease-in forwards; filter: brightness(0.6); }
+@keyframes cer-old {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(1.12); opacity: 0.2; }
+}
+/* новый мир раскрывается кругом из центра на ударе вспышки */
+.cer-new { clip-path: circle(0% at 50% 40%); animation: cer-reveal 1.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.45s forwards; }
+@keyframes cer-reveal {
+  from { clip-path: circle(0% at 50% 40%); transform: scale(1.15); }
+  to { clip-path: circle(150% at 50% 40%); transform: scale(1); }
+}
+.cer-flash {
+  background: radial-gradient(circle at 50% 40%, #fff6cf 0%, rgba(255, 226, 140, 0.8) 25%, transparent 65%);
+  opacity: 0;
+  animation: cer-flash 1.3s ease-out 0.35s forwards;
+}
+@keyframes cer-flash {
+  0% { opacity: 0; transform: scale(1); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+.cer-ring {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 9999px;
+  border: 3px solid rgba(255, 226, 140, 0.9);
+  box-shadow: 0 0 24px rgba(232, 205, 114, 0.8), inset 0 0 18px rgba(232, 205, 114, 0.5);
+  opacity: 0;
+  animation: cer-ring 1.4s ease-out 0.4s forwards;
+}
+@keyframes cer-ring {
+  0% { opacity: 1; transform: scale(0.2); }
+  100% { opacity: 0; transform: scale(24); }
+}
+.cer-rays {
+  width: 170vmax;
+  height: 170vmax;
+  margin: -85vmax 0 0 -85vmax;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 226, 140, 0.12) 0deg 6deg, transparent 6deg 18deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+  mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+  opacity: 0;
+  animation: cer-rays-in 1.2s ease-out 1s forwards, cer-rays-spin 40s linear 1s infinite;
+}
+@keyframes cer-rays-in { to { opacity: 1; } }
+@keyframes cer-rays-spin { to { transform: rotate(360deg); } }
+.cer-crown { opacity: 0; animation: cer-crown 1s cubic-bezier(0.2, 0.9, 0.3, 1.25) 1.05s forwards; }
+@keyframes cer-crown {
+  0% { opacity: 0; transform: translateY(-70px) scale(0.5) rotate(-10deg); }
+  60% { opacity: 1; transform: translateY(6px) scale(1.1) rotate(2deg); }
+  100% { opacity: 1; transform: none; }
+}
+.cer-label { opacity: 0; animation: cer-up 0.6s ease-out 1.5s forwards; }
+.cer-text { opacity: 0; animation: cer-up 0.6s ease-out forwards; }
+@keyframes cer-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.cer-letter { opacity: 0; animation: cer-letter 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards; }
+@keyframes cer-letter {
+  0% { opacity: 0; transform: translateY(24px) scale(1.6); filter: blur(8px); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+.cer-ember {
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff3b0 0%, #e8cd72 55%, transparent 70%);
+  opacity: 0;
+  animation: cer-fall linear infinite;
+}
+@keyframes cer-fall {
+  0% { opacity: 0; transform: translateY(-10px); }
+  12% { opacity: 0.95; }
+  100% { opacity: 0; transform: translateY(105vh) translateX(18px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cer, .cer-old, .cer-flash, .cer-ring, .cer-rays, .cer-ember { animation: none; }
+  .cer-old, .cer-flash, .cer-ring, .cer-ember { display: none; }
+  .cer-new { clip-path: none; animation: none; }
+  .cer-rays { opacity: 0.5; }
+  .cer-crown, .cer-label, .cer-text, .cer-letter { opacity: 1; animation: none; }
+}

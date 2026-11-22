@@ -1,9 +1,9 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { foundHouse } from './game/engine'
-import { clearRankUp, onRankUp, peekRankUp, type RankUp } from './game/events'
 import { useGame, type Game } from './game/useGame'
 import { Button, Icon, Label, Seal } from './components/ui'
+import { RankCeremony } from './components/RankCeremony'
 import { ResourceBar } from './components/ResourceBar'
 import { StageBackdrop } from './components/StageBackdrop'
 import Today from './screens/Today'
@@ -13,6 +13,8 @@ const Empire = lazy(() => import('./screens/Empire'))
 import Arsenal from './screens/Arsenal'
 // Совет тоже тянет графики — отдельным куском
 const Council = lazy(() => import('./screens/Council'))
+// Админ-панель нужна редко: отдельный кусок
+const Admin = lazy(() => import('./screens/Admin'))
 import LessonScreen from './screens/Lesson'
 import BossScreen from './screens/Boss'
 import NegotiationScreen from './screens/Negotiation'
@@ -42,6 +44,7 @@ export default function App() {
         <Route path="/empire" element={tab((g) => <Suspense fallback={<div className="pt-10 text-center text-muted">Открываем карту…</div>}><Empire game={g} /></Suspense>)} />
         <Route path="/arsenal" element={tab((g) => <Arsenal game={g} />)} />
         <Route path="/council" element={tab((g) => <Suspense fallback={<div className="pt-10 text-center text-muted">Собираем Совет…</div>}><Council game={g} /></Suspense>)} />
+        <Route path="/admin" element={tab((g) => <Suspense fallback={null}><Admin game={g} /></Suspense>)} />
         <Route path="/lesson/:id" element={<LessonScreen />} />
         <Route path="/boss/:id" element={<BossScreen />} />
         <Route path="/negotiation/:id" element={<NegotiationScreen />} />
@@ -78,7 +81,7 @@ function Shell({ children, game }: { children: ReactNode; game: Game }) {
         </nav>
         {p && <div className="mt-auto text-[12px] text-muted">{p.houseName}</div>}
       </aside>
-      <div className="relative z-10 mx-auto min-h-dvh max-w-xl md:ml-56 md:max-w-none">
+      <div className="relative mx-auto min-h-dvh max-w-xl md:ml-56 md:max-w-none">
         <main key={loc.pathname} className="animate-rise pt-safe mx-auto max-w-xl px-4 pb-28 md:max-w-4xl md:pb-10">
           {p && <ResourceBar capital={p.capital} xp={p.xp} reputation={p.reputation} />}
           {children}
@@ -121,17 +124,3 @@ function Welcome() {
   )
 }
 
-function RankCeremony() {
-  const [e, setE] = useState<RankUp | null>(() => peekRankUp())
-  useEffect(() => { const u = peekRankUp(); if (u) setE(u); return onRankUp(setE) }, [])
-  if (!e) return null
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 px-8 text-center backdrop-blur" role="dialog" aria-label="Новый титул">
-      <div className="animate-crown text-gold"><svg width="120" height="90" viewBox="0 0 120 90" aria-hidden><path d="M10 70 22 20l24 30 14-40 14 40 24-30 12 50z" fill="currentColor" /><rect x="10" y="74" width="100" height="10" fill="currentColor" /></svg></div>
-      <Label>Совет Дома объявляет</Label>
-      <div className="gold-text mt-3 font-serif text-[42px] leading-tight">{e.title}</div>
-      <p className="mt-4 text-[16px] leading-relaxed text-parch/90">Титул получен за реальный результат. Его не отнять.</p>
-      <Button className="mt-10 w-full max-w-xs" onClick={() => { clearRankUp(); setE(null) }}>Принять титул</Button>
-    </div>
-  )
-}

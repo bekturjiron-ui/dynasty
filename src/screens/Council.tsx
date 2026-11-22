@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { content } from '../content'
 import { PACK_DEFAULT_PCT, unitProfit } from '../content/scope'
 import { db } from '../db'
@@ -10,6 +11,7 @@ import { WeekReport } from './council/WeekReport'
 import { KaspiImport } from './council/KaspiImport'
 
 export default function Council({ game }: { game: Game }) {
+  const nav = useNavigate()
   const s = game.settings
   const [fee, setFee] = useState(String(s.kaspiFeePct))
   const [delivery, setDelivery] = useState(String(s.deliveryCost))
@@ -93,6 +95,8 @@ export default function Council({ game }: { game: Game }) {
         </label>
         {msg && <p className="text-[13px] text-gold">{msg}</p>}
       </Card>
+
+      <button onClick={() => nav('/admin')} className="w-full py-2 text-center text-[13px] text-muted underline-offset-4 active:underline">Админ-панель</button>
 
       <Card className="space-y-2 text-[14px] leading-relaxed text-muted">
         <Label>Напоминание</Label>
