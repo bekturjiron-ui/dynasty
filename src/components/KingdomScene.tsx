@@ -20,9 +20,14 @@ const ZOOM_BTN = 'grid h-11 w-11 place-items-center rounded-full border border-w
 const R = 11 // радиус запасного (программного) острова
 const ISLAND_LEN = 24 // длина модели острова по глубине сцены
 /** Где стоят постройки на модели острова: доли ширины и длины от центра (купол сзади — замок, средняя терраса, нижняя терраса) */
-const LAYOUT: Record<string, [number, number]> = {
-  castle: [0, -0.31], bank: [0, -0.12], birzha: [-0.21, -0.03], 'torgovy-dom': [0.21, -0.03], kontora: [0.25, 0.2], sklad: [0, 0.23], lavka: [-0.25, 0.2],
+// Площадки нового острова (доли модели до поворота: замок на дальнем плато слева сверху), затем остров поворачивается так, чтобы замок оказался сзади по центру
+const ISLAND_YAW = -Math.PI / 4
+const RAW_LAYOUT: Record<string, [number, number]> = {
+  castle: [-0.3, -0.3], bank: [-0.043, -0.136], birzha: [-0.229, 0.064], 'torgovy-dom': [0.186, -0.3], kontora: [0.264, -0.007], sklad: [0.171, 0.2], lavka: [-0.1, 0.307],
 }
+const LAYOUT: Record<string, [number, number]> = Object.fromEntries(
+  Object.entries(RAW_LAYOUT).map(([id, [x, z]]) => [id, [x * Math.cos(ISLAND_YAW) + z * Math.sin(ISLAND_YAW), -x * Math.sin(ISLAND_YAW) + z * Math.cos(ISLAND_YAW)]]),
+)
 const smooth = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t) }
 const easeOutElastic = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -9 * x) * Math.sin((x * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1)
 function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
@@ -86,7 +91,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
         controls.maxPolarAngle = 1.3
-        controls.target.set(0, -0.4, 0.2)
+        controls.target.set(0, 1.4, 0.6)
         renderer.domElement.style.touchAction = 'pan-y'
 
         const world = new THREE.Group()
@@ -101,7 +106,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const ray0 = new THREE.Raycaster()
         const DOWN = new THREE.Vector3(0, -1, 0)
         try {
-          const model = await loadModel(t, 'island')
+          const model = await loadModel(t, 'island2')
           if (disposed) return
           const isl = model.clone(true)
           const box = new THREE.Box3().setFromObject(isl)
@@ -113,6 +118,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const sc = ISLAND_LEN / size.z
           holder.scale.setScalar(sc)
           holder.position.y = -1
+          holder.rotation.y = ISLAND_YAW
           holder.traverse((o) => { const m = o as T.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; islandMeshes.push(m) } })
           world.add(holder)
           world.updateMatrixWorld(true)
@@ -140,8 +146,8 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             if (!d || !base) continue
             const half = d.size * 0.5
             let best: { x: number; z: number; y: number; score: number } | null = null
-            for (let dx = -3; dx <= 3.01; dx += GRID) {
-              for (let dz = -3; dz <= 3.01; dz += GRID) {
+            for (let dx = -0.9; dx <= 0.91; dx += GRID) {
+              for (let dz = -0.9; dz <= 0.91; dz += GRID) {
                 const x = base.x + dx, z = base.z + dz
                 let mn = 1e9, mx = -1e9, ok = true
                 for (const [ox, oz] of PTS) {
@@ -152,7 +158,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
                 if (!ok) continue
                 let pen = 0
                 for (const o of done) { const need = (half + o.r) * 0.9; const dist = Math.hypot(x - o.x, z - o.z); if (dist < need) pen += (need - dist) * 6 }
-                const score = (mx - mn) * 3 + Math.hypot(dx, dz) * 0.15 + pen
+                const score = (mx - mn) * 3 + Math.hypot(dx, dz) * 0.9 + pen
                 if (!best || score < best.score) best = { x, z, y: mx, score }
               }
             }
@@ -282,8 +288,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
               for (let tries = 0; tries < 600 && mats.length < count; tries++) {
                 const x = (rnd2() - 0.5) * isz.w
                 const z = (rnd2() - 0.5) * isz.l
-                if (z > isz.l * 0.36) continue // песчаный берег впереди
-                if (anchors.some((p) => Math.hypot(x - p.x, z - p.z) < 3.4)) continue
+                if (anchors.some((p) => Math.hypot(x - p.x, z - p.z) < 4.8)) continue
                 ray0.set(new THREE.Vector3(x, 60, z), DOWN)
                 const hit = ray0.intersectObjects(islandMeshes, false)[0]
                 if (!hit || hit.point.y < -0.3) continue
@@ -837,7 +842,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = (a > 1.2 ? 43 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
             controls.update()
