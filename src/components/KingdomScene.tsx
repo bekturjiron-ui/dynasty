@@ -14,8 +14,9 @@ export type SceneSlot = {
   label: string
 }
 
-type Api = { setSlots: (slots: SceneSlot[]) => void }
+type Api = { setSlots: (slots: SceneSlot[]) => void; zoomBy: (factor: number) => void; resetView: () => void }
 
+const ZOOM_BTN = 'grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-black/45 text-[24px] leading-none text-parch backdrop-blur transition active:scale-95'
 const R = 11 // радиус запасного (программного) острова
 const ISLAND_LEN = 24 // длина модели острова по глубине сцены
 /** Где стоят постройки на модели острова: доли ширины и длины от центра (купол сзади — замок, средняя терраса, нижняя терраса) */
@@ -28,14 +29,16 @@ function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0
 
 /** Диорама королевства: остров, дорога, деревья и модели построек. Купленные стоят цветными, остальные — прозрачными «призраками».
  *  Тап по постройке вызывает onSelect(id). Сцена грузится лениво; при отсутствии WebGL вызывается onFail. */
-export default function KingdomScene({ slots, stage, onSelect, onFail, className = '' }: { slots: SceneSlot[]; stage: number; onSelect: (id: string) => void; onFail?: () => void; className?: string }) {
+export default function KingdomScene({ slots, onSelect, onFail, className = '' }: { slots: SceneSlot[]; onSelect: (id: string) => void; onFail?: () => void; className?: string }) {
   const host = useRef<HTMLDivElement>(null)
-  const tintRef = useRef<HTMLDivElement>(null)
+  const skyRef = useRef<HTMLDivElement>(null)
+  const starsRef = useRef<HTMLCanvasElement>(null)
+  const sunRef = useRef<HTMLDivElement>(null)
+  const moonRef = useRef<HTMLDivElement>(null)
   const api = useRef<Api | null>(null)
   const latest = useRef({ slots, onSelect, onFail })
   latest.current = { slots, onSelect, onFail }
   const [ready, setReady] = useState(false)
-  const [imgOk, setImgOk] = useState(true)
 
   // состояния построек меняются (куплена, хватает денег) — сцена обновляется без пересоздания
   useEffect(() => { api.current?.setSlots(slots) }, [slots])
@@ -77,7 +80,8 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enablePan = false
-        controls.enableZoom = false
+        controls.enableZoom = true // щипок двумя пальцами и колесо мыши; пределы задаются при подгонке под размер
+        controls.zoomSpeed = 0.9
         controls.enableDamping = true
         controls.minAzimuthAngle = -0.7
         controls.maxAzimuthAngle = 0.7
@@ -293,15 +297,10 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           return new THREE.CanvasTexture(c)
         })()
 
-        // море: волны из синусов, блик солнца, отражение неба по Френелю, пена вдоль берега (по карте расстояния до суши)
+        // море облаков под островом: шум fbm с «объёмом», гуще у скал (карта расстояния до суши из вершин острова)
         const isz = islandSize ?? { w: R * 2, l: R * 2 }
         const waterU = {
           uTime: timeU,
-          uSun: { value: new THREE.Vector3(6, 11, 8).normalize() },
-          uDeep: { value: new THREE.Color(0x1b6f86) },
-          uShallow: { value: new THREE.Color(0x56c2bd) },
-          uSky: { value: new THREE.Color(0xf3b57a) },
-          uNight: { value: 0 },
           uShore: { value: null as T.Texture | null },
           uOrigin: { value: new THREE.Vector2(0, 0) },
           uSize: { value: new THREE.Vector2(1, 1) },
@@ -336,43 +335,37 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           waterU.uShore.value = tex
           waterU.uOrigin.value.set(x0, z0); waterU.uSize.value.set(sx, sz)
         }
-        const water = new THREE.Mesh(
-          new THREE.CircleGeometry(70, 96).rotateX(-Math.PI / 2),
-          new THREE.ShaderMaterial({
-            transparent: true, depthWrite: false, uniforms: waterU,
-            vertexShader: 'varying vec3 vLocal; varying vec3 vWorld; void main(){ vLocal = position; vec4 wp = modelMatrix * vec4(position,1.0); vWorld = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
-            fragmentShader: `
-              uniform float uTime; uniform vec3 uSun; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSky; uniform float uNight;
-              uniform sampler2D uShore; uniform vec2 uOrigin; uniform vec2 uSize;
-              varying vec3 vLocal; varying vec3 vWorld;
-              void main(){
-                vec2 p = vLocal.xz; float t = uTime;
-                vec2 n = vec2(cos(p.x*0.9+t*0.9), cos(p.y*0.7+t*0.7))*0.35
-                       + vec2(cos((p.x+p.y)*1.7-t*1.3), cos((p.x-p.y)*1.4+t*1.1))*0.18
-                       + vec2(cos(p.x*3.3+t*2.0+p.y*1.1), cos(p.y*3.7-t*1.7))*0.08;
-                vec3 N = normalize(vec3(-n.x*0.28, 1.0, -n.y*0.28));
-                vec3 V = normalize(cameraPosition - vWorld);
-                float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-                float sd = texture2D(uShore, (p - uOrigin) / uSize).r * 12.0 * (uSize.x / 64.0);
-                float shallow = 1.0 - smoothstep(0.0, 3.2, sd);
-                vec3 col = mix(uDeep, uShallow, shallow);
-                col = mix(col, uSky * (1.0 - uNight * 0.75), fres * 0.6);
-                vec3 R = reflect(-normalize(uSun), N);
-                float spec = pow(max(dot(R, V), 0.0), 90.0);
-                col += vec3(1.0, 0.82, 0.55) * spec * 1.3 * (1.0 - uNight * 0.85);
-                float wob = 0.55 + 0.45 * sin(sd * 3.0 - t * 1.6 + p.x * 0.6);
-                float foam = (1.0 - smoothstep(0.0, 0.9, abs(sd - (0.5 + 0.35 * sin(t * 1.1 + p.x * 0.5))))) * wob;
-                foam *= 0.55 + 0.45 * sin(p.x * 3.1 + t * 1.7) * sin(p.y * 2.7 - t * 1.3);
-                col += vec3(0.95, 1.0, 1.0) * foam * 0.55 * (1.0 - uNight * 0.55);
-                float fade = 1.0 - smoothstep(9.0, 27.0, length(p * vec2(0.8, 0.62)) * 1.4);
-                float alpha = mix(0.78, 0.95, fres) * fade * mix(0.8, 1.0, shallow);
-                gl_FragColor = vec4(col, alpha);
-              }`,
-          }),
-        )
-        water.position.y = WATER_Y
-        water.renderOrder = -1
-        world.add(water)
+        const cloudFrag = `
+          uniform float uTime; uniform vec3 uLight; uniform vec3 uShade; uniform float uScale; uniform float uSpeed; uniform float uBase; uniform float uOpacity;
+          uniform sampler2D uShore; uniform vec2 uOrigin; uniform vec2 uSize;
+          varying vec3 vLocal;
+          float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+          float noise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1.0,0.0)), f.x), mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), f.x), f.y); }
+          float fbm(vec2 p){ float v = 0.0; float a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + vec2(17.0, 9.0); a *= 0.5; } return v; }
+          void main(){
+            vec2 p = vLocal.xz;
+            vec2 q = p * 0.09 * uScale + vec2(uTime * 0.02 * uSpeed, uTime * 0.008 * uSpeed);
+            float c = fbm(q);
+            float sd = texture2D(uShore, (p - uOrigin) / uSize).r * 12.0 * (uSize.x / 64.0);
+            float near = 1.0 - smoothstep(0.0, 4.0, sd);
+            float cover = smoothstep(0.34, 0.72, c + near * 0.28 + uBase);
+            float c2 = fbm(q + vec2(0.06, -0.05));
+            float lit = clamp((c - c2) * 7.0 + 0.55, 0.0, 1.0);
+            vec3 col = mix(uShade, uLight, lit);
+            float fade = 1.0 - smoothstep(12.0, 46.0, length(p * vec2(0.75, 0.6)));
+            gl_FragColor = vec4(col, cover * fade * uOpacity);
+          }`
+        const cloudVert = 'varying vec3 vLocal; void main(){ vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+        const mkLayer = (scale: number, speed: number, base: number, opacity: number, y: number) => {
+          const u = { ...waterU, uLight: { value: new THREE.Color(0xffffff) }, uShade: { value: new THREE.Color(0xb9d4f2) }, uScale: { value: scale }, uSpeed: { value: speed }, uBase: { value: base }, uOpacity: { value: opacity } }
+          const m = new THREE.Mesh(new THREE.CircleGeometry(70, 64).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: u, vertexShader: cloudVert, fragmentShader: cloudFrag }))
+          m.position.y = y
+          m.renderOrder = -1
+          world.add(m)
+          return { u, m }
+        }
+        const seaTop = mkLayer(1.0, 1.0, 0.0, 0.96, WATER_Y)
+        const seaLow = mkLayer(0.7, 0.6, 0.14, 0.92, WATER_Y - 2.6)
 
         // облака: плывут мимо, часть позади острова, часть низких впереди
         const clouds: { s: T.Sprite; v: number; o: number }[] = []
@@ -612,7 +605,11 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         const order = [...slotMap.values()].sort((a, b) => Number(b.def.state === 'owned') - Number(a.def.state === 'owned'))
         void (async () => { for (const s of order) await loadSlot(s) })()
 
+        let zoomImpl: (f: number) => void = () => {}
+        let resetImpl: () => void = () => {}
         api.current = {
+          zoomBy: (f) => zoomImpl(f),
+          resetView: () => resetImpl(),
           setSlots: (defs) => {
             for (const d of defs) {
               const s = slotMap.get(d.id)
@@ -677,12 +674,32 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
             const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
+            const d0 = finalPos.distanceTo(controls.target)
+            controls.minDistance = d0 * 0.42
+            controls.maxDistance = d0 * 1.25
             controls.update()
           }
         }
         const ro = new ResizeObserver(resize)
         ro.observe(el)
         resize()
+
+        // приближение кнопками и «вернуть вид»: плавно двигаем камеру
+        const animCam = (toPos: T.Vector3, ms = 280) => {
+          const from = camera.position.clone()
+          const t0 = performance.now()
+          fx.push((now) => {
+            const k2 = Math.min(1, (now - t0) / ms)
+            camera.position.lerpVectors(from, toPos, 1 - Math.pow(1 - k2, 3))
+            return k2 >= 1
+          })
+        }
+        zoomImpl = (f) => {
+          const offv = camera.position.clone().sub(controls.target)
+          const d = Math.max(controls.minDistance, Math.min(controls.maxDistance, offv.length() * f))
+          animCam(controls.target.clone().add(offv.setLength(d)))
+        }
+        resetImpl = () => animCam(finalPos.clone(), 420)
 
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         let visible = true
@@ -719,15 +736,38 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           sun.color.setHex(0xffd9a0).lerp(c1.setHex(0xff8c4a), dusk).lerp(c1.setHex(0x8c9cff), night)
           fill.intensity = 0.5 + 0.2 * night
           renderer.toneMappingExposure = 1.05 - 0.05 * night
-          waterU.uNight.value = night; ffU.uNight.value = night; smU.uNight.value = night
-          waterU.uSky.value.setHex(0xf3b57a).lerp(c1.setHex(0xff7a3c), dusk)
+          ffU.uNight.value = night; smU.uNight.value = night
+          seaTop.u.uLight.value.setHex(0xffffff).lerp(c1.setHex(0xffc9a0), dusk).lerp(c1.setHex(0x7c8bbf), night)
+          seaTop.u.uShade.value.setHex(0xb9d4f2).lerp(c1.setHex(0xb06a8a), dusk).lerp(c1.setHex(0x1a2450), night)
+          seaLow.u.uLight.value.copy(seaTop.u.uLight.value).multiplyScalar(0.86)
+          seaLow.u.uShade.value.copy(seaTop.u.uShade.value).multiplyScalar(0.78)
           for (const c of clouds) (c.s.material as T.SpriteMaterial).color.setHex(0xffffff).lerp(c1.setHex(0xffb98a), dusk).lerp(c1.setHex(0x4a5578), night)
           birdMat.opacity = 1 - night
-          const tint = tintRef.current
-          if (tint) {
-            const a = Math.min(0.5, night * 0.4 + dusk * 0.16)
-            const r = Math.round(255 * dusk * (1 - night) + 12 * night), g = Math.round(130 * dusk * (1 - night) + 20 * night), b = Math.round(50 * dusk * (1 - night) + 52 * night)
-            tint.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')'
+          const sky = skyRef.current
+          if (sky) {
+            const top = new THREE.Color(0x3f8fe3).lerp(c1.setHex(0x1e1846), dusk).lerp(c1.setHex(0x050816), night)
+            const mid = new THREE.Color(0x8fc9f6).lerp(c1.setHex(0x86406f), dusk).lerp(c1.setHex(0x0e1840), night)
+            const bot = new THREE.Color(0xffe8c6).lerp(c1.setHex(0xff9b5b), dusk).lerp(c1.setHex(0x223a73), night)
+            sky.style.background = 'linear-gradient(180deg,' + top.getStyle() + ' 0%,' + mid.getStyle() + ' 52%,' + bot.getStyle() + ' 100%)'
+          }
+          if (starsRef.current) starsRef.current.style.opacity = String(Math.max(0, night * 1.2 - 0.2))
+          const sunEl = sunRef.current
+          if (sunEl) {
+            const size = 74 + 70 * dusk
+            sunEl.style.cssText = 'position:absolute;border-radius:9999px;pointer-events:none;transform:translate(-50%,-50%);left:' + (66 + 8 * dusk) + '%;top:' + (9 + 30 * dusk) + '%;width:' + size + 'px;height:' + size + 'px;opacity:' + Math.max(0, 1 - night * 1.3) + ';background:radial-gradient(circle,rgba(255,252,232,1) 0%,rgba(255,' + Math.round(222 - 60 * dusk) + ',' + Math.round(150 - 50 * dusk) + ',0.85) 28%,rgba(255,170,90,0) 70%)'
+          }
+          const moonEl = moonRef.current
+          if (moonEl) moonEl.style.cssText = 'position:absolute;border-radius:9999px;pointer-events:none;transform:translate(-50%,-50%);left:24%;top:15%;width:54px;height:54px;opacity:' + Math.max(0, night * 1.2 - 0.2) + ';background:radial-gradient(circle at 38% 34%,#fffdf2 0%,#e9eefc 55%,#b9c4e6 100%);box-shadow:0 0 40px 14px rgba(190,205,255,0.45)'
+        }
+        {
+          const sc = starsRef.current
+          const g = sc?.getContext('2d')
+          if (sc && g) {
+            const r = mulberry32(3)
+            for (let i = 0; i < 170; i++) {
+              g.fillStyle = 'rgba(255,255,255,' + (0.35 + r() * 0.65) + ')'
+              g.beginPath(); g.arc(r() * sc.width, r() * sc.height * 0.7, r() < 0.12 ? 2.1 : 1.1, 0, Math.PI * 2); g.fill()
+            }
           }
         }
         applyTime()
@@ -745,6 +785,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           renderer.setPixelRatio(1)
           ffU.uPx.value = 1; smU.uPx.value = 1
           renderer.shadowMap.enabled = false
+          seaLow.m.visible = false
           scene.traverse((o) => { const m = (o as T.Mesh).material; if (m) (Array.isArray(m) ? m : [m]).forEach((mm) => { mm.needsUpdate = true }) })
           renderer.setSize(el.clientWidth, el.clientHeight, false)
         }
@@ -834,15 +875,20 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      {imgOk && (
-        <picture>
-          <source media="(min-width: 768px)" srcSet={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-l.webp`} />
-          <img src={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-p.webp`} alt="" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '50% 30%', filter: 'brightness(0.85) saturate(1.1)' }} />
-        </picture>
-      )}
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(80% 60% at 50% 55%, transparent 0%, rgba(17,17,20,0.55) 100%)' }} />
-      <div ref={tintRef} className="pointer-events-none absolute inset-0" />
+      {/* небо: цвета, солнце, луна и звёзды зависят от времени суток; остров парит над морем облаков */}
+      <div ref={skyRef} className="absolute inset-0" style={{ background: 'linear-gradient(180deg,#3f8fe3,#8fc9f6 52%,#ffe8c6)' }} />
+      <canvas ref={starsRef} width={1024} height={1024} className="pointer-events-none absolute inset-0 h-full w-full" style={{ opacity: 0 }} />
+      <div ref={sunRef} />
+      <div ref={moonRef} />
+      <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(10,18,48,0.42) 0%, transparent 24%), linear-gradient(0deg, rgba(10,18,48,0.5) 0%, transparent 20%), radial-gradient(85% 70% at 50% 50%, transparent 55%, rgba(8,10,28,0.3) 100%)' }} />
       <div ref={host} className="absolute inset-0" />
+      <div className="absolute bottom-12 right-3 z-10 flex flex-col gap-2 md:bottom-10 md:right-5">
+        <button aria-label="Приблизить" onClick={() => api.current?.zoomBy(0.72)} className={ZOOM_BTN}>+</button>
+        <button aria-label="Отдалить" onClick={() => api.current?.zoomBy(1.38)} className={ZOOM_BTN}>−</button>
+        <button aria-label="Вернуть вид" onClick={() => api.current?.resetView()} className={ZOOM_BTN}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /></svg>
+        </button>
+      </div>
       {!ready && <div className="absolute inset-0 grid place-items-center text-[13px] text-parch/80">Строим королевство…</div>}
     </div>
   )
