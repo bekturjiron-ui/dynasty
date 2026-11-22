@@ -114,9 +114,15 @@ export function Seal({ size = 16 }: { size?: number }) {
   )
 }
 
-export function Icon({ name, size = 24 }: { name: 'today' | 'plan' | 'empire' | 'arsenal' | 'council' | 'close' | 'check' | 'lock' | 'shield' | 'flame' | 'photo'; size?: number }) {
+export function Icon({ name, size = 24 }: { name: 'coin' | 'star' | 'crown' | 'today' | 'plan' | 'empire' | 'arsenal' | 'council' | 'close' | 'check' | 'lock' | 'shield' | 'flame' | 'photo'; size?: number }) {
   const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
   switch (name) {
+    case 'coin':
+      return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M8.5 8.5h7M12 8.5v7.5M9.5 12h5" /></svg>
+    case 'star':
+      return <svg {...p}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>
+    case 'crown':
+      return <svg {...p}><path d="M4 18 3 7l5 4 4-6 4 6 5-4-1 11zM4 21h16" /></svg>
     case 'today':
       return <svg {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
     case 'plan':

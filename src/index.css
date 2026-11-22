@@ -1,12 +1,14 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ink: #0e0e10;
-  --color-panel: #18171a;
-  --color-panel2: #222024;
-  --color-line: #33302f;
-  --color-gold: #c9a227;
-  --color-gold-soft: #e8cd72;
+  --color-ink: #111114;
+  --color-panel: #1c1a1f;
+  --color-panel2: #252126;
+  --color-line: #38333a;
+  --color-gold: #d8aa42;
+  --color-gold-soft: #ecc875;
+  --color-xp: #5aa9f0;
+  --color-rep: #a77bd2;
   --color-parch: #f1ebdd;
   --color-muted: #b3ad9e;
   --color-gain: #8fc287;
@@ -301,5 +303,28 @@ select:focus-visible {
   }
   .choice {
     transition: none;
+  }
+}
+
+/* ---------- Фон-мир ---------- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in {
+  animation: fade-in 1.5s ease-out both;
+}
+@keyframes sk-flicker {
+  0%, 100% { opacity: 0.9; }
+  40% { opacity: 0.45; }
+  70% { opacity: 1; }
+}
+.sk-flicker {
+  animation: sk-flicker 3.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .sk-flicker {
+    animation: none;
   }
 }

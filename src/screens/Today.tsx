@@ -6,14 +6,12 @@ import { dayKey, daysBetween } from '../lib/dates'
 import { rivalCurve, rivalXpAt } from '../game/rival'
 import { ContractCard } from '../components/ContractCard'
 import { MissionCard } from '../components/MissionCard'
-import { Bar, Button, Card, Icon, Label, Sparks, useCountUp } from '../components/ui'
+import { Bar, Button, Card, Icon, Label } from '../components/ui'
 
 export default function Today({ game }: { game: Game }) {
   const nav = useNavigate()
   const { player, streak, focus, rank, st, weekNow } = game
   const plan = game.content
-  const xpShown = useCountUp(player?.xp ?? 0)
-  const capShown = useCountUp(player?.capital ?? 0)
   if (!player || !focus || !rank) return null
 
   const lesson = focus.nextLessonId ? content.lessons[focus.nextLessonId] : undefined
@@ -28,14 +26,8 @@ export default function Today({ game }: { game: Game }) {
 
       {/* Титул и ресурсы */}
       <div className="relative pt-2">
-        <Sparks burst={player.xp} />
         <Label tone="gold">{player.houseName}</Label>
         <h1 className="gold-text mt-1 font-serif text-[38px] leading-none">{rank.rank?.title}</h1>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[14px] text-muted">
-          <span><b className="text-parch">{fmtNum(capShown)}</b> ₸ Капитала</span>
-          <span><b className="text-gold-soft">{fmtNum(xpShown)}</b> XP</span>
-          <span>Репутация <b className="text-parch">{player.reputation}</b></span>
-        </div>
         {(() => {
           const lead = player.xp - rivalXpAt(rivalCurve(plan), daysBetween(player.startedAt, dayKey()) + 1, player.planOffsetWeeks ?? 0)
           return (
@@ -92,6 +84,8 @@ export default function Today({ game }: { game: Game }) {
         <div className="mt-1 font-serif text-[20px] leading-snug">{focus.week.title}</div>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2">
+      <div className="md:col-span-2">
       {lesson ? (
         <Card tone="gold" className="p-5">
           <div className="flex items-center justify-between">
@@ -107,6 +101,7 @@ export default function Today({ game }: { game: Game }) {
       ) : (
         <Card><p className="text-[15px] text-muted">Уроки этой недели наставник ещё готовит. Пока — реальный контракт и повторение Арсенала.</p></Card>
       )}
+      </div>
 
       {/* Миссии: босс и контракт */}
       {boss && !focus.bossDone && (
@@ -123,6 +118,7 @@ export default function Today({ game }: { game: Game }) {
       )}
       {focus.missions.map((m) => <MissionCard key={m.id} mission={m} result={st.missions.get(m.id)} />)}
       <ContractCard week={focus.week} result={st.contracts.get(focus.week.key ?? focus.week.n)} />
+      </div>
 
       {content.productsAreDemo && (
         <p className="px-1 text-center text-[12px] text-muted">Цифры в уроках — демо-косметика. Наставник заменит их на товары Novelia.</p>

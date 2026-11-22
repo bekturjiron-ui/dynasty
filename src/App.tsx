@@ -3,7 +3,9 @@ import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { foundHouse } from './game/engine'
 import { clearRankUp, onRankUp, peekRankUp, type RankUp } from './game/events'
 import { useGame, type Game } from './game/useGame'
-import { Button, Icon, Label } from './components/ui'
+import { Button, Icon, Label, Seal } from './components/ui'
+import { ResourceBar } from './components/ResourceBar'
+import { StageBackdrop } from './components/StageBackdrop'
 import Today from './screens/Today'
 import Plan from './screens/Plan'
 // Империя тянет Recharts — грузим её отдельным куском, только когда открыли вкладку
@@ -31,7 +33,7 @@ export default function App() {
   if (game.loading) return <div className="min-h-dvh bg-ink" />
   if (!game.player) return <Welcome />
 
-  const tab = (el: (g: Game) => ReactNode) => <Shell>{el(game)}</Shell>
+  const tab = (el: (g: Game) => ReactNode) => <Shell game={game}>{el(game)}</Shell>
   return (
     <>
       <Routes>
@@ -50,15 +52,42 @@ export default function App() {
   )
 }
 
-function Shell({ children }: { children: ReactNode }) {
+function Shell({ children, game }: { children: ReactNode; game: Game }) {
   const loc = useLocation()
+  const p = game.player
+  const link = (vertical: boolean) => ({ isActive }: { isActive: boolean }) =>
+    vertical
+      ? `flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition-colors ${isActive ? 'tab-active bg-gold/15 text-gold-soft' : 'text-muted hover:text-parch'}`
+      : `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${isActive ? 'tab-active text-gold-soft' : 'text-muted'}`
   return (
-    <div className="mx-auto min-h-dvh max-w-xl">
-      <main key={loc.pathname} className="animate-rise pt-safe px-4 pb-28">{children}</main>
-      <nav className="pb-safe fixed inset-x-0 bottom-0 z-10 border-t border-line bg-ink/95 backdrop-blur">
+    <div className="relative min-h-dvh">
+      <StageBackdrop stage={game.rank?.rank?.n ?? 1} />
+      {/* Боковое меню: планшет и ПК */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-white/5 bg-ink/85 p-4 backdrop-blur-md md:flex">
+        <div className="mb-6 flex items-center gap-2 pt-2">
+          <span className="text-gold-soft"><Seal size={30} /></span>
+          <span className="gold-text font-serif text-[22px] leading-none">Династия</span>
+        </div>
+        <nav className="space-y-1">
+          {TABS.map((t) => (
+            <NavLink key={t.to} to={t.to} end className={link(true)}>
+              <span className="tab-icon inline-flex"><Icon name={t.icon} size={22} /></span>
+              {t.label}
+            </NavLink>
+          ))}
+        </nav>
+        {p && <div className="mt-auto text-[12px] text-muted">{p.houseName}</div>}
+      </aside>
+      <div className="relative z-10 mx-auto min-h-dvh max-w-xl md:ml-56 md:max-w-none">
+        <main key={loc.pathname} className="animate-rise pt-safe mx-auto max-w-xl px-4 pb-28 md:max-w-4xl md:pb-10">
+          {p && <ResourceBar capital={p.capital} xp={p.xp} reputation={p.reputation} />}
+          {children}
+        </main>
+      </div>
+      <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-line bg-ink/90 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-xl">
           {TABS.map((t) => (
-            <NavLink key={t.to} to={t.to} end className={({ isActive }) => `flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors ${isActive ? 'tab-active text-gold-soft' : 'text-muted'}`}>
+            <NavLink key={t.to} to={t.to} end className={link(false)}>
               <span className="tab-icon inline-flex"><Icon name={t.icon} size={22} /></span>
               {t.label}
             </NavLink>
