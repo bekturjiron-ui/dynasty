@@ -20,9 +20,14 @@ const ZOOM_BTN = 'grid h-11 w-11 place-items-center rounded-full border border-w
 const R = 11 // радиус запасного (программного) острова
 const ISLAND_LEN = 24 // длина модели острова по глубине сцены
 /** Где стоят постройки на модели острова: доли ширины и длины от центра (купол сзади — замок, средняя терраса, нижняя терраса) */
-const LAYOUT: Record<string, [number, number]> = {
-  castle: [0, -0.31], bank: [0, -0.12], birzha: [-0.21, -0.03], 'torgovy-dom': [0.21, -0.03], kontora: [0.25, 0.2], sklad: [0, 0.23], lavka: [-0.25, 0.2],
+// Площадки нового острова (доли модели до поворота: замок на дальнем плато слева сверху), затем остров поворачивается так, чтобы замок оказался сзади по центру
+const ISLAND_YAW = -Math.PI / 4
+const RAW_LAYOUT: Record<string, [number, number]> = {
+  castle: [-0.3, -0.3], bank: [-0.043, -0.136], birzha: [-0.229, 0.064], 'torgovy-dom': [0.186, -0.3], kontora: [0.264, -0.007], sklad: [0.171, 0.2], lavka: [-0.1, 0.307],
 }
+const LAYOUT: Record<string, [number, number]> = Object.fromEntries(
+  Object.entries(RAW_LAYOUT).map(([id, [x, z]]) => [id, [x * Math.cos(ISLAND_YAW) + z * Math.sin(ISLAND_YAW), -x * Math.sin(ISLAND_YAW) + z * Math.cos(ISLAND_YAW)]]),
+)
 const smooth = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t) }
 const easeOutElastic = (x: number) => (x === 0 ? 0 : x === 1 ? 1 : Math.pow(2, -9 * x) * Math.sin((x * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1)
 function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 } }
@@ -86,7 +91,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         controls.maxAzimuthAngle = 0.7
         controls.minPolarAngle = 0.85
         controls.maxPolarAngle = 1.3
-        controls.target.set(0, -0.4, 0.2)
+        controls.target.set(0, 1.4, 0.6)
         renderer.domElement.style.touchAction = 'pan-y'
 
         const world = new THREE.Group()
@@ -101,7 +106,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const ray0 = new THREE.Raycaster()
         const DOWN = new THREE.Vector3(0, -1, 0)
         try {
-          const model = await loadModel(t, 'island')
+          const model = await loadModel(t, 'island2')
           if (disposed) return
           const isl = model.clone(true)
           const box = new THREE.Box3().setFromObject(isl)
@@ -113,29 +118,10 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const sc = ISLAND_LEN / size.z
           holder.scale.setScalar(sc)
           holder.position.y = -1
+          holder.rotation.y = ISLAND_YAW
           holder.traverse((o) => { const m = o as T.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; islandMeshes.push(m) } })
           world.add(holder)
           world.updateMatrixWorld(true)
-          // убираем песчаную «плиту» берега, которая висела под передним обрывом: треугольники ниже и дальше линии обрыва
-          {
-            const CUT_Z = 8.0
-            const CUT_Y = -1.3
-            const vt = new THREE.Vector3()
-            for (const m of islandMeshes) {
-              const g = m.geometry
-              const idx = g.getIndex()
-              const pos = g.attributes.position
-              if (!idx) continue
-              const keep: number[] = []
-              for (let i = 0; i < idx.count; i += 3) {
-                let cz = 0, cy = 0
-                for (let j = 0; j < 3; j++) { vt.fromBufferAttribute(pos, idx.getX(i + j)).applyMatrix4(m.matrixWorld); cz += vt.z; cy += vt.y }
-                if (cz / 3 > CUT_Z && cy / 3 < CUT_Y) continue
-                keep.push(idx.getX(i), idx.getX(i + 1), idx.getX(i + 2))
-              }
-              g.setIndex(keep)
-            }
-          }
           islandSize = { w: size.x * sc, l: ISLAND_LEN }
           height = (x, z) => { ray0.set(new THREE.Vector3(x, 60, z), DOWN); const h = ray0.intersectObjects(islandMeshes, false)[0]; return h ? h.point.y : -3 }
           for (const d of latest.current.slots) { const f = LAYOUT[d.id]; if (f) placed.set(d.id, { x: f[0] * islandSize.w, z: f[1] * islandSize.l }) }
@@ -857,7 +843,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
           const a = w / h
           if (Math.abs(a - lastAspect) > 0.05) {
             lastAspect = a
-            const dist = (a > 1.2 ? 36 : 30) * Math.pow(Math.max(1, 1.35 / a), 0.55)
+            const dist = (a > 1.2 ? 43 : 39) * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
             finalPos.copy(camera.position)
             controls.update()
