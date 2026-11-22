@@ -8,6 +8,7 @@ import { fmtNum } from '../lib/format'
 import { Button, Card, Icon, Label, Title } from '../components/ui'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 
+const TIME_LABELS: Record<string, string> = { auto: 'Авто', day: 'День', dusk: 'Закат', night: 'Ночь' }
 const chip = 'min-h-11 rounded-xl border border-line bg-white/[0.04] px-3 text-[14px] font-semibold active:bg-white/10'
 
 export default function Admin({ game }: { game: Game }) {
@@ -18,6 +19,7 @@ export default function Admin({ game }: { game: Game }) {
   const [pinErr, setPinErr] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [timeMode, setTimeMode] = useState<string>(() => localStorage.getItem('dynasty-time') ?? 'auto')
 
   function check() {
     if (pin === ADMIN_PIN) { sessionStorage.setItem('dynasty-admin', '1'); setUnlocked(true); setPin('') } else setPinErr(true)
@@ -94,6 +96,16 @@ export default function Admin({ game }: { game: Game }) {
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={() => setAllBuildings(true)}>Открыть все</Button>
           <Button variant="ghost" className="flex-1" onClick={() => setAllBuildings(false)}>Закрыть все</Button>
+        </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <Label>Время суток в Империи · сейчас {TIME_LABELS[timeMode] ?? 'Авто'}</Label>
+        <p className="text-[13px] text-muted">«Авто» берёт часы телефона: вечером в окнах загорается свет, ночью светятся светлячки. Остальное — для проверки. Откройте «Империю», чтобы увидеть.</p>
+        <div className="grid grid-cols-4 gap-2">
+          {(['auto', 'day', 'dusk', 'night'] as const).map((k) => (
+            <button key={k} onClick={() => { if (k === 'auto') localStorage.removeItem('dynasty-time'); else localStorage.setItem('dynasty-time', k); setTimeMode(k) }} className={`${chip} px-1 ${timeMode === k ? 'border-gold/70 text-gold-soft' : ''}`}>{TIME_LABELS[k]}</button>
+          ))}
         </div>
       </Card>
 

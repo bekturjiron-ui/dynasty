@@ -30,6 +30,7 @@ function mulberry32(a: number) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0
  *  Тап по постройке вызывает onSelect(id). Сцена грузится лениво; при отсутствии WebGL вызывается onFail. */
 export default function KingdomScene({ slots, stage, onSelect, onFail, className = '' }: { slots: SceneSlot[]; stage: number; onSelect: (id: string) => void; onFail?: () => void; className?: string }) {
   const host = useRef<HTMLDivElement>(null)
+  const tintRef = useRef<HTMLDivElement>(null)
   const api = useRef<Api | null>(null)
   const latest = useRef({ slots, onSelect, onFail })
   latest.current = { slots, onSelect, onFail }
@@ -60,7 +61,8 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y'
 
         const scene = new THREE.Scene()
-        scene.add(new THREE.HemisphereLight(0xfff0d0, 0x2a2430, 1.1))
+        const hemi = new THREE.HemisphereLight(0xfff0d0, 0x2a2430, 1.1)
+        scene.add(hemi)
         const sun = new THREE.DirectionalLight(0xffd9a0, 2.6)
         sun.position.set(6, 11, 8)
         sun.castShadow = true
@@ -86,6 +88,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
 
         const world = new THREE.Group()
         scene.add(world)
+        const timeU = { value: 0 } // общее время для шейдеров (секунды)
 
         // ---------- остров: модель из Meshy, иначе программный рельеф ----------
         let height: (x: number, z: number) => number = () => 0
@@ -246,7 +249,18 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
                 const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd2() * Math.PI * 2)
                 mats.push(new THREE.Matrix4().compose(hit.point, q, new THREE.Vector3(sc2, sc2, sc2)).multiply(base))
               }
-              const inst = new THREE.InstancedMesh(meshes[0].geometry, meshes[0].material, mats.length)
+              const geoT = meshes[0].geometry
+              geoT.computeBoundingBox()
+              const bb = geoT.boundingBox!
+              const swayMat = (Array.isArray(meshes[0].material) ? meshes[0].material[0] : meshes[0].material).clone() as T.MeshStandardMaterial
+              swayMat.onBeforeCompile = (sh) => {
+                sh.uniforms.uTime = timeU
+                sh.uniforms.uMin = { value: bb.min.y }
+                sh.uniforms.uMax = { value: bb.max.y }
+                sh.uniforms.uAmp = { value: (bb.max.y - bb.min.y) * 0.035 }
+                sh.vertexShader = 'uniform float uTime; uniform float uMin; uniform float uMax; uniform float uAmp;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n float sh_h = clamp((position.y - uMin) / (uMax - uMin), 0.0, 1.0); sh_h = sh_h * sh_h; transformed.x += sin(uTime * 1.6 + instanceMatrix[3].x * 0.9 + instanceMatrix[3].z * 0.6) * uAmp * sh_h; transformed.z += cos(uTime * 1.3 + instanceMatrix[3].z * 0.8) * uAmp * 0.6 * sh_h;')
+              }
+              const inst = new THREE.InstancedMesh(geoT, swayMat, mats.length)
               mats.forEach((m, i) => inst.setMatrixAt(i, m))
               inst.castShadow = true
               inst.receiveShadow = true
@@ -256,6 +270,168 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           void addTrees('tree1', 16, 11, 2.6)
           void addTrees('tree2', 14, 29, 2.4)
         }
+
+        // ---------- эффекты: море, облака, светлячки, птицы ----------
+        const WATER_Y = -2.2
+        const glowTex = (() => {
+          const c = document.createElement('canvas'); c.width = c.height = 64
+          const g = c.getContext('2d')!; const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32)
+          gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
+          g.fillStyle = gr; g.fillRect(0, 0, 64, 64)
+          return new THREE.CanvasTexture(c)
+        })()
+        const cloudTex = (() => {
+          const c = document.createElement('canvas'); c.width = 256; c.height = 128
+          const g = c.getContext('2d')!
+          const r = mulberry32(5)
+          for (let i = 0; i < 16; i++) {
+            const x = 40 + r() * 176, y = 50 + (r() - 0.5) * 30, rad = 22 + r() * 30
+            const gr = g.createRadialGradient(x, y, 0, x, y, rad)
+            gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)')
+            g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill()
+          }
+          return new THREE.CanvasTexture(c)
+        })()
+
+        // море: волны из синусов, блик солнца, отражение неба по Френелю, пена вдоль берега (по карте расстояния до суши)
+        const isz = islandSize ?? { w: R * 2, l: R * 2 }
+        const waterU = {
+          uTime: timeU,
+          uSun: { value: new THREE.Vector3(6, 11, 8).normalize() },
+          uDeep: { value: new THREE.Color(0x1b6f86) },
+          uShallow: { value: new THREE.Color(0x56c2bd) },
+          uSky: { value: new THREE.Color(0xf3b57a) },
+          uNight: { value: 0 },
+          uShore: { value: null as T.Texture | null },
+          uOrigin: { value: new THREE.Vector2(0, 0) },
+          uSize: { value: new THREE.Vector2(1, 1) },
+        }
+        {
+          const N = 64, pad = 9
+          const x0 = -(isz.w / 2 + pad), z0 = -(isz.l / 2 + pad), sx = isz.w + pad * 2, sz = isz.l + pad * 2
+          const mask = new Uint8Array(N * N)
+          const v = new THREE.Vector3()
+          for (const m of islandMeshes) {
+            m.updateWorldMatrix(true, false)
+            const pos = m.geometry.attributes.position
+            for (let i = 0; i < pos.count; i++) {
+              v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld)
+              if (v.y < WATER_Y - 0.2) continue
+              const ix = Math.floor(((v.x - x0) / sx) * N), iz = Math.floor(((v.z - z0) / sz) * N)
+              if (ix >= 0 && ix < N && iz >= 0 && iz < N) mask[iz * N + ix] = 1
+            }
+          }
+          if (!islandMeshes.length) mask.fill(0)
+          // закрасить дырки (одна дилатация) и посчитать расстояние до суши в клетках
+          const filled = new Uint8Array(mask)
+          for (let z = 1; z < N - 1; z++) for (let x = 1; x < N - 1; x++) if (mask[z * N + x + 1] + mask[z * N + x - 1] + mask[(z + 1) * N + x] + mask[(z - 1) * N + x] >= 2) filled[z * N + x] = 1
+          const dist = new Float32Array(N * N).fill(99)
+          for (let i = 0; i < N * N; i++) if (filled[i]) dist[i] = 0
+          for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { let d = dist[z * N + x]; if (x > 0) d = Math.min(d, dist[z * N + x - 1] + 1); if (z > 0) d = Math.min(d, dist[(z - 1) * N + x] + 1); dist[z * N + x] = d }
+          for (let z = N - 1; z >= 0; z--) for (let x = N - 1; x >= 0; x--) { let d = dist[z * N + x]; if (x < N - 1) d = Math.min(d, dist[z * N + x + 1] + 1); if (z < N - 1) d = Math.min(d, dist[(z + 1) * N + x] + 1); dist[z * N + x] = d }
+          const data = new Uint8Array(N * N)
+          for (let i = 0; i < N * N; i++) data[i] = Math.round(Math.min(1, dist[i] / 12) * 255)
+          const tex = new THREE.DataTexture(data, N, N, THREE.RedFormat, THREE.UnsignedByteType)
+          tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true
+          waterU.uShore.value = tex
+          waterU.uOrigin.value.set(x0, z0); waterU.uSize.value.set(sx, sz)
+        }
+        const water = new THREE.Mesh(
+          new THREE.CircleGeometry(70, 96).rotateX(-Math.PI / 2),
+          new THREE.ShaderMaterial({
+            transparent: true, depthWrite: false, uniforms: waterU,
+            vertexShader: 'varying vec3 vLocal; varying vec3 vWorld; void main(){ vLocal = position; vec4 wp = modelMatrix * vec4(position,1.0); vWorld = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
+            fragmentShader: `
+              uniform float uTime; uniform vec3 uSun; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSky; uniform float uNight;
+              uniform sampler2D uShore; uniform vec2 uOrigin; uniform vec2 uSize;
+              varying vec3 vLocal; varying vec3 vWorld;
+              void main(){
+                vec2 p = vLocal.xz; float t = uTime;
+                vec2 n = vec2(cos(p.x*0.9+t*0.9), cos(p.y*0.7+t*0.7))*0.35
+                       + vec2(cos((p.x+p.y)*1.7-t*1.3), cos((p.x-p.y)*1.4+t*1.1))*0.18
+                       + vec2(cos(p.x*3.3+t*2.0+p.y*1.1), cos(p.y*3.7-t*1.7))*0.08;
+                vec3 N = normalize(vec3(-n.x*0.28, 1.0, -n.y*0.28));
+                vec3 V = normalize(cameraPosition - vWorld);
+                float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+                float sd = texture2D(uShore, (p - uOrigin) / uSize).r * 12.0 * (uSize.x / 64.0);
+                float shallow = 1.0 - smoothstep(0.0, 3.2, sd);
+                vec3 col = mix(uDeep, uShallow, shallow);
+                col = mix(col, uSky * (1.0 - uNight * 0.75), fres * 0.6);
+                vec3 R = reflect(-normalize(uSun), N);
+                float spec = pow(max(dot(R, V), 0.0), 90.0);
+                col += vec3(1.0, 0.82, 0.55) * spec * 1.3 * (1.0 - uNight * 0.85);
+                float wob = 0.55 + 0.45 * sin(sd * 3.0 - t * 1.6 + p.x * 0.6);
+                float foam = (1.0 - smoothstep(0.0, 0.9, abs(sd - (0.5 + 0.35 * sin(t * 1.1 + p.x * 0.5))))) * wob;
+                foam *= 0.55 + 0.45 * sin(p.x * 3.1 + t * 1.7) * sin(p.y * 2.7 - t * 1.3);
+                col += vec3(0.95, 1.0, 1.0) * foam * 0.55 * (1.0 - uNight * 0.55);
+                float fade = 1.0 - smoothstep(9.0, 27.0, length(p * vec2(0.8, 0.62)) * 1.4);
+                float alpha = mix(0.78, 0.95, fres) * fade * mix(0.8, 1.0, shallow);
+                gl_FragColor = vec4(col, alpha);
+              }`,
+          }),
+        )
+        water.position.y = WATER_Y
+        water.renderOrder = -1
+        world.add(water)
+
+        // облака: плывут мимо, часть позади острова, часть низких впереди
+        const clouds: { s: T.Sprite; v: number }[] = []
+        const cr = mulberry32(21)
+        for (let i = 0; i < 9; i++) {
+          const mat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.5 + cr() * 0.25, depthWrite: false, fog: false })
+          const s = new THREE.Sprite(mat)
+          const front = i % 3 === 2
+          const w = 14 + cr() * 14
+          s.scale.set(w, w * 0.45, 1)
+          s.position.set((cr() - 0.5) * 80, front ? 4 + cr() * 2 : 9 + cr() * 7, front ? 14 + cr() * 6 : -26 + cr() * 14)
+          scene.add(s)
+          clouds.push({ s, v: 0.25 + cr() * 0.45 })
+        }
+
+        // светлячки: мягкие точки, ночью ярче
+        const FIREFLIES = 44
+        const ffPos = new Float32Array(FIREFLIES * 3); const ffSeed = new Float32Array(FIREFLIES)
+        const fr = mulberry32(77)
+        for (let i = 0; i < FIREFLIES; i++) { ffPos.set([(fr() - 0.5) * isz.w * 0.9, -0.5 + fr() * 4.5, (fr() - 0.5) * isz.l * 0.8], i * 3); ffSeed[i] = fr() }
+        const ffGeo = new THREE.BufferGeometry()
+        ffGeo.setAttribute('position', new THREE.BufferAttribute(ffPos, 3)); ffGeo.setAttribute('aSeed', new THREE.BufferAttribute(ffSeed, 1))
+        const ffU = { uTime: timeU, uNight: { value: 0 }, uPx: { value: renderer.getPixelRatio() } }
+        const fireflies = new THREE.Points(ffGeo, new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: ffU,
+          vertexShader: 'attribute float aSeed; uniform float uTime; uniform float uPx; varying float vA; void main(){ vec3 p = position + vec3(sin(uTime*0.4+aSeed*6.0), sin(uTime*0.6+aSeed*9.0)*0.5, cos(uTime*0.35+aSeed*5.0)) * 0.8; vec4 mv = modelViewMatrix * vec4(p,1.0); gl_Position = projectionMatrix * mv; gl_PointSize = uPx * 90.0 / -mv.z; vA = 0.55 + 0.45 * sin(uTime*3.0 + aSeed*30.0); }',
+          fragmentShader: 'uniform float uNight; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); a *= a; gl_FragColor = vec4(1.0, 0.85, 0.45, a * vA * (0.12 + 0.88 * uNight)); }',
+        }))
+        fireflies.frustumCulled = false
+        world.add(fireflies)
+
+        // птицы: пять тёмных силуэтов кружат вдали днём
+        const birds: { g: T.Group; wl: T.Mesh; wr: T.Mesh; r: number; a: number; sp: number; y: number }[] = []
+        const birdMat = new THREE.MeshBasicMaterial({ color: 0x2a2230, side: THREE.DoubleSide, transparent: true })
+        const wingGeo = new THREE.BufferGeometry()
+        wingGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1.1, 0.05, 0.25, 0.9, 0, -0.2], 3))
+        const br = mulberry32(99)
+        for (let i = 0; i < 5; i++) {
+          const g = new THREE.Group(); const wl = new THREE.Mesh(wingGeo, birdMat); const wr = new THREE.Mesh(wingGeo, birdMat)
+          wr.scale.x = -1; g.add(wl, wr); g.scale.setScalar(0.55); scene.add(g)
+          birds.push({ g, wl, wr, r: 15 + br() * 9, a: br() * Math.PI * 2, sp: 0.1 + br() * 0.08, y: 8 + br() * 4 })
+        }
+
+        // дым из труб и тёплые окна у купленных построек
+        const SMOKE = 72
+        const smBase = new Float32Array(SMOKE * 3); const smSeed = new Float32Array(SMOKE); const smOn = new Float32Array(SMOKE)
+        for (let i = 0; i < SMOKE; i++) smSeed[i] = (i * 0.6180339) % 1
+        const smGeo = new THREE.BufferGeometry()
+        smGeo.setAttribute('position', new THREE.BufferAttribute(smBase, 3)); smGeo.setAttribute('aSeed', new THREE.BufferAttribute(smSeed, 1)); smGeo.setAttribute('aOn', new THREE.BufferAttribute(smOn, 1))
+        const smU = { uTime: timeU, uNight: { value: 0 }, uPx: { value: renderer.getPixelRatio() } }
+        const smoke = new THREE.Points(smGeo, new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, uniforms: smU,
+          vertexShader: 'attribute float aSeed; attribute float aOn; uniform float uTime; uniform float uPx; varying float vA; void main(){ float up = fract(uTime*0.16 + aSeed); vec3 p = position + vec3(sin(up*5.0+aSeed*6.0)*0.22 + up*0.7, up*2.6, 0.0); vec4 mv = modelViewMatrix * vec4(p,1.0); gl_Position = projectionMatrix * mv; gl_PointSize = uPx * (70.0 + up*170.0) / -mv.z; vA = (1.0-up) * smoothstep(0.0, 0.12, up) * 0.32 * aOn; }',
+          fragmentShader: 'uniform float uNight; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); gl_FragColor = vec4(mix(vec3(0.86,0.84,0.8), vec3(0.45,0.48,0.6), uNight), a * vA); }',
+        }))
+        smoke.frustumCulled = false
+        world.add(smoke)
+        const glows: T.Sprite[] = []
+        let refreshEmitters = () => {}
 
         // ---------- постройки ----------
         type Slot = {
@@ -301,6 +477,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
             m.emissiveIntensity = next === 'ready' ? 0.18 : 0
           }
           if (animate && next === 'owned' && !wasOwned) playBuild(s)
+          refreshEmitters()
         }
 
         const playBuild = (s: Slot) => {
@@ -386,6 +563,31 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
           styleLabel(s)
         }
         latest.current.slots.forEach(setup)
+        refreshEmitters = () => {
+          glows.splice(0).forEach((g) => { world.remove(g); (g.material as T.Material).dispose() })
+          let k = 0
+          for (const s of slotMap.values()) {
+            const owned = s.shown === 'owned' && s.loaded
+            const n = s.def.id === 'castle' ? 10 : 6
+            for (let i = 0; i < n && k < SMOKE; i++, k++) {
+              smBase.set([s.root.position.x + s.def.size * 0.18, s.root.position.y + s.def.size * 0.78, s.root.position.z - s.def.size * 0.05], k * 3)
+              smOn[k] = owned ? 1 : 0
+            }
+            if (owned) {
+              for (const dx of [-0.28, 0, 0.28]) {
+                const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffc06a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }))
+                g.position.set(s.root.position.x + dx * s.def.size, s.root.position.y + s.def.size * 0.28, s.root.position.z + s.def.size * 0.46)
+                g.scale.setScalar(s.def.size * 0.34)
+                world.add(g)
+                glows.push(g)
+              }
+            }
+          }
+          for (; k < SMOKE; k++) smOn[k] = 0
+          smGeo.attributes.position.needsUpdate = true
+          smGeo.attributes.aOn.needsUpdate = true
+        }
+        refreshEmitters()
 
         const loadSlot = async (s: Slot) => {
           try {
@@ -461,6 +663,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
 
         // ---------- размер и цикл ----------
         let lastAspect = 0
+        const finalPos = new THREE.Vector3()
         const resize = () => {
           const w = el.clientWidth
           const h = el.clientHeight
@@ -473,6 +676,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
             lastAspect = a
             const dist = 30 * Math.pow(Math.max(1, 1.35 / a), 0.55)
             camera.position.set(0, dist * 0.7, dist * 0.72)
+            finalPos.copy(camera.position)
             controls.update()
           }
         }
@@ -493,10 +697,78 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         renderer.domElement.addEventListener('pointerdown', pd)
         window.addEventListener('pointerup', pu)
 
+        // ---------- время суток: по часам устройства (в админке можно переключить) ----------
+        let night = 0
+        let dusk = 0
+        const c1 = new THREE.Color()
+        const hourNow = () => {
+          const o = localStorage.getItem('dynasty-time')
+          if (o === 'day') return 13
+          if (o === 'dusk') return 18.7
+          if (o === 'night') return 23
+          const d = new Date()
+          return d.getHours() + d.getMinutes() / 60
+        }
+        const applyTime = () => {
+          const h = hourNow()
+          night = Math.max(0, Math.min(1, smooth(18, 20.5, h) + (1 - smooth(4.5, 6.5, h))))
+          dusk = Math.max(smooth(16.2, 18.2, h) * (1 - smooth(19.2, 20.8, h)), smooth(4.6, 5.6, h) * (1 - smooth(6.2, 7.4, h)) * 0.8)
+          hemi.intensity = 1.1 - 0.45 * night
+          hemi.color.setHex(0xfff0d0).lerp(c1.setHex(0x7d8cff), night * 0.8)
+          sun.intensity = 2.6 - 1.9 * night
+          sun.color.setHex(0xffd9a0).lerp(c1.setHex(0xff8c4a), dusk).lerp(c1.setHex(0x8c9cff), night)
+          fill.intensity = 0.5 + 0.2 * night
+          renderer.toneMappingExposure = 1.05 - 0.05 * night
+          waterU.uNight.value = night; ffU.uNight.value = night; smU.uNight.value = night
+          waterU.uSky.value.setHex(0xf3b57a).lerp(c1.setHex(0xff7a3c), dusk)
+          for (const c of clouds) (c.s.material as T.SpriteMaterial).color.setHex(0xffffff).lerp(c1.setHex(0xffb98a), dusk).lerp(c1.setHex(0x4a5578), night)
+          birdMat.opacity = 1 - night
+          const tint = tintRef.current
+          if (tint) {
+            const a = Math.min(0.5, night * 0.4 + dusk * 0.16)
+            const r = Math.round(255 * dusk * (1 - night) + 12 * night), g = Math.round(130 * dusk * (1 - night) + 20 * night), b = Math.round(50 * dusk * (1 - night) + 52 * night)
+            tint.style.background = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')'
+          }
+        }
+        applyTime()
+        let lastTime = performance.now()
+        let intro = !reduce
+        const introStart = performance.now()
+        if (intro) controls.enabled = false
+        const UP = new THREE.Vector3(0, 1, 0)
+        const off = new THREE.Vector3()
+        let ema = 16
+        let degraded = false
+        let frames = 0
+        const degrade = () => {
+          degraded = true
+          renderer.setPixelRatio(1)
+          ffU.uPx.value = 1; smU.uPx.value = 1
+          renderer.shadowMap.enabled = false
+          scene.traverse((o) => { const m = (o as T.Mesh).material; if (m) (Array.isArray(m) ? m : [m]).forEach((mm) => { mm.needsUpdate = true }) })
+          renderer.setSize(el.clientWidth, el.clientHeight, false)
+        }
+
         const tick = () => {
           raf = requestAnimationFrame(tick)
           if (document.hidden || !visible) return
           const now = performance.now()
+          const dt = Math.min(100, now - lastTime)
+          lastTime = now
+          timeU.value = now * 0.001
+          ema = ema * 0.95 + dt * 0.05
+          if (!degraded && ++frames > 150 && ema > 42) degrade()
+          if (now - lastTime < 0 || Math.floor(now / 1000) !== Math.floor((now - dt) / 1000)) applyTime()
+          for (const c of clouds) { c.s.position.x += c.v * dt * 0.001; if (c.s.position.x > 48) c.s.position.x = -48 }
+          for (const b of birds) {
+            b.a += b.sp * dt * 0.001
+            b.g.position.set(Math.cos(b.a) * b.r, b.y + Math.sin(b.a * 3) * 0.4, -6 + Math.sin(b.a) * b.r * 0.6)
+            b.g.rotation.y = -b.a + Math.PI
+            const f = Math.sin(now * 0.012 + b.a * 9) * 0.7
+            b.wl.rotation.z = f; b.wr.rotation.z = -f
+            b.g.visible = night < 0.9 && !degraded
+          }
+          glows.forEach((g, i) => { (g.material as T.SpriteMaterial).opacity = night * (0.55 + 0.3 * Math.sin(now * 0.006 + i * 1.7)) })
           if (!reduce && !dragging) {
             world.rotation.y = Math.sin(now * 0.00018) * 0.08
             world.position.y = Math.sin(now * 0.0009) * 0.05
@@ -506,7 +778,14 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
             if (s.shown === 'ready' && s.ghostMats.length) { const p = 0.16 + 0.16 * Math.sin(now * 0.004); for (const m of s.ghostMats) m.emissiveIntensity = p }
           }
           if (now < shakeUntil) { const k = (shakeUntil - now) / 450; camera.position.x += (Math.random() - 0.5) * 0.12 * k; camera.position.y += (Math.random() - 0.5) * 0.08 * k } else camBase.copy(camera.position)
-          controls.update()
+          if (intro) {
+            const e = Math.min(1, (now - introStart) / 2400)
+            const k = 1 - Math.pow(1 - e, 3)
+            off.copy(finalPos).sub(controls.target).applyAxisAngle(UP, (1 - k) * 0.55).multiplyScalar(1 + (1 - k) * 0.4)
+            camera.position.copy(controls.target).add(off)
+            camera.lookAt(controls.target)
+            if (e >= 1) { intro = false; controls.enabled = true; controls.update() }
+          } else controls.update()
           renderer.render(scene, camera)
           // подписи над постройками
           const w = el.clientWidth
@@ -555,6 +834,7 @@ export default function KingdomScene({ slots, stage, onSelect, onFail, className
         <img src={`${import.meta.env.BASE_URL}art/stage-${Math.max(1, Math.min(7, stage))}-p.webp`} alt="" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: '50% 30%', filter: 'brightness(0.85) saturate(1.1)' }} />
       )}
       <div className="absolute inset-0" style={{ background: 'radial-gradient(80% 60% at 50% 55%, transparent 0%, rgba(17,17,20,0.55) 100%)' }} />
+      <div ref={tintRef} className="pointer-events-none absolute inset-0" />
       <div ref={host} className="absolute inset-0" />
       {!ready && <div className="absolute inset-0 grid place-items-center text-[13px] text-parch/80">Строим королевство…</div>}
     </div>
