@@ -3,7 +3,7 @@
 //
 // Зависимости не входят в package.json (нужны только при подготовке моделей). Поставьте во временную папку или временно в проект:
 //   npm i -D @gltf-transform/core @gltf-transform/extensions @gltf-transform/functions meshoptimizer
-// Запуск из корня проекта:   node tools/optimize-models.mjs
+// Запуск из корня проекта:   node tools/optimize-models.mjs   (все модели) или   node tools/optimize-models.mjs flyingstones   (только указанные по имени результата)
 // Исходники (.glb) лежат в Models/ (папка не в git, ~300 МБ), готовые — в public/models/.
 import { NodeIO } from '@gltf-transform/core'
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions'
@@ -28,6 +28,7 @@ const JOBS = [
   { src: 'island', name: 'island', tris: 20000, tex: 2048 },
   { src: 'tree1', name: 'tree1', tris: 2200, tex: 512 }, // деревья размножаются десятками — делаем совсем лёгкими
   { src: 'tree2', name: 'tree2', tris: 2200, tex: 512 },
+  { src: 'Flyingstones', name: 'flyingstones', tris: 4000, tex: 1024 }, // парящие камни: несколько копий вокруг острова
 ]
 
 await MeshoptSimplifier.ready
@@ -36,7 +37,8 @@ await MeshoptDecoder.ready
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder, 'meshopt.encoder': MeshoptEncoder })
 fs.mkdirSync(OUT, { recursive: true })
 
-for (const j of JOBS) {
+const only = process.argv.slice(2)
+for (const j of JOBS.filter((x) => !only.length || only.includes(x.name))) {
   const file = `${SRC}/${j.src}.glb`
   if (!fs.existsSync(file)) { console.log('пропуск (нет файла):', j.src); continue }
   const doc = await io.read(file)

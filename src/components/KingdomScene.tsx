@@ -426,6 +426,36 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
         const glows: T.Sprite[] = []
         let refreshEmitters = () => {}
 
+        // ---------- парящие камни вокруг острова (модель flyingstones, несколько копий) ----------
+        const floaters: { g: T.Group; y0: number; ph: number; spin: number }[] = []
+        void (async () => {
+          try {
+            const model = await loadModel(t, 'flyingstones')
+            if (disposed) return
+            // x, y, z, ширина в мире, поворот
+            const spots: [number, number, number, number, number][] = [
+              [-11.5, 3.2, 4, 4.6, 0.6], [12, 5.5, -3, 3.8, -0.9], [-8, 6.5, -11, 3.4, 2.2],
+              [8.5, -0.8, 12, 3.4, 1.4], [-10, 1.2, 11, 3.0, 3.0], [9, 8, -12, 3.0, -2.0], [-17, -0.5, -4, 6.0, 1.9],
+            ]
+            const fr2 = mulberry32(61)
+            for (const [x, y, z, w, rot] of spots) {
+              const g = new THREE.Group()
+              const m = model.clone(true)
+              const box = new THREE.Box3().setFromObject(m)
+              const sz = box.getSize(new THREE.Vector3())
+              const c = box.getCenter(new THREE.Vector3())
+              m.position.set(-c.x, -c.y, -c.z)
+              m.traverse((o) => { const mm = o as T.Mesh; if (mm.isMesh) { mm.castShadow = true; mm.receiveShadow = true } })
+              g.add(m)
+              g.scale.setScalar(w / Math.max(sz.x, sz.z))
+              g.position.set(x, y, z)
+              g.rotation.y = rot
+              world.add(g)
+              floaters.push({ g, y0: y, ph: fr2() * Math.PI * 2, spin: (rot > 0 ? 1 : -1) * 0.00004 })
+            }
+          } catch { /* камни не загрузились: сцена работает без них */ }
+        })()
+
         // ---------- постройки ----------
         type Slot = {
           def: SceneSlot
@@ -813,6 +843,7 @@ export default function KingdomScene({ slots, onSelect, onFail, className = '' }
             b.wl.rotation.z = f; b.wr.rotation.z = -f
             b.g.visible = night < 0.9 && !degraded
           }
+          for (const f of floaters) { f.g.position.y = f.y0 + Math.sin(now * 0.0007 + f.ph) * 0.4; f.g.rotation.y += f.spin * dt }
           glows.forEach((g, i) => { (g.material as T.SpriteMaterial).opacity = night * (0.55 + 0.3 * Math.sin(now * 0.006 + i * 1.7)) })
           if (!reduce && !dragging) {
             world.rotation.y = Math.sin(now * 0.00018) * 0.08
