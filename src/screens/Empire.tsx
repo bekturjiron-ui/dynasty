@@ -69,7 +69,7 @@ export default function Empire({ game }: { game: Game }) {
       <div className="relative overflow-hidden rounded-3xl border border-gold/40 shadow-[0_0_40px_-10px_rgba(201,162,39,0.5)]">
         {!sceneFailed ? (
           <Suspense fallback={<div className="h-[72dvh] min-h-[460px] md:h-[calc(100dvh-8rem)] md:min-h-[560px]" />}>
-            <KingdomScene slots={slots} stage={p.rank} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[72dvh] min-h-[460px] md:h-[calc(100dvh-8rem)] md:min-h-[560px]" />
+            <KingdomScene slots={slots} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[72dvh] min-h-[460px] md:h-[calc(100dvh-8rem)] md:min-h-[560px]" />
           </Suspense>
         ) : (
           <Card className="p-2">
