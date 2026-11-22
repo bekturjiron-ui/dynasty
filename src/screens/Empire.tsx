@@ -8,9 +8,15 @@ import type { Game } from '../game/useGame'
 import { dayKey } from '../lib/dates'
 import { fmtNum } from '../lib/format'
 import { Advisor, Bar, Button, Card, Icon, Label, Sparks, Title } from '../components/ui'
+import type { SceneSlot } from '../components/KingdomScene'
 
 // three.js тяжёлый: грузим отдельным куском, только когда нужна модель
 const ModelViewer = lazy(() => import('../components/ModelViewer'))
+const KingdomScene = lazy(() => import('../components/KingdomScene'))
+
+/** Размеры построек в диораме (мир) и положение на острове: карта 360×300 из empire.json → мир */
+const SIZES: Record<string, number> = { lavka: 2.8, sklad: 3.2, kontora: 3.0, 'torgovy-dom': 3.5, birzha: 3.6, bank: 3.6, castle: 6.2 }
+const toWorld = (x: number, y: number) => ({ x: (x - 180) / 30, z: (y - 150) / 30 })
 
 type Status = 'owned' | 'ready' | 'capital' | 'rank'
 
@@ -19,12 +25,19 @@ export default function Empire({ game }: { game: Game }) {
   const [sel, setSel] = useState<Building | null>(null)
   const [msg, setMsg] = useState('')
   const [burst, setBurst] = useState(0) // растёт при постройке: запускает вспышку и искры
+  const [sceneFailed, setSceneFailed] = useState(false) // нет WebGL: остаётся плоская карта
   const today = dayKey()
   const { buildings, rival } = content.empire
   const rankTitle = (n: number) => content.ranks.find((r) => r.n === n)?.title ?? `титул ${n}`
 
+  // Замок не покупается: достраивается на высшем титуле
+  const CASTLE: Building = useMemo(() => ({
+    id: 'castle', title: 'Замок Дома', cost: 0, minRank: 7, x: 180, y: -80, kind: 'bank',
+    text: 'Вершина пути. Когда всё выучено и построено, Дом становится замком. Достраивается на высшем титуле.',
+    skills: [{ title: 'Весь путь: все недели плана', weeks: game.content.weeks.map((w) => w.key ?? w.n) }],
+  }), [game.content.weeks])
   const status = (b: Building): Status =>
-    b.cost === 0 || game.buildings.has(b.id) ? 'owned' : p.rank < b.minRank ? 'rank' : p.capital < b.cost ? 'capital' : 'ready'
+    b.id === 'castle' ? (p.rank >= b.minRank ? 'owned' : 'rank') : b.cost === 0 || game.buildings.has(b.id) ? 'owned' : p.rank < b.minRank ? 'rank' : p.capital < b.cost ? 'capital' : 'ready'
 
   const series = useMemo(() => duelSeries(game.content, p.startedAt, today, game.activity, p.planOffsetWeeks ?? 0), [game.content, p.startedAt, p.planOffsetWeeks, game.activity, today])
   const last = series[series.length - 1]
@@ -44,6 +57,15 @@ export default function Empire({ game }: { game: Game }) {
     return { done, total, ratio: total ? done / total : 0 }
   }
 
+  const slots: SceneSlot[] = useMemo(() => [...buildings, CASTLE].map((b) => {
+    const st = status(b)
+    const w = toWorld(b.x, b.y)
+    const label = st === 'owned' ? b.title : st === 'ready' ? `Построить · ${fmtNum(b.cost)} ₸` : st === 'capital' ? `${b.title} · ${fmtNum(b.cost)} ₸` : `🔒 ${b.title}`
+    return { id: b.id, model: b.id, x: w.x, z: b.id === 'castle' ? -7.8 : w.z, size: SIZES[b.id] ?? 2.5, state: st, label }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [buildings, CASTLE, p.rank, p.capital, game.buildings])
+  const pick = (id: string) => { const b = id === 'castle' ? CASTLE : buildings.find((x) => x.id === id); if (b) { setSel(b); setMsg('') } }
+
   async function buy(b: Building) {
     const r = await buyBuilding(content, b.id)
     if (r.ok) { setMsg(`${b.title} построен. Казна: ${fmtNum(p.capital - b.cost)} ₸.`); setBurst((n) => n + 1) }
@@ -57,43 +79,43 @@ export default function Empire({ game }: { game: Game }) {
         <p className="mt-1 text-[14px] text-muted">{p.houseName} · построек {owned} из {buildings.length} · казна <b className="text-gold">{fmtNum(p.capital)} ₸</b></p>
       </div>
 
-      {/* Замок Дома: открывается на высшем титуле */}
-      <Card tone="gold" className="overflow-hidden p-0">
-        <Suspense fallback={<div className="h-64" />}><ModelViewer name="castle" dim={p.rank < 7} className="h-64 md:h-80" /></Suspense>
-        <div className="px-4 pb-4">
-          <Label tone="gold">Замок Дома</Label>
-          <p className="mt-1 text-[14px] text-muted">{p.rank >= 7 ? 'Дом достроен. Ты — Глава Дома.' : `Достроится на титуле «${rankTitle(7)}». Сейчас у тебя «${rankTitle(p.rank)}».`}</p>
-        </div>
-      </Card>
-
-      {/* Карта построек */}
-      <Card className="p-2">
-        <svg viewBox="0 0 360 300" className="w-full" role="img" aria-label="Карта построек Дома">
-          <defs>
-            <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#2c2c31" /></pattern>
-            <radialGradient id="glow"><stop offset="0%" stopColor="#c9a227" stopOpacity="0.35" /><stop offset="100%" stopColor="#c9a227" stopOpacity="0" /></radialGradient>
-          </defs>
-          <rect width="360" height="300" fill="url(#dots)" />
-          {/* дороги: от лавки к банку */}
-          {buildings.slice(1).map((b, i) => {
-            const a = buildings[i]
-            const on = status(a) === 'owned' && status(b) === 'owned'
-            return <line key={b.id} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={on ? '#c9a227' : '#2c2c31'} strokeWidth={on ? 2 : 1.5} strokeDasharray={on ? undefined : '4 5'} />
-          })}
-          {buildings.map((b) => {
-            const s = status(b)
-            return (
-              <g key={b.id} transform={`translate(${b.x} ${b.y})`} onClick={() => { setSel(b); setMsg('') }} className="cursor-pointer" role="button" aria-label={`${b.title}: ${s === 'owned' ? 'построено' : s === 'ready' ? 'можно построить' : 'закрыто'}`}>
-                {s === 'ready' && <circle r="36" fill="url(#glow)"><animate attributeName="r" values="30;38;30" dur="2.4s" repeatCount="indefinite" /></circle>}
-                <BuildingShape kind={b.kind} status={s} />
-                <text y="34" textAnchor="middle" fontSize="10.5" fill={s === 'owned' ? '#e3c766' : s === 'ready' ? '#ede7d9' : '#6f6a60'}>{b.title}</text>
-                {s === 'rank' && <g transform="translate(14 -26)"><circle r="8" fill="#17171a" stroke="#6f6a60" /><path d="M-3 0v-2a3 3 0 0 1 6 0v2M-4 0h8v5h-8z" fill="none" stroke="#9a9486" strokeWidth="1.2" /></g>}
-              </g>
-            )
-          })}
-        </svg>
-        <p className="px-2 pb-1 text-[12px] text-muted">Тап по постройке — подробности. Строится за Капитал, но только с нужным титулом.</p>
-      </Card>
+      {/* Королевство: единая 3D-сцена. Без WebGL — плоская карта */}
+      {!sceneFailed ? (
+        <Card tone="gold" className="overflow-hidden !p-0">
+          <Suspense fallback={<div className="h-[420px] md:h-[540px]" />}>
+            <KingdomScene slots={slots} stage={p.rank} onSelect={pick} onFail={() => setSceneFailed(true)} className="h-[420px] md:h-[540px]" />
+          </Suspense>
+          <p className="px-4 py-3 text-[12px] text-parch/80">Тяни, чтобы повернуть. Тап по постройке — подробности. Прозрачные ещё не построены: нужны титул и Капитал. Замок достроится на высшем титуле.</p>
+        </Card>
+      ) : (
+        <Card className="p-2">
+          <svg viewBox="0 0 360 300" className="w-full" role="img" aria-label="Карта построек Дома">
+            <defs>
+              <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#2c2c31" /></pattern>
+              <radialGradient id="glow"><stop offset="0%" stopColor="#c9a227" stopOpacity="0.35" /><stop offset="100%" stopColor="#c9a227" stopOpacity="0" /></radialGradient>
+            </defs>
+            <rect width="360" height="300" fill="url(#dots)" />
+            {/* дороги: от лавки к банку */}
+            {buildings.slice(1).map((b, i) => {
+              const a = buildings[i]
+              const on = status(a) === 'owned' && status(b) === 'owned'
+              return <line key={b.id} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={on ? '#c9a227' : '#2c2c31'} strokeWidth={on ? 2 : 1.5} strokeDasharray={on ? undefined : '4 5'} />
+            })}
+            {buildings.map((b) => {
+              const s = status(b)
+              return (
+                <g key={b.id} transform={`translate(${b.x} ${b.y})`} onClick={() => { setSel(b); setMsg('') }} className="cursor-pointer" role="button" aria-label={`${b.title}: ${s === 'owned' ? 'построено' : s === 'ready' ? 'можно построить' : 'закрыто'}`}>
+                  {s === 'ready' && <circle r="36" fill="url(#glow)"><animate attributeName="r" values="30;38;30" dur="2.4s" repeatCount="indefinite" /></circle>}
+                  <BuildingShape kind={b.kind} status={s} />
+                  <text y="34" textAnchor="middle" fontSize="10.5" fill={s === 'owned' ? '#e3c766' : s === 'ready' ? '#ede7d9' : '#6f6a60'}>{b.title}</text>
+                  {s === 'rank' && <g transform="translate(14 -26)"><circle r="8" fill="#17171a" stroke="#6f6a60" /><path d="M-3 0v-2a3 3 0 0 1 6 0v2M-4 0h8v5h-8z" fill="none" stroke="#9a9486" strokeWidth="1.2" /></g>}
+                </g>
+              )
+            })}
+          </svg>
+          <p className="px-2 pb-1 text-[12px] text-muted">Тап по постройке — подробности. Строится за Капитал, но только с нужным титулом.</p>
+        </Card>
+      )}
       {msg && <Advisor tone="gain">{msg}</Advisor>}
 
       {/* Соперник */}
@@ -167,7 +189,7 @@ export default function Empire({ game }: { game: Game }) {
             <div className="flex items-center gap-3">
               <div>
                 <div className="font-serif text-[22px]">{sel.title}</div>
-                <div className="text-[13px] text-muted">{sel.cost ? `${fmtNum(sel.cost)} ₸ Капитала · титул «${rankTitle(sel.minRank)}»` : 'Есть с основания Дома'}</div>
+                <div className="text-[13px] text-muted">{sel.id === 'castle' ? `Достраивается на титуле «${rankTitle(sel.minRank)}»` : sel.cost ? `${fmtNum(sel.cost)} ₸ Капитала · титул «${rankTitle(sel.minRank)}»` : 'Есть с основания Дома'}</div>
               </div>
             </div>
             <p className="mt-3 text-[15px] leading-relaxed">{sel.text}</p>
