@@ -148,6 +148,18 @@ export const EmpireSchema = z.object({
   rival: z.object({ name: z.string(), motto: z.string(), news: z.array(z.object({ week: z.number().int(), text: z.string() })) }),
   buildings: z.array(BuildingSchema).min(1),
 })
+/** Навык для Арсенала: группа недель плана (Week.key), по урокам которых считается уровень */
+export const ArsenalSkillSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  group: z.enum(['data', 'kaspi', 'money', 'people']),
+  icon: z.enum(['formula', 'unit', 'box', 'tag', 'chart', 'card', 'megaphone', 'star', 'handshake', 'crown', 'briefcase']),
+  tagline: z.string(),
+  description: z.string(),
+  outcomes: z.array(z.string()).min(2),
+  weeks: z.array(z.number().int()).min(1),
+})
+export type ArsenalSkill = z.infer<typeof ArsenalSkillSchema>
 export type Building = z.infer<typeof BuildingSchema>
 export type Empire = z.infer<typeof EmpireSchema>
 
@@ -235,6 +247,7 @@ export type Content = {
   ranks: Rank[]
   products: Product[]
   productsAreDemo: boolean
+  skills: ArsenalSkill[]
 }
 
 /** Разбирает и проверяет сырые JSON-файлы контента. Бросает понятную ошибку. */
@@ -246,6 +259,7 @@ export function parseContent(raw: {
   plan: unknown
   ranks: unknown
   products: unknown
+  skills?: unknown
 }): Content {
   const lessons: Record<string, Lesson> = {}
   for (const [file, data] of Object.entries(raw.lessonFiles)) {
@@ -285,5 +299,7 @@ export function parseContent(raw: {
   for (const b of empire.buildings)
     if (!ranks.some((r) => r.n === b.minRank)) throw new Error(`Постройка ${b.id}: нет титула ${b.minRank}`)
 
-  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, products: pf.products, productsAreDemo: pf.demo }
+  const skills = z.array(ArsenalSkillSchema).parse(raw.skills ?? [])
+  if (new Set(skills.map((s) => s.id)).size !== skills.length) throw new Error('Навыки: повторяются id')
+  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, products: pf.products, productsAreDemo: pf.demo, skills }
 }

@@ -116,9 +116,27 @@ export function Seal({ size = 16 }: { size?: number }) {
   )
 }
 
-export function Icon({ name, size = 24 }: { name: 'coin' | 'star' | 'crown' | 'today' | 'plan' | 'empire' | 'arsenal' | 'council' | 'close' | 'check' | 'lock' | 'shield' | 'flame' | 'photo'; size?: number }) {
+export function Icon({ name, size = 24 }: { name: 'formula' | 'unit' | 'box' | 'tag' | 'chart' | 'card' | 'megaphone' | 'handshake' | 'briefcase' | 'coin' | 'star' | 'crown' | 'today' | 'plan' | 'empire' | 'arsenal' | 'council' | 'close' | 'check' | 'lock' | 'shield' | 'flame' | 'photo'; size?: number }) {
   const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true }
   switch (name) {
+    case 'formula':
+      return <svg {...p}><path d="M18 5H7l6 7-6 7h11" /></svg>
+    case 'unit':
+      return <svg {...p}><path d="M12 4v16M6 20h12M12 7 5 9l-2 6a3.5 3.5 0 0 0 6 0L7 9M12 7l7 2-2 6a3.5 3.5 0 0 0 6 0l-2-6" /></svg>
+    case 'box':
+      return <svg {...p}><path d="m12 3 8 4v10l-8 4-8-4V7zM4 7l8 4 8-4M12 11v10" /></svg>
+    case 'tag':
+      return <svg {...p}><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.3" /></svg>
+    case 'chart':
+      return <svg {...p}><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6" /></svg>
+    case 'card':
+      return <svg {...p}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>
+    case 'megaphone':
+      return <svg {...p}><path d="M4 10v4h3l8 4V6L7 10zM18 9a4 4 0 0 1 0 6M7 14l1.5 5" /></svg>
+    case 'handshake':
+      return <svg {...p}><path d="m3 11 4-4 4 2 4-2 6 5-5 6-3-2-3 2-4-3zM7 7l-4 4M17 7l4 4" /></svg>
+    case 'briefcase':
+      return <svg {...p}><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18" /></svg>
     case 'coin':
       return <svg {...p}><circle cx="12" cy="12" r="9" /><path d="M8.5 8.5h7M12 8.5v7.5M9.5 12h5" /></svg>
     case 'star':

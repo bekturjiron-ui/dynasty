@@ -21,7 +21,7 @@ const lessonFiles = Object.fromEntries(readdirSync(join(root, 'lessons')).filter
 let problems = 0
 const fail = (where: string, msg: string) => { problems++; console.log(`  ✗ ${where}: ${msg}`) }
 
-const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), products: read('products.json') })
+const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), products: read('products.json'), skills: read('skills.json') })
 const base = baseScope(content.products, DEFAULT_SETTINGS)
 
 console.log(`Товары${content.productsAreDemo ? ' (ДЕМО)' : ''}: прибыль с продажи при комиссии ${DEFAULT_SETTINGS.kaspiFeePct}%, доставке ${DEFAULT_SETTINGS.deliveryCost} ₸, налоге ${DEFAULT_SETTINGS.taxPct}%, упаковке ${DEFAULT_SETTINGS.packPct}%, доставка — тариф товара`)
@@ -155,6 +155,24 @@ for (const n of Object.values(content.negotiations)) {
   if (!badDeals.length) fail(n.id, 'давление нигде не ведёт к сделке с холодным поставщиком')
   if (best && worstPressure && worstPressure.o.saving >= best.o.saving) fail(n.id, 'давление выгоднее влияния — урок перевёрнут')
   if (!outs.some(({ s }) => s.end === 'left' || s.end === 'walkout')) fail(n.id, 'поставщик ни на одном пути не уходит сам')
+}
+
+// ---------- Навыки Арсенала ----------
+{
+  console.log('\nНавыки Арсенала:')
+  const seen = new Map<number, string>()
+  for (const sk of content.skills) {
+    for (const k of sk.weeks) {
+      if (!content.weeks.some((w) => (w.key ?? w.n) === k)) fail(sk.id, `в плане нет недели с ключом ${k}`)
+      if (seen.has(k)) fail(sk.id, `неделя ${k} уже входит в навык «${seen.get(k)}»`)
+      seen.set(k, sk.id)
+    }
+    const lessons = sk.weeks.flatMap((k) => content.weeks.find((w) => (w.key ?? w.n) === k)?.lessonIds ?? []).length
+    console.log(`  ${sk.title}: недель ${sk.weeks.length}, уроков ${lessons}`)
+  }
+  for (const w of content.weeks) if (!seen.has(w.key ?? w.n)) fail('навыки', `неделя ${w.n} не входит ни в один навык`)
+  for (const b of content.empire.buildings)
+    for (const bs of b.skills) if (!bs.weeks.every((k) => seen.has(k))) fail(b.id, `навык постройки «${bs.title}» ссылается на неделю вне навыков`)
 }
 
 // ---------- Империя: экономика построек и соперник ----------
