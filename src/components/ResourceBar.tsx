@@ -19,7 +19,7 @@ function Chip({ icon, color, value, label, burst }: { icon: 'coin' | 'star' | 'c
 /** Шапка ресурсов: Капитал, Опыт, Репутация. Видна на всех вкладках. */
 export function ResourceBar({ capital, xp, reputation, right }: { capital: number; xp: number; reputation: number; right?: ReactNode }) {
   return (
-    <div className="sticky top-0 z-20 -mx-4 mb-2 border-b border-white/5 bg-ink/80 px-4 py-2.5 backdrop-blur-md">
+    <div className="pt-safe sticky top-0 z-20 -mx-4 mb-2 border-b border-white/5 bg-ink/80 px-4 pb-2.5 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <Chip icon="coin" color="text-gold" value={capital} label="₸ Капитала" />
         <Chip icon="star" color="text-xp" value={xp} label="Опыт" burst={xp} />

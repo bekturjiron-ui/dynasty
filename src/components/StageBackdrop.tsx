@@ -50,16 +50,16 @@ export function StageBackdrop({ stage }: { stage: number }) {
   const [loaded, setLoaded] = useState<number | null>(null)
   const img = loaded === n
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[38dvh] md:h-[52dvh] overflow-hidden" aria-hidden>
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg,#2a1f33 0%,#5a3a3a 55%,#c98a3f 100%)', opacity: 0.55 }} />
       <div key={`sil-${n}`} className="fade-in absolute inset-0" style={{ opacity: img ? 0 : 1 }}>
         <Skyline n={n} />
       </div>
       <picture key={`img-${n}`} className="fade-in absolute inset-0">
         <source media="(min-width: 768px)" srcSet={`${BASE}art/stage-${n}-l.webp`} />
-        <img src={`${BASE}art/stage-${n}-p.webp`} alt="" onLoad={() => setLoaded(n)} onError={() => setLoaded(null)} className="h-full w-full object-cover" style={{ opacity: img ? 1 : 0, objectPosition: "50% 62%" }} />
+        <img src={`${BASE}art/stage-${n}-p.webp`} alt="" onLoad={() => setLoaded(n)} onError={() => setLoaded(null)} className="stage-drift h-full w-full object-cover" style={{ opacity: img ? 1 : 0, objectPosition: "50% 45%", filter: "brightness(0.78) saturate(1.1)" }} />
       </picture>
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(17,17,20,0.35) 0%, rgba(17,17,20,0.55) 45%, #111114 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(17,17,20,0.35) 0%, rgba(17,17,20,0) 30%, rgba(17,17,20,0.25) 65%, rgba(17,17,20,0.8) 100%)' }} />
     </div>
   )
 }

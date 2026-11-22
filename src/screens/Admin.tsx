@@ -6,6 +6,7 @@ import { downloadBlob, exportState } from '../game/backup'
 import type { Game } from '../game/useGame'
 import { fmtNum } from '../lib/format'
 import { Button, Card, Icon, Label, Title } from '../components/ui'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 
 const chip = 'min-h-11 rounded-xl border border-line bg-white/[0.04] px-3 text-[14px] font-semibold active:bg-white/10'
 
@@ -103,18 +104,7 @@ export default function Admin({ game }: { game: Game }) {
         <button onClick={() => setConfirm(true)} className="min-h-12 w-full rounded-xl border border-loss/60 text-[15px] font-semibold text-loss active:bg-loss/10">Сбросить всё…</button>
       </Card>
 
-      {confirm && (
-        <div className="fixed inset-0 z-50 flex items-end bg-black/70 md:items-center md:justify-center" onClick={() => !busy && setConfirm(false)} role="dialog" aria-label="Подтверждение сброса">
-          <div className="pb-safe animate-rise surface w-full rounded-t-3xl border-t border-loss/50 px-5 pt-6 md:max-w-sm md:rounded-3xl md:border md:pb-6" onClick={(e) => e.stopPropagation()}>
-            <div className="text-[20px] font-semibold text-loss">Сбросить всю игру?</div>
-            <p className="mt-2 text-[14px] leading-relaxed text-muted">Весь прогресс, Капитал, титулы и постройки будут удалены без возможности вернуть.</p>
-            <div className="mt-5 space-y-2">
-              <button disabled={busy} onClick={doReset} className="min-h-12 w-full rounded-xl bg-[#c0392b] text-[16px] font-semibold text-white shadow-[0_6px_18px_-6px_rgba(192,57,43,0.7)] active:scale-[0.98] active:brightness-90 disabled:opacity-50">{busy ? 'Сбрасываю…' : 'Подтвердить сброс'}</button>
-              <Button variant="quiet" full disabled={busy} onClick={() => setConfirm(false)}>Отмена</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {confirm && <ConfirmDialog title="Сбросить всю игру?" text="Весь прогресс, Капитал, титулы и постройки будут удалены без возможности вернуть." confirmLabel="Подтвердить сброс" busyLabel="Сбрасываю…" busy={busy} onConfirm={doReset} onCancel={() => setConfirm(false)} />}
     </div>
   )
 }

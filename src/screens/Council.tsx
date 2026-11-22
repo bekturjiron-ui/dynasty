@@ -4,6 +4,8 @@ import { content } from '../content'
 import { PACK_DEFAULT_PCT, unitProfit } from '../content/scope'
 import { db } from '../db'
 import { downloadBlob, exportState, importState } from '../game/backup'
+import { restartGame } from '../game/admin'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import type { Game } from '../game/useGame'
 import { fmtTg, parseUserNumber } from '../lib/format'
 import { Button, Card, Label, Title } from '../components/ui'
@@ -19,6 +21,8 @@ export default function Council({ game }: { game: Game }) {
   const [pack, setPack] = useState(String(s.packPct ?? PACK_DEFAULT_PCT))
   const [saved, setSaved] = useState(false)
   const [msg, setMsg] = useState('')
+  const [askRestart, setAskRestart] = useState(false)
+  const [restarting, setRestarting] = useState(false)
 
   const parsed = { kaspiFeePct: parseUserNumber(fee), deliveryCost: parseUserNumber(delivery), taxPct: parseUserNumber(tax), packPct: parseUserNumber(pack) }
   const valid =
@@ -96,12 +100,19 @@ export default function Council({ game }: { game: Game }) {
         {msg && <p className="text-[13px] text-gold">{msg}</p>}
       </Card>
 
+      <Card className="space-y-3">
+        <Label>Рестарт</Label>
+        <p className="text-[13px] leading-relaxed text-muted">Начать игру заново: прогресс, титулы, постройки и Капитал обнулятся. Остаются имя Дома, ставки Kaspi и налог, архив Kaspi и правки плана. Перед рестартом сохрани бэкап.</p>
+        <button onClick={() => setAskRestart(true)} className="min-h-12 w-full rounded-xl border border-loss/60 text-[15px] font-semibold text-loss active:bg-loss/10">Рестарт игры…</button>
+      </Card>
+
       <button onClick={() => nav('/admin')} className="w-full py-2 text-center text-[13px] text-muted underline-offset-4 active:underline">Админ-панель</button>
 
       <Card className="space-y-2 text-[14px] leading-relaxed text-muted">
         <Label>Напоминание</Label>
         <p>Push-уведомлений в этой версии нет. Поставь в «Напоминаниях» iPhone ежедневное напоминание со ссылкой на игру — например, на 20:00.</p>
       </Card>
+      {askRestart && <ConfirmDialog title="Начать игру заново?" text="Весь прогресс, титулы, постройки и Капитал будут удалены. Настройки и архив Kaspi останутся." confirmLabel="Подтвердить рестарт" busyLabel="Перезапускаю…" busy={restarting} onConfirm={async () => { setRestarting(true); await restartGame(); setAskRestart(false); setRestarting(false); nav('/') }} onCancel={() => setAskRestart(false)} />}
     </div>
   )
 }

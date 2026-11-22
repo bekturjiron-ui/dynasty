@@ -25,13 +25,14 @@ export default function Today({ game }: { game: Game }) {
       {contentError && <Card className="border-loss/60 text-[13px] text-loss">Контент не прошёл проверку: {contentError}</Card>}
 
       {/* Титул и ресурсы */}
-      <div className="relative pt-2">
-        <Label tone="gold">{player.houseName}</Label>
-        <h1 className="gold-text mt-1 font-serif text-[38px] leading-none">{rank.rank?.title}</h1>
+      <div className="relative -mx-4 flex min-h-[30dvh] flex-col justify-end px-4 pb-1 pt-10 md:min-h-[34dvh]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%]" style={{ background: 'linear-gradient(to top, rgba(17,17,20,0.85) 0%, rgba(17,17,20,0.5) 55%, transparent 100%)' }} />
+        <Label tone="gold"><span className="hero-text relative">{player.houseName}</span></Label>
+        <h1 className="gold-text relative mt-1 font-serif text-[44px] leading-none">{rank.rank?.title}</h1>
         {(() => {
           const lead = player.xp - rivalXpAt(rivalCurve(plan), daysBetween(player.startedAt, dayKey()) + 1, player.planOffsetWeeks ?? 0)
           return (
-            <button onClick={() => nav('/empire')} className="mt-2 text-left text-[13px] text-muted">
+            <button onClick={() => nav('/empire')} className="hero-text relative mt-2 text-left text-[14px] text-parch/90">
               {content.empire.rival.name}: {lead >= 0 ? <span className="text-gain">ты впереди на {fmtNum(lead)} XP</span> : <span className="text-loss">впереди тебя на {fmtNum(-lead)} XP</span>} ›
             </button>
           )

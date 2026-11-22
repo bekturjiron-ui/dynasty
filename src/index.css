@@ -73,36 +73,48 @@ h3,
 }
 
 .gold-text {
-  background: linear-gradient(180deg, #f6e08a 0%, #d4ae2f 52%, #9c7c17 100%);
+  background: linear-gradient(180deg, #fff1b0 0%, #f0cf5f 45%, #c9a227 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 14px rgba(201, 162, 39, 0.35));
+  /* text-shadow у прозрачного текста «просвечивает» сквозь буквы и затемняет их: тень только через filter */
+  text-shadow: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 14px rgba(201, 162, 39, 0.4));
 }
 
 /* ---------- Поверхности ---------- */
 .surface {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 60%), var(--color-panel);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 60%), rgba(28, 26, 31, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 20px -12px rgba(0, 0, 0, 0.8);
 }
 .surface-gold {
   border-color: rgba(232, 205, 114, 0.4);
-  background: linear-gradient(160deg, rgba(201, 162, 39, 0.2) 0%, rgba(201, 162, 39, 0.04) 55%, transparent 100%), var(--color-panel);
+  background: linear-gradient(160deg, rgba(201, 162, 39, 0.2) 0%, rgba(201, 162, 39, 0.04) 55%, transparent 100%), rgba(28, 26, 31, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--shadow-glow), inset 0 1px 0 rgba(255, 240, 180, 0.12);
 }
 .surface-boss {
   border-color: rgba(208, 88, 107, 0.45);
-  background: linear-gradient(160deg, rgba(208, 88, 107, 0.2) 0%, rgba(208, 88, 107, 0.04) 55%, transparent 100%), var(--color-panel);
+  background: linear-gradient(160deg, rgba(208, 88, 107, 0.2) 0%, rgba(208, 88, 107, 0.04) 55%, transparent 100%), rgba(28, 26, 31, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 0 0 1px rgba(208, 88, 107, 0.15), 0 8px 28px -10px rgba(208, 88, 107, 0.45);
 }
 .surface-contract {
   border-color: rgba(82, 184, 144, 0.4);
-  background: linear-gradient(160deg, rgba(82, 184, 144, 0.16) 0%, rgba(82, 184, 144, 0.03) 55%, transparent 100%), var(--color-panel);
+  background: linear-gradient(160deg, rgba(82, 184, 144, 0.16) 0%, rgba(82, 184, 144, 0.03) 55%, transparent 100%), rgba(28, 26, 31, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 8px 28px -12px rgba(82, 184, 144, 0.4);
 }
 .surface-copper {
   border-color: rgba(210, 138, 74, 0.42);
-  background: linear-gradient(160deg, rgba(210, 138, 74, 0.18) 0%, rgba(210, 138, 74, 0.03) 55%, transparent 100%), var(--color-panel);
+  background: linear-gradient(160deg, rgba(210, 138, 74, 0.18) 0%, rgba(210, 138, 74, 0.03) 55%, transparent 100%), rgba(28, 26, 31, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 8px 28px -12px rgba(210, 138, 74, 0.4);
 }
 
@@ -451,4 +463,21 @@ select:focus-visible {
   .cer-new { clip-path: none; animation: none; }
   .cer-rays { opacity: 0.5; }
   .cer-crown, .cer-label, .cer-text, .cer-letter { opacity: 1; animation: none; }
+}
+
+/* Текст на открытой картинке героя: тёмный ореол, читается на любом фоне */
+.hero-text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+/* Фон-мир: очень медленный дрейф (картинка «живёт») */
+@keyframes stage-drift {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
+}
+.stage-drift {
+  animation: stage-drift 38s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-drift { animation: none; }
 }
