@@ -102,8 +102,7 @@ export default function Admin({ game }: { game: Game }) {
       <Card className="space-y-3">
         <Label>Прохождение курса · уроков пройдено {game.st.progress.size} из {Object.keys(content.lessons).length}</Label>
         <p className="text-[13px] text-muted">Для проверки закрытых недель. Награды (XP, Капитал) не начисляются.</p>
-        <Button variant="ghost" full onClick={() => completeAllProgress(false)}>Пройти все уроки</Button>
-        <Button variant="ghost" full onClick={() => completeAllProgress(true)}>Пройти всё: уроки, боссы, переговоры</Button>
+        <Button variant="ghost" full onClick={() => completeAllProgress(true)}>Пройти все уроки и боссов</Button>
         <Button variant="ghost" full onClick={() => clearAllProgress()}>Снять прохождение</Button>
       </Card>
 

@@ -4,7 +4,7 @@ import { dayKey } from '../lib/dates'
 import { emitRankUp } from './events'
 
 /** Админ-панель: только для проверки того, как игра меняется. Работает с локальной базой этого устройства. */
-export const ADMIN_PIN = '000'
+export const ADMIN_PIN = '0000'
 
 export async function adjustPlayer(d: { capital?: number; xp?: number; influence?: number; reputation?: number }) {
   const p = await db.player.get('me')
