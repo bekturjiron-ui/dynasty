@@ -1,16 +1,17 @@
-// Отправка работы агента в main одной командой, с проверками. Для Antigravity (зона: content/, docs/, public/art/).
+// Отправка работы агента в ветку и PR одной командой, с проверками. Для Antigravity.
 //
-//   node tools/ship.mjs            подтянуть main, проверить, запушить ветку, открыть PR и, если всё в зоне и проверка зелёная, влить
+//   node tools/ship.mjs            подтянуть main, проверить, запушить ветку, открыть PR и остановиться (вливает владелец вручную)
+//   node tools/ship.mjs --merge    (только по явной просьбе владельца) дождаться Check и влить, если всё в зоне
 //   node tools/ship.mjs --dry      только показать, что было бы сделано (ничего не отправляет)
 //
 // Правила:
 //  - работает только из рабочей ветки (не main);
 //  - сначала сливает origin/main в ветку; при конфликте останавливается и ничего не ломает;
-//  - если изменены файлы ВНЕ зоны, PR открывается, но НЕ вливается: ждёт владельца («влей»);
-//  - вливает обычным merge-коммитом только после зелёной проверки Check.
+//  - по умолчанию НИКОГДА не вливает в main сам: открывает PR и ждёт владельца («можно вливать»).
 import { spawnSync } from 'child_process'
 
 const dry = process.argv.includes('--dry')
+const allowMerge = process.argv.includes('--merge')
 const ZONE = ['content/', 'docs/', 'public/art/']
 const say = (...a) => console.log(...a)
 const die = (msg, code = 1) => { console.error('СТОП: ' + msg); process.exit(code) }
@@ -78,6 +79,11 @@ if (!pr) {
   pr = JSON.parse(gh('pr', 'list', '--head', branch, '--state', 'open', '--json', 'number').stdout)[0]
 }
 say('PR #' + pr.number)
+
+if (!allowMerge) {
+  say(`\nГотово: PR #${pr.number} открыт (или обновлён), в main сам не вливаю — скажите владельцу «можно вливать».`)
+  process.exit(0)
+}
 
 if (outside.length) {
   say(`\nОстановился: затронуты файлы вне вашей зоны (${outside.join(', ')}). PR открыт, ждёт владельца: скажите ему «влей».`)
