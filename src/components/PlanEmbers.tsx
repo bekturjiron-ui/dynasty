@@ -66,27 +66,39 @@ export function PlanEmbers({ paused = false }: { paused?: boolean }) {
       const auraGeo = new THREE.BufferGeometry()
       const auraPos = new Float32Array(AURA * AURA_N * 3)
       auraGeo.setAttribute('position', new THREE.BufferAttribute(auraPos, 3))
-      const auraMat = new THREE.PointsMaterial({ map: tex, size: 9 * dpr, sizeAttenuation: false, transparent: true, opacity: 0.85, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, color: 0xffe9a8 })
+      // яркость каждой искры задаётся цветом вершины: так она плавно гаснет вверху цикла, а не исчезает рывком
+      const auraCol = new Float32Array(AURA * AURA_N * 3)
+      auraGeo.setAttribute('color', new THREE.BufferAttribute(auraCol, 3))
+      const auraMat = new THREE.PointsMaterial({ map: tex, size: 9 * dpr, sizeAttenuation: false, transparent: true, opacity: 0.85, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, color: 0xffe9a8, vertexColors: true })
       const aura = new THREE.Points(auraGeo, auraMat)
       aura.frustumCulled = false
       scene.add(aura)
 
+      // На iPhone/Android при прокрутке прячется адресная строка и высота окна скачет.
+      // Холст держим по большой высоте окна (lvh) и пересоздаём буфер только при реальной смене размера.
       const resize = () => {
-        vw = window.innerWidth; vh = window.innerHeight
+        const w = host.clientWidth || window.innerWidth
+        const h = host.clientHeight || window.innerHeight
+        if (Math.abs(w - vw) < 2 && Math.abs(h - vh) < 2) return
+        vw = w; vh = h
         renderer.setSize(vw, vh, false)
         camera.left = 0; camera.right = vw; camera.top = vh; camera.bottom = 0; camera.updateProjectionMatrix()
       }
       resize()
       window.addEventListener('resize', resize)
 
-      let lastY = window.scrollY, vel = 0, t = 0, last = performance.now(), raf = 0
+      let lastY = window.scrollY, ys = lastY, vel = 0, t = 0, last = performance.now(), raf = 0
+      let hot: HTMLElement[] = [], hotAt = -1
       const frame = (now: number) => {
         raf = requestAnimationFrame(frame)
         const dt = Math.min(0.05, (now - last) / 1000); last = now
-        if (document.hidden || pausedRef.current) { lastY = window.scrollY; return }
-        const y = window.scrollY
-        vel += (Math.min(Math.abs(y - lastY), 120) - vel) * 0.15
-        lastY = y
+        if (document.hidden || pausedRef.current) { lastY = window.scrollY; ys = lastY; return }
+        const scrollY = window.scrollY
+        // искры чуть «догоняют» прокрутку: так нет рывков, когда страница едет быстрее кадров
+        ys += (scrollY - ys) * 0.3
+        const y = ys
+        vel += (Math.min(Math.abs(scrollY - lastY), 120) - vel) * 0.1
+        lastY = scrollY
         t += dt * (1 + Math.min(vel * 0.06, 3))
         for (const L of layers) {
           for (let i = 0; i < L.n; i++) {
@@ -101,7 +113,7 @@ export function PlanEmbers({ paused = false }: { paused?: boolean }) {
           L.mat.opacity = L.op * (0.8 + 0.2 * Math.sin(t * 1.3 + L.par * 5))
         }
         // искры вокруг доступных боссов
-        const hot = [...document.querySelectorAll<HTMLElement>('[data-pm-ready="1"]')].slice(0, AURA)
+        if (now - hotAt > 500) { hot = [...document.querySelectorAll<HTMLElement>('[data-pm-ready="1"]')].slice(0, AURA); hotAt = now }
         auraGeo.setDrawRange(0, hot.length * AURA_N)
         hot.forEach((el, k) => {
           const r = el.getBoundingClientRect()
@@ -114,9 +126,12 @@ export function PlanEmbers({ paused = false }: { paused?: boolean }) {
             auraPos[o] = cx + Math.cos(a) * rad
             auraPos[o + 1] = vh - (cy + Math.sin(a) * rad * 0.7 - rise)
             auraPos[o + 2] = 0
+            const k = Math.sin((rise / 60) * Math.PI) // 0 → 1 → 0 за цикл
+            auraCol[o] = auraCol[o + 1] = auraCol[o + 2] = k
           }
         })
         auraGeo.attributes.position.needsUpdate = true
+        auraGeo.attributes.color.needsUpdate = true
         renderer.render(scene, camera)
       }
       raf = requestAnimationFrame(frame)
@@ -135,5 +150,5 @@ export function PlanEmbers({ paused = false }: { paused?: boolean }) {
     return () => { disposed = true; cleanup() }
   }, [])
 
-  return <div ref={hostRef} aria-hidden className="pointer-events-none fixed inset-0 z-0" />
+  return <div ref={hostRef} aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-0 h-dvh" style={{ height: '100lvh' }} />
 }
