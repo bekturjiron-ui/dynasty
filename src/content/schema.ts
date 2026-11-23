@@ -25,6 +25,23 @@ export const StepSchema = z.object({
   hint: z.string().optional(),
 })
 
+/** Вариант ответа: why показывается после выбора — это «доклад советника». */
+export const ChoiceOptionSchema = z.object({ text: z.string(), correct: z.boolean().default(false), why: z.string() })
+export const ChoiceSchema = z.object({ options: z.array(ChoiceOptionSchema).min(2).max(5) })
+  .refine((c) => c.options.filter((o) => o.correct).length === 1, 'Нужен ровно один верный вариант')
+
+export const AdRuleSchema = z.enum(['caps', 'exclaim', 'guarantee', 'personal', 'informal', 'spaces'])
+/** Игрок пишет объявление; проверка — длина, правила площадки и обязательные слова. sample — эталон, его гоняет валидатор. */
+export const TextCheckSchema = z.object({
+  maxLength: z.number().int().positive().default(160),
+  minLength: z.number().int().min(1).default(40),
+  rules: z.array(AdRuleSchema).default(['caps', 'exclaim', 'guarantee', 'personal', 'informal', 'spaces']),
+  /** Каждая группа: должно встретиться хотя бы одно слово */
+  mustInclude: z.array(z.object({ label: z.string(), any: z.array(z.string()).min(1) })).default([]),
+  placeholder: z.string().optional(),
+  sample: z.string(),
+})
+
 export const ExerciseSchema = z
   .object({
     prompt: z.string(),
@@ -36,10 +53,12 @@ export const ExerciseSchema = z
     tolerance: z.number().min(0).max(0.2).default(0.01),
     hints: z.array(z.string()).default([]),
     sheet: SheetTaskSchema.optional(),
+    choice: ChoiceSchema.optional(),
+    textCheck: TextCheckSchema.optional(),
     /** Шаблоны доклада советника; доступны answer, correct, diff */
     report: z.object({ ok: z.string().optional(), off: z.string().optional() }).optional(),
   })
-  .refine((e) => e.sheet || e.answerFormula, 'Нужен answerFormula или sheet')
+  .refine((e) => e.sheet || e.answerFormula || e.choice || e.textCheck, 'Нужен answerFormula, sheet, choice или textCheck')
 
 export const DemoStepSchema = z.object({
   text: z.string(),
@@ -47,25 +66,36 @@ export const DemoStepSchema = z.object({
   highlight: z.array(z.string()).optional(),
 })
 
-export const SkillSchema = z.enum([
-  'excel', 'unit', 'pricing', 'ads', 'kaspi', 'reviews', 'negotiation', 'analytics', 'hiring', 'career',
-])
+export const SkillSchema = z.enum(['basics', 'audience', 'economics', 'creative', 'meta', 'telegram', 'analytics', 'launch'])
+
+/** Вставка с YouTube: отрезок открытого урока. Без сети урок проходится по тексту. */
+export const VideoSchema = z.object({
+  youtubeId: z.string().regex(/^[\w-]{11}$/),
+  title: z.string(),
+  channel: z.string().optional(),
+  /** Начало и конец отрезка, секунды */
+  start: z.number().int().min(0),
+  end: z.number().int().positive(),
+  /** На что смотреть в отрезке */
+  focus: z.string(),
+  question: z.object({ prompt: z.string(), choice: ChoiceSchema }).optional(),
+}).refine((v) => v.end > v.start, 'Конец отрезка раньше начала')
 
 export const LessonSchema = z.object({
-  id: z.string().regex(/^w\d{2}-l\d+$/),
+  id: z.string().regex(/^t\d{2}-l\d+$/),
   week: z.number().int().min(1),
   skill: SkillSchema,
   title: z.string(),
   why: z.string(),
   /** Переменные урока для демо-текстов (выражения над базовым контекстом) */
   vars: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
+  video: VideoSchema.optional(),
   demo: z.array(DemoStepSchema).min(1),
   analogy: z.string().optional(),
   guided: ExerciseSchema,
   solo: ExerciseSchema,
   arsenalCard: z.object({ title: z.string(), body: z.string() }),
   reward: z.object({ capital: z.number(), xp: z.number() }),
-  useRealData: z.boolean().optional(),
 })
 
 export const BossSchema = z.object({
@@ -79,8 +109,6 @@ export const BossSchema = z.object({
   table: TableSchema.optional(),
   rounds: z.array(ExerciseSchema).min(1),
   lives: z.literal(3).default(3),
-  /** Подставлять продажи/цены из импорта архива Kaspi */
-  useRealData: z.boolean().optional(),
   reward: z.object({ capital: z.number(), xp: z.number() }),
 })
 
@@ -105,22 +133,21 @@ export const NegotiationSchema = z.object({
   week: z.number().int(),
   title: z.string(),
   intro: z.string(),
-  supplier: z.object({ name: z.string(), company: z.string(), role: z.string() }),
-  /** Товар сделки: выражение, дающее товар из products (например «p1») */
-  product: z.string(),
+  /** С кем договариваемся: блогер, партнёр, подрядчик */
+  partner: z.object({ name: z.string(), company: z.string(), role: z.string() }),
   vars: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
-  /** Цена закупа на старте, ₸ (выражение) */
+  /** Цена за единицу на старте, ₸ (выражение) */
   startPrice: z.union([z.number(), z.string()]),
-  /** Скрытый потолок скидки поставщика, % */
+  /** Скрытый потолок скидки партнёра, % */
   maxDiscountPct: z.number().min(0).max(50),
-  /** Штук в одной партии и сколько партий считать в итоге */
+  /** Единиц в одном размещении и сколько размещений считать в итоге */
   volume: z.number().int().positive(),
   orders: z.number().int().min(1).default(3),
   loyalty: z.number().min(0).max(100).default(60),
   patience: z.number().min(0).max(100).default(100),
-  /** Ниже этой лояльности поставщик «холодеет»; если не потеплело за 2 хода — уходит */
+  /** Ниже этой лояльности партнёр «холодеет»; если не потеплело за 2 хода — уходит */
   coldBelow: z.number().default(35),
-  /** Во сколько раз дороже обходится замена ушедшего поставщика */
+  /** Во сколько раз дороже обходится замена ушедшего партнёра */
   replacementMarkup: z.number().default(1.05),
   start: z.string(),
   nodes: z.array(NegotiationNodeSchema).min(12),
@@ -152,7 +179,7 @@ export const EmpireSchema = z.object({
 export const ArsenalSkillSchema = z.object({
   id: z.string(),
   title: z.string(),
-  group: z.enum(['data', 'kaspi', 'money', 'people']),
+  group: z.enum(['base', 'creative', 'meta', 'telegram', 'data']),
   icon: z.enum(['formula', 'unit', 'box', 'tag', 'chart', 'card', 'megaphone', 'star', 'handshake', 'crown', 'briefcase']),
   tagline: z.string(),
   description: z.string(),
@@ -190,24 +217,24 @@ export const WeekSchema = z.object({
   bossTitle: z.string(),
   contract: z.object({ text: z.string(), proof: ProofSchema, numberLabel: z.string().optional() }),
   resource: z
-    .object({ title: z.string(), url: z.string().optional(), kind: z.enum(['course', 'kaspi-guide', 'book', 'practice']) })
+    .object({ title: z.string(), url: z.string().optional(), kind: z.enum(['course', 'guide', 'video', 'book', 'practice']) })
     .optional(),
 })
 
-export const ProductSchema = z.object({
-  id: z.string().regex(/^p\d+$/),
+/** Учебный оффер: вымышленный проект с экономикой одной продажи. В формулах — o1…oN. */
+export const OfferSchema = z.object({
+  id: z.string().regex(/^o\d+$/),
   name: z.string(),
   short: z.string().optional(),
-  /** Закуп за 1 шт, ₸ */
-  cost: z.number().positive(),
-  /** Доставка до склада на 1 шт, ₸ (0 — если уже в закупе или неизвестна) */
-  inbound: z.number().min(0).default(0),
-  /** Цена продажи на Kaspi, ₸ */
+  kind: z.enum(['product', 'service', 'project']),
+  /** Средний чек, ₸ */
   price: z.number().positive(),
-  /** Тариф доставки Kaspi до покупателя за счёт продавца, ₸. Нет — берётся из настроек */
-  delivery: z.number().min(0).optional(),
-  /** Продаж в месяц */
-  orders: z.number().min(0),
+  /** Маржинальность, доля (0.55 = 55%) */
+  margin: z.number().gt(0).lt(1),
+  /** Конверсия клика в заявку, доля */
+  clickToLead: z.number().gt(0).lt(1),
+  /** Конверсия заявки в продажу, доля */
+  leadToSale: z.number().gt(0).lte(1),
 })
 
 export const RankSchema = z.object({
@@ -219,7 +246,7 @@ export const RankSchema = z.object({
   promoteWhen: z.object({ contracts: z.array(z.number().int()) }),
 })
 
-export const ProductsFileSchema = z.object({ demo: z.boolean().default(false), products: z.array(ProductSchema).min(3) })
+export const OffersFileSchema = z.object({ demo: z.boolean().default(false), offers: z.array(OfferSchema).min(3) })
 
 export type Cell = z.infer<typeof CellSchema>
 export type Table = z.infer<typeof TableSchema>
@@ -228,7 +255,11 @@ export type DemoStep = z.infer<typeof DemoStepSchema>
 export type Lesson = z.infer<typeof LessonSchema>
 export type Boss = z.infer<typeof BossSchema>
 export type Week = z.infer<typeof WeekSchema>
-export type Product = z.infer<typeof ProductSchema>
+export type Offer = z.infer<typeof OfferSchema>
+export type Choice = z.infer<typeof ChoiceSchema>
+export type TextCheck = z.infer<typeof TextCheckSchema>
+export type AdRule = z.infer<typeof AdRuleSchema>
+export type Video = z.infer<typeof VideoSchema>
 export type Rank = z.infer<typeof RankSchema>
 export type Step = z.infer<typeof StepSchema>
 export type SheetTask = z.infer<typeof SheetTaskSchema>
@@ -245,8 +276,7 @@ export type Content = {
   /** Свои миссии наставника (из правок плана) */
   missions: Mission[]
   ranks: Rank[]
-  products: Product[]
-  productsAreDemo: boolean
+  offers: Offer[]
   skills: ArsenalSkill[]
 }
 
@@ -258,7 +288,7 @@ export function parseContent(raw: {
   empire?: unknown
   plan: unknown
   ranks: unknown
-  products: unknown
+  offers: unknown
   skills?: unknown
 }): Content {
   const lessons: Record<string, Lesson> = {}
@@ -274,7 +304,7 @@ export function parseContent(raw: {
   const bosses = Object.fromEntries(bossArr.map((b) => [b.id, b]))
   const weeks = z.array(WeekSchema).parse(raw.plan).sort((a, b) => a.n - b.n).map((w) => ({ ...w, key: w.key ?? w.n }))
   const ranks = z.array(RankSchema).parse(raw.ranks).sort((a, b) => a.n - b.n)
-  const pf = ProductsFileSchema.parse(raw.products)
+  const offerFile = OffersFileSchema.parse(raw.offers)
 
   const negArr = z.array(NegotiationSchema).parse(raw.negotiations ?? [])
   const negotiations = Object.fromEntries(negArr.map((n) => [n.id, n]))
@@ -301,5 +331,5 @@ export function parseContent(raw: {
 
   const skills = z.array(ArsenalSkillSchema).parse(raw.skills ?? [])
   if (new Set(skills.map((s) => s.id)).size !== skills.length) throw new Error('Навыки: повторяются id')
-  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, products: pf.products, productsAreDemo: pf.demo, skills }
+  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, offers: offerFile.offers, skills }
 }

@@ -2,10 +2,11 @@ import type { ArsenalSkill, Content } from '../content/schema'
 import { weekStatus, type State, type WeekStatus } from './engine'
 
 export const GROUPS: Record<ArsenalSkill['group'], { label: string; text: string; tint: string; ring: string }> = {
-  data: { label: 'Данные', text: 'text-xp', tint: 'bg-xp/15', ring: '#5aa9f0' },
-  kaspi: { label: 'Kaspi', text: 'text-gold-soft', tint: 'bg-gold/15', ring: '#e0b84e' },
-  money: { label: 'Деньги', text: 'text-emerald', tint: 'bg-emerald/15', ring: '#52b890' },
-  people: { label: 'Люди', text: 'text-rep', tint: 'bg-rep/15', ring: '#a77bd2' },
+  base: { label: 'Основа', text: 'text-gold-soft', tint: 'bg-gold/15', ring: '#e0b84e' },
+  creative: { label: 'Креатив', text: 'text-rep', tint: 'bg-rep/15', ring: '#a77bd2' },
+  meta: { label: 'Meta и Instagram', text: 'text-xp', tint: 'bg-xp/15', ring: '#5aa9f0' },
+  telegram: { label: 'Telegram Ads', text: 'text-xp', tint: 'bg-xp/15', ring: '#5aa9f0' },
+  data: { label: 'Цифры и запуск', text: 'text-emerald', tint: 'bg-emerald/15', ring: '#52b890' },
 }
 export const LEVEL_NAMES = ['Не начат', 'Новичок', 'Практик', 'Мастер']
 

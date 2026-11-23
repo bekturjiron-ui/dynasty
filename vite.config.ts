@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'Династия',
         short_name: 'Династия',
-        description: 'Игра-тренажёр навыков Kaspi-менеджера',
+        description: 'Игра-тренажёр комплексного таргетинга: Instagram и Telegram Ads',
         lang: 'ru',
         start_url: './',
         scope: './',

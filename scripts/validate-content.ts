@@ -4,12 +4,12 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseContent, type Exercise, type Table } from '../src/content/schema'
-import { baseScope, checkSteps, exerciseScope, resolveTable, withVars, unitProfit } from '../src/content/scope'
+import { baseScope, checkSteps, exerciseScope, offerEconomy, resolveTable, withVars } from '../src/content/scope'
+import { checkAd } from '../src/content/adCheck'
 import { checkTarget, expectedValues, setCell } from '../src/content/sheetCheck'
 import { evalNum, type Scope } from '../src/lib/expr'
 import { render, hasBrokenTemplate } from '../src/lib/template'
 import { fmtUnit } from '../src/lib/format'
-import { DEFAULT_SETTINGS } from '../src/defaults'
 import { jitterVars } from '../src/game/jitter'
 import { choose, negScope, outcome, startNeg, type NegState } from '../src/game/negotiation'
 import { rivalCurve } from '../src/game/rival'
@@ -21,11 +21,12 @@ const lessonFiles = Object.fromEntries(readdirSync(join(root, 'lessons')).filter
 let problems = 0
 const fail = (where: string, msg: string) => { problems++; console.log(`  ✗ ${where}: ${msg}`) }
 
-const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), products: read('products.json'), skills: read('skills.json') })
-const base = baseScope(content.products, DEFAULT_SETTINGS)
+const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), offers: read('offers.json'), skills: read('skills.json') })
+const base = baseScope(content.offers)
+const WEEKS = 12
 
-console.log(`Товары${content.productsAreDemo ? ' (ДЕМО)' : ''}: прибыль с продажи при комиссии ${DEFAULT_SETTINGS.kaspiFeePct}%, доставке ${DEFAULT_SETTINGS.deliveryCost} ₸, налоге ${DEFAULT_SETTINGS.taxPct}%, упаковке ${DEFAULT_SETTINGS.packPct}%, доставка — тариф товара`)
-for (const p of content.products) console.log(`  ${p.id} ${p.name}: ${Math.round(unitProfit(p, DEFAULT_SETTINGS))} ₸`)
+console.log('Офферы: прибыль с продажи / потолок клиента / заявки / клика')
+for (const o of content.offers) { const e = offerEconomy(o); console.log(`  ${o.id} ${o.name}: ${Math.round(e.profit)} / ${Math.round(e.maxCac)} / ${Math.round(e.maxCpl)} / ${Math.round(e.maxCpc)} ₸`) }
 
 function checkText(where: string, text: string, scope: Scope) {
   const out = render(text, scope)
@@ -42,6 +43,16 @@ function checkExercise(where: string, ex: Exercise, scope0: Scope, mode: 'guided
   try { scope = exerciseScope(scope0, ex) } catch (e) { fail(where, `inputs: ${(e as Error).message}`); return }
   checkText(`${where}.prompt`, ex.prompt, scope)
   ex.hints.forEach((h, i) => checkText(`${where}.hint${i}`, h, scope))
+  if (ex.choice) {
+    ex.choice.options.forEach((o, i) => { checkText(`${where}.opt${i}`, o.text, scope); checkText(`${where}.why${i}`, o.why, scope) })
+    return
+  }
+  if (ex.textCheck) {
+    const sample = render(ex.textCheck.sample, scope)
+    const issues = checkAd(sample, ex.textCheck)
+    if (issues.length) fail(where, `эталон объявления не проходит: ${issues.map((x) => x.text).join(' ')}`)
+    return
+  }
   if (ex.sheet) {
     const grid = resolveTable(ex.sheet.grid, scope)
     const exp = expectedValues(grid, ex.sheet)
@@ -82,6 +93,7 @@ for (const w of content.weeks) {
     let scope: Scope
     try { scope = withVars(base, l.vars) } catch (e) { fail(id, `vars: ${(e as Error).message}`); continue }
     checkText(`${id}.why`, l.why, scope)
+    if (l.video?.question) l.video.question.choice.options.forEach((o, i) => checkText(`${id}.video.opt${i}`, o.why, scope))
     l.demo.forEach((d, i) => { checkText(`${id}.demo${i}`, d.text, scope); if (d.table) checkTable(`${id}.demo${i}`, d.table, scope) })
     if (l.analogy) checkText(`${id}.analogy`, l.analogy, scope)
     checkExercise(`${id}.guided`, l.guided, scope, 'guided')
@@ -96,7 +108,7 @@ for (const w of content.weeks) {
       if (b.table) checkTable(`${tag}.table`, b.table, vars)
       b.rounds.forEach((r, i) => {
         if (run === 0) checkExercise(`${tag}.round${i + 1}`, r, vars, 'solo')
-        else { try { evalNum(r.answerFormula!, exerciseScope(vars, r)) } catch (e) { fail(tag, (e as Error).message) } }
+        else if (r.answerFormula) { try { evalNum(r.answerFormula, exerciseScope(vars, r)) } catch (e) { fail(tag, (e as Error).message) } }
       })
     }
   }
@@ -144,17 +156,17 @@ for (const n of Object.values(content.negotiations)) {
   const worstPressure = badDeals.reduce((m, x) => (x.s.discount > m.s.discount ? x : m), badDeals[0])
   const be = sc0.target as number | undefined
   console.log(`  исходов: ${outs.length} — ${JSON.stringify(byEnd)}`)
-  if (best) console.log(`  лучшая сделка с отношениями: скидка ${best.s.discount}%, цена ${best.o.dealUnit} ₸, лояльность ${best.s.loyalty}, экономия за ${n.orders} партии ${best.o.saving} ₸ (потолок ${best.o.bestSaving} ₸)`)
-  if (worstPressure) console.log(`  давление: скидка ${worstPressure.s.discount}%, лояльность ${worstPressure.s.loyalty}, итог за ${n.orders} партии ${worstPressure.o.saving} ₸`)
+  if (best) console.log(`  лучшая сделка с отношениями: скидка ${best.s.discount}%, цена ${best.o.dealUnit} ₸, лояльность ${best.s.loyalty}, экономия за ${n.orders} размещения ${best.o.saving} ₸ (потолок ${best.o.bestSaving} ₸)`)
+  if (worstPressure) console.log(`  давление: скидка ${worstPressure.s.discount}%, лояльность ${worstPressure.s.loyalty}, итог за ${n.orders} размещения ${worstPressure.o.saving} ₸`)
   if (be !== undefined) {
     const reach = goodDeals.filter((x) => (x.o.dealUnit ?? Infinity) <= be).length
-    console.log(`  целевой закуп ${Math.round(be)} ₸: достигают ${reach} из ${goodDeals.length} сделок с отношениями`)
-    if (!reach) fail(n.id, 'ни одна честная сделка не достигает целевого закупа')
+    console.log(`  целевая цена ${Math.round(be)} ₸: достигают ${reach} из ${goodDeals.length} сделок с отношениями`)
+    if (!reach) fail(n.id, 'ни одна честная сделка не достигает целевой цены')
   }
   if (!goodDeals.length) fail(n.id, 'нет ни одной сделки с сохранёнными отношениями')
-  if (!badDeals.length) fail(n.id, 'давление нигде не ведёт к сделке с холодным поставщиком')
+  if (!badDeals.length) fail(n.id, 'давление нигде не ведёт к сделке с холодным партнёром')
   if (best && worstPressure && worstPressure.o.saving >= best.o.saving) fail(n.id, 'давление выгоднее влияния — урок перевёрнут')
-  if (!outs.some(({ s }) => s.end === 'left' || s.end === 'walkout')) fail(n.id, 'поставщик ни на одном пути не уходит сам')
+  if (!outs.some(({ s }) => s.end === 'left' || s.end === 'walkout')) fail(n.id, 'партнёр ни на одном пути не уходит сам')
 }
 
 // ---------- Навыки Арсенала ----------
@@ -178,10 +190,10 @@ for (const n of Object.values(content.negotiations)) {
 // ---------- Империя: экономика построек и соперник ----------
 {
   const curve = rivalCurve(content)
-  console.log(`\nСоперник «${content.empire.rival.name}»: XP к неделям 2/8/16/24 — ${[2, 8, 16, 24].map((w) => curve[w]).join(' / ')}`)
+  console.log(`\nСоперник «${content.empire.rival.name}»: XP к неделям 3/6/9/12 — ${[3, 6, 9, 12].map((w) => curve[w]).join(' / ')}`)
   // Капитал игрока, идущего ровно по плану: уроки без подсказок + боссы + контракты (типичная неделя без контента — как неделя 1)
   const capByWeek = [0]
-  for (let n = 1; n <= 24; n++) {
+  for (let n = 1; n <= WEEKS; n++) {
     const w = content.weeks.find((x) => x.n === n)
     const ls = w?.lessonIds.map((id) => content.lessons[id]) ?? []
     const boss = w?.bossId ? content.bosses[w.bossId] : undefined
@@ -200,9 +212,11 @@ for (const n of Object.values(content.negotiations)) {
     const when = Math.max(rankWeek, affordWeek)
     console.log(`  ${b.title}: ${b.cost} ₸, титул «${rank.title}» (с недели ${rankWeek}) → по плану доступна с недели ${affordWeek < 0 ? '—' : when}`)
     if (affordWeek < 0) fail(b.id, 'по плану на неё никогда не хватит Капитала')
-    else if (when > 24) fail(b.id, 'доступна только после 24 недели')
+    else if (when > WEEKS) fail(b.id, 'доступна только после последней недели')
   }
-  console.log(`  Капитал за 24 недели по плану: ${capByWeek[24]} ₸, все постройки: ${spent} ₸`)
+  console.log(`  Капитал за ${WEEKS} недель по плану: ${capByWeek[WEEKS]} ₸, все постройки: ${spent} ₸`)
+  if (content.weeks.length !== WEEKS) fail('план', `недель ${content.weeks.length}, ожидается ${WEEKS}`)
+  for (const r of content.ranks) for (const k of r.promoteWhen.contracts) if (!content.weeks.some((w) => (w.key ?? w.n) === k)) fail(`титул ${r.n}`, `контракт ссылается на неделю с ключом ${k}, её нет в плане`)
 }
 
 console.log(problems ? `\n✗ Проблем: ${problems}` : '\n✓ Контент в порядке')

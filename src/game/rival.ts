@@ -18,7 +18,7 @@ export function rivalCurve(content: Content): number[] {
     const lessons = w?.lessonIds.filter((id) => content.lessons[id]) ?? []
     sum += lessons.length ? lessons.reduce((s, id) => s + content.lessons[id].reward.xp, 0) : TYPICAL_LESSONS_XP
     const boss = w?.bossId ? content.bosses[w.bossId] : undefined
-    // Диалог с поставщиком играет роль босса недели: «типичный босс» ему не добавляем
+    // Диалог с партнёром играет роль босса недели: «типичный босс» ему не добавляем
     sum += boss ? boss.reward.xp : w && w.bossTitle !== '—' && !w.negotiationId ? TYPICAL_BOSS_XP : 0
     const neg = w?.negotiationId ? content.negotiations[w.negotiationId] : undefined
     if (neg) sum += neg.reward.xp

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { content as baseContent } from '../../content'
 import type { Mission, Week } from '../../content/schema'
-import { resetPlan, savePlan, setMentorPin, setPlanOffset } from '../../game/engine'
+import { resetPlan, savePlan, setMentorPin, setPlanOffset, syncRank } from '../../game/engine'
 import { downloadBlob } from '../../game/backup'
 import { blankWeek, deadlineOf, parsePlanFile, planToFile, renumber, weekKey } from '../../game/plan'
 import type { Game } from '../../game/useGame'
@@ -27,6 +27,7 @@ export function PlanEditor({ game, onClose }: { game: Game; onClose: () => void 
 
   async function save() {
     await savePlan(weeks, missions, baseContent.weeks, baseContent.missions)
+    await syncRank(baseContent)
     if (offset !== (p.planOffsetWeeks ?? 0)) await setPlanOffset(offset)
     setDirty(false)
     setMsg({ tone: 'gain', text: 'План сохранён. Игрок увидит его сразу.' })
@@ -74,7 +75,7 @@ export function PlanEditor({ game, onClose }: { game: Game; onClose: () => void 
         <div className="flex items-center gap-3">
           <Button variant="ghost" className="min-h-10 w-12 px-0" onClick={() => { setOffset((o) => Math.max(0, o - 1)); setDirty(true) }} disabled={offset === 0}>−</Button>
           <div className="flex-1 text-center"><span className="text-[22px] font-semibold text-gold">{offset}</span> <span className="text-muted">нед.</span></div>
-          <Button variant="ghost" className="min-h-10 w-12 px-0" onClick={() => { setOffset((o) => Math.min(24, o + 1)); setDirty(true) }}>+</Button>
+          <Button variant="ghost" className="min-h-10 w-12 px-0" onClick={() => { setOffset((o) => Math.min(12, o + 1)); setDirty(true) }}>+</Button>
         </div>
       </Card>
 
@@ -186,7 +187,7 @@ export function PlanEditor({ game, onClose }: { game: Game; onClose: () => void 
           <span className="flex min-h-12 cursor-pointer items-center justify-center rounded-xl text-[15px] text-muted active:bg-panel2">Загрузить план из файла</span>
           <input type="file" accept="application/json,.json" className="hidden" onChange={(e) => onImport(e.target.files?.[0])} />
         </label>
-        <Button variant="quiet" full onClick={async () => { if (confirm('Вернуть стандартный план на 24 недели? Свои миссии и правки пропадут; прогресс игрока сохранится.')) { await resetPlan(); onClose() } }}>Вернуть стандартный план</Button>
+        <Button variant="quiet" full onClick={async () => { if (confirm('Вернуть стандартный план на 12 недель? Свои миссии и правки пропадут; прогресс игрока сохранится.')) { await resetPlan(); onClose() } }}>Вернуть стандартный план</Button>
       </Card>
 
       <Card className="space-y-2">

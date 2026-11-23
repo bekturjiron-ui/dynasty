@@ -6,7 +6,7 @@ import { CONTRACT_REWARD, completeContract } from '../game/engine'
 import { parseUserNumber, fmtNum } from '../lib/format'
 import { Button, Icon, Label } from './ui'
 
-/** Реальный контракт недели: действие в живом кабинете Kaspi с пруфом. */
+/** Реальный контракт недели: действие в живом рекламном кабинете с пруфом. */
 export function ContractCard({ week, result }: { week: Week; result?: ContractResult }) {
   const [open, setOpen] = useState(false)
   const [num, setNum] = useState('')
@@ -62,7 +62,7 @@ export function ContractCard({ week, result }: { week: Week; result?: ContractRe
             <input inputMode="decimal" value={num} onChange={(e) => setNum(e.target.value)} placeholder={week.contract.numberLabel ?? 'Итоговая цифра'}
               className="min-h-12 w-full rounded-xl border border-line bg-ink px-4 text-[17px] outline-none focus:border-gold" />
           )}
-          {proof === 'checkbox' && <p className="text-[14px] text-muted">Подтверди, что действие сделано в живом кабинете.</p>}
+          {proof === 'checkbox' && <p className="text-[14px] text-muted">Подтверди, что действие сделано по-настоящему.</p>}
           <p className="text-[12px] text-muted">Пруф хранится только на этом телефоне.</p>
           {err && <p className="text-[13px] text-loss">{err}</p>}
           <div className="flex gap-2">

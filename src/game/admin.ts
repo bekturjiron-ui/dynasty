@@ -40,14 +40,14 @@ export async function setAllBuildings(owned: boolean) {
   })
 }
 
-/** Полный сброс: игрок, прогресс, постройки, настройки, план, импорт Kaspi. После него игра начинается с экрана основания Дома. */
+/** Полный сброс: игрок, прогресс, постройки, настройки, план. После него игра начинается с экрана основания Дома. */
 export async function resetAll() {
   await db.transaction('rw', db.tables, async () => {
     for (const t of db.tables) await t.clear()
   })
 }
 
-/** Рестарт для игрока: прогресс, титулы, постройки и ресурсы с нуля. Настройки (ставки Kaspi, PIN), архив Kaspi и правки плана наставника остаются,
+/** Рестарт для игрока: прогресс, титулы, постройки и ресурсы с нуля. Настройки (бриф проекта, PIN) и правки плана наставника остаются,
  *  имя Дома тоже. Дата начала ставится заново. */
 export async function restartGame() {
   await db.transaction('rw', [db.player, db.progress, db.bosses, db.contracts, db.activity, db.reports, db.negotiations, db.buildings, db.missionResults], async () => {

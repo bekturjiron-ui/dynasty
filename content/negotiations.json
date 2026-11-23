@@ -1,474 +1,404 @@
 [
-  {
-    "id": "w16-neg",
-    "week": 17,
-    "title": "Закуп Dr.Hana: вернуть маржу",
-    "intro": "{{product.short}} — лидер продаж Novelia, но с каждой продажи остаётся всего {{left|tg}}. Чтобы маржа дошла до 5%, закуп должен опуститься с {{start|tg}} до {{target|tg}}. Сегодня звонит поставщик. Цель — цена не выше этой черты и партнёр, который захочет работать дальше.",
-    "supplier": {
-      "name": "Асель",
-      "company": "K-Beauty Trade",
-      "role": "менеджер дистрибьютора"
-    },
-    "product": "p1",
-    "vars": {
-      "left": "p1.price*(1-fee-tax-pack)-p1.delivery-p1.cost",
-      "target": "p1.price*(1-fee-tax-pack-0.05)-p1.delivery",
-      "sold": "p1.orders*2"
-    },
-    "startPrice": "p1.cost",
-    "maxDiscountPct": 9,
-    "volume": 30,
-    "orders": 3,
-    "loyalty": 60,
-    "patience": 100,
-    "coldBelow": 35,
-    "replacementMarkup": 1.05,
-    "start": "open",
-    "reward": {
-      "xp": 150,
-      "influence": 40
-    },
-    "nodes": [
-      {
-        "id": "open",
-        "npcLine": "Здравствуйте! Это Асель из «K-Beauty Trade». Вижу, {{product.short}} у вас хорошо уходит. Готовы к следующей партии? Цена прежняя — {{start|tg}} за штуку.",
-        "options": [
-          {
-            "text": "Здравствуйте, Асель! Да, за два месяца ушло {{sold}} штук. Хочу обсудить условия на партию побольше.",
-            "tactic": "info",
-            "effect": {
-              "loyalty": 5
-            },
-            "next": "volume"
-          },
-          {
-            "text": "Цена высокая. У других дешевле — снижайте.",
-            "tactic": "pressure",
-            "effect": {
-              "loyalty": -10,
-              "patience": -10
-            },
-            "next": "competitors"
-          },
-          {
-            "text": "Сколько скидки дадите, если возьму {{volume}} штук?",
-            "tactic": "neutral",
-            "effect": {
-              "price": 3,
-              "patience": -5
-            },
-            "next": "offer_small"
-          }
-        ]
+ {
+  "id": "t08-neg",
+  "week": 8,
+  "title": "Договор с блогером",
+  "intro": "Для набора ухода нужна партнёрская реклама у бьюти-блогера. Блогер просит {{start|tg}} за ролик, а по экономике кампании лучше уложиться в {{target|tg}}. Нужен пакет из трёх роликов и партнёр, который захочет работать дальше.",
+  "partner": {
+   "name": "Дана",
+   "company": "Дана про уход",
+   "role": "бьюти-блогер"
+  },
+  "vars": {
+   "target": 55000
+  },
+  "startPrice": 60000,
+  "maxDiscountPct": 12,
+  "volume": 1,
+  "orders": 3,
+  "loyalty": 60,
+  "patience": 100,
+  "coldBelow": 35,
+  "replacementMarkup": 1.1,
+  "start": "open",
+  "reward": {
+   "xp": 150,
+   "influence": 40
+  },
+  "nodes": [
+   {
+    "id": "open",
+    "npcLine": "Здравствуйте! Видела ваш бренд. Интеграция стоит {{start|tg}} за ролик. Что планируете?",
+    "options": [
+     {
+      "text": "Дана, мне нравится, как вы честно разбираете составы. Расскажу о продукте и посмотрим, подойдёт ли он вашей аудитории.",
+      "tactic": "info",
+      "effect": {
+       "loyalty": 5
       },
-      {
-        "id": "volume",
-        "npcLine": "Отлично! А что значит «побольше»?",
-        "options": [
-          {
-            "text": "Сейчас беру понемногу. Готов брать по {{volume}} штук за раз, если цена станет интереснее.",
-            "tactic": "influence",
-            "effect": {
-              "price": 5,
-              "loyalty": 5,
-              "patience": -5
-            },
-            "next": "offer"
-          },
-          {
-            "text": "Сначала расскажите: что вы даёте постоянным клиентам?",
-            "tactic": "info",
-            "effect": {
-              "loyalty": 5,
-              "patience": -5
-            },
-            "next": "terms"
-          },
-          {
-            "text": "Мне нужна цена ниже 6 000 ₸, иначе работать не будем.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 6,
-              "loyalty": -15,
-              "patience": -15
-            },
-            "next": "ceiling"
-          }
-        ]
+      "next": "value"
+     },
+     {
+      "text": "Дорого. Снижайте, у других дешевле.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 4,
+       "loyalty": -15,
+       "patience": -10
       },
-      {
-        "id": "competitors",
-        "npcLine": "У других? У кого именно? У нас официальные поставки, все сертификаты.",
-        "options": [
-          {
-            "text": "Неважно у кого. Либо скидка, либо я ухожу.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 5,
-              "loyalty": -20,
-              "patience": -20
-            },
-            "next": "ceiling"
-          },
-          {
-            "text": "Справедливо, начну иначе. Мне важно работать с вами долго, но на этом товаре у меня почти не остаётся прибыли.",
-            "tactic": "influence",
-            "effect": {
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "honest"
-          },
-          {
-            "text": "Серый импорт на Kaspi дешевле на 15%.",
-            "tactic": "pressure",
-            "effect": {
-              "loyalty": -5,
-              "patience": -10
-            },
-            "next": "grey"
-          }
-        ]
+      "next": "pressed"
+     },
+     {
+      "text": "Какая будет цена, если взять сразу пакет из трёх роликов?",
+      "tactic": "neutral",
+      "effect": {
+       "price": 3,
+       "patience": -5
       },
-      {
-        "id": "offer_small",
-        "npcLine": "На {{volume}} штук могу дать {{discount|pct}}: {{price|tg}} за штуку.",
-        "options": [
-          {
-            "text": "Хорошо, оформляем.",
-            "tactic": "neutral",
-            "effect": {},
-            "next": "$deal"
-          },
-          {
-            "text": "Этого мало. Объясню, почему мне нужно больше.",
-            "tactic": "info",
-            "effect": {
-              "loyalty": 5,
-              "patience": -5
-            },
-            "next": "honest"
-          },
-          {
-            "text": "Несерьёзно. Минимум 15%.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -15,
-              "patience": -15
-            },
-            "next": "ceiling"
-          }
-        ]
-      },
-      {
-        "id": "offer",
-        "npcLine": "{{volume}} штук за раз — это уже разговор. Даю {{discount|pct}}: {{price|tg}} за штуку.",
-        "options": [
-          {
-            "text": "А если оплачу партию сразу — дадите ещё за предоплату?",
-            "tactic": "influence",
-            "effect": {
-              "price": 2,
-              "loyalty": 5,
-              "patience": -5
-            },
-            "next": "prepay"
-          },
-          {
-            "text": "Договорились, оформляем.",
-            "tactic": "neutral",
-            "effect": {
-              "loyalty": 5
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "Это подачка. Идите к руководству, пусть дают больше.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -15,
-              "patience": -15
-            },
-            "next": "ceiling"
-          }
-        ]
-      },
-      {
-        "id": "terms",
-        "npcLine": "Постоянным — скидка от объёма, отсрочка платежа до 30 дней и пробники для вкладышей в заказы.",
-        "options": [
-          {
-            "text": "Отсрочка и пробники — интересно. А цена на {{volume}} штук?",
-            "tactic": "info",
-            "effect": {
-              "price": 5,
-              "loyalty": 5,
-              "patience": -5
-            },
-            "next": "offer"
-          },
-          {
-            "text": "Беру {{volume}} штук и пробники в каждую партию — покупатели попробуют линейку, будут повторные продажи нам обоим. Какая будет цена?",
-            "tactic": "influence",
-            "effect": {
-              "price": 6,
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "samples"
-          },
-          {
-            "text": "Отсрочка мне не нужна, только цена.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -5,
-              "patience": -5
-            },
-            "next": "offer_small"
-          }
-        ]
-      },
-      {
-        "id": "ceiling",
-        "npcLine": "(пауза) Вы со всеми партнёрами так разговариваете? Хорошо: {{price|tg}} за штуку. Это потолок.",
-        "options": [
-          {
-            "text": "Беру. Не обижайтесь — это бизнес.",
-            "tactic": "pressure",
-            "effect": {
-              "loyalty": -10
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "Потолок — ваши проблемы. Ещё 5%, или ухожу.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -20,
-              "patience": -25
-            },
-            "next": "last"
-          },
-          {
-            "text": "Извините, перегнул. Давайте по-человечески: мне нужно поднять маржу на этом товаре до 5%.",
-            "tactic": "influence",
-            "effect": {
-              "loyalty": 15,
-              "patience": -5
-            },
-            "next": "honest"
-          }
-        ]
-      },
-      {
-        "id": "honest",
-        "npcLine": "Почти без прибыли? Расскажите — я не знала.",
-        "options": [
-          {
-            "text": "На Kaspi он стоит {{product.price|tg}}. После закупа, комиссии, налога, упаковки и доставки остаётся {{left|tg}}. Для маржи 5% закуп нужен не выше {{target|tg}}.",
-            "tactic": "info",
-            "effect": {
-              "price": 4,
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "solve"
-          },
-          {
-            "text": "Неважно почему. Просто дайте скидку.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -10,
-              "patience": -10
-            },
-            "next": "offer_small"
-          },
-          {
-            "text": "Сам разберусь. Сколько дадите на {{volume}} штук?",
-            "tactic": "neutral",
-            "effect": {
-              "price": 5,
-              "patience": -5
-            },
-            "next": "offer"
-          }
-        ]
-      },
-      {
-        "id": "grey",
-        "npcLine": "Серый импорт — без сертификатов, Kaspi такие карточки снимает. Вы рискуете всем магазином.",
-        "options": [
-          {
-            "text": "Вы правы. Мне нужна честная цена от официального поставщика.",
-            "tactic": "influence",
-            "effect": {
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "honest"
-          },
-          {
-            "text": "Мне всё равно. Дайте как у них, или я ухожу к ним.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 4,
-              "loyalty": -20,
-              "patience": -20
-            },
-            "next": "last"
-          },
-          {
-            "text": "Ладно. Сколько дадите на {{volume}} штук?",
-            "tactic": "neutral",
-            "effect": {
-              "price": 3,
-              "patience": -5
-            },
-            "next": "offer_small"
-          }
-        ]
-      },
-      {
-        "id": "prepay",
-        "npcLine": "Предоплата нам удобна. Итого скидка {{discount|pct}}: {{price|tg}} за штуку.",
-        "options": [
-          {
-            "text": "Договорились.",
-            "tactic": "neutral",
-            "effect": {
-              "loyalty": 5
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "И пробники в каждую партию — покупатели попробуют линейку, будут повторные продажи у нас обоих.",
-            "tactic": "influence",
-            "effect": {
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "samples"
-          },
-          {
-            "text": "Мало. Ещё 5%.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -20,
-              "patience": -20
-            },
-            "next": "last"
-          }
-        ]
-      },
-      {
-        "id": "solve",
-        "npcLine": "Понятно. Давайте вместе: {{volume}} штук, предоплата — и {{price|tg}} за штуку, скидка {{discount|pct}}. Как вам?",
-        "options": [
-          {
-            "text": "Договорились, спасибо, что вникли.",
-            "tactic": "info",
-            "effect": {
-              "loyalty": 10
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "Давайте закрепим: беру каждые три недели, а вы держите цену квартал.",
-            "tactic": "influence",
-            "effect": {
-              "price": 2,
-              "loyalty": 10,
-              "patience": -5
-            },
-            "next": "loyal"
-          },
-          {
-            "text": "Добавьте ещё 5%.",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -15,
-              "patience": -15
-            },
-            "next": "last"
-          }
-        ]
-      },
-      {
-        "id": "samples",
-        "npcLine": "Пробники в каждую партию — да. Цена {{price|tg}} за штуку, скидка {{discount|pct}}. Что-то ещё?",
-        "options": [
-          {
-            "text": "Ещё немного за предоплату?",
-            "tactic": "influence",
-            "effect": {
-              "price": 2,
-              "patience": -5
-            },
-            "next": "prepay"
-          },
-          {
-            "text": "Нет, всё отлично. Работаем.",
-            "tactic": "neutral",
-            "effect": {
-              "loyalty": 5
-            },
-            "next": "$deal"
-          }
-        ]
-      },
-      {
-        "id": "loyal",
-        "npcLine": "Держать цену квартал могу, если будете брать регулярно. Тогда {{price|tg}} за штуку и отсрочка две недели. По рукам?",
-        "options": [
-          {
-            "text": "По рукам.",
-            "tactic": "neutral",
-            "effect": {
-              "loyalty": 10
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "А если ещё 5% сверху?",
-            "tactic": "pressure",
-            "effect": {
-              "price": 3,
-              "loyalty": -20,
-              "patience": -20
-            },
-            "next": "last"
-          }
-        ]
-      },
-      {
-        "id": "last",
-        "npcLine": "Хорошо. Последнее предложение: {{price|tg}} за штуку. Но этот разговор я запомню.",
-        "options": [
-          {
-            "text": "Беру.",
-            "tactic": "pressure",
-            "effect": {
-              "loyalty": -10
-            },
-            "next": "$deal"
-          },
-          {
-            "text": "Нет. Ухожу.",
-            "tactic": "pressure",
-            "effect": {
-              "loyalty": -5
-            },
-            "next": "$walk"
-          }
-        ]
-      }
+      "next": "pack"
+     }
     ]
-  }
+   },
+   {
+    "id": "value",
+    "npcLine": "Приятно слышать. Если продукт правда хороший, я готова обсуждать. Какой формат думаете?",
+    "options": [
+     {
+      "text": "Три ролика за квартал с понятным планом. Вам стабильная работа, нам постоянное присутствие.",
+      "tactic": "influence",
+      "effect": {
+       "price": 4,
+       "loyalty": 5,
+       "patience": -5
+      },
+      "next": "long"
+     },
+     {
+      "text": "Давайте пакет и оплату заранее, чтобы вам было спокойнее.",
+      "tactic": "info",
+      "effect": {
+       "price": 3,
+       "loyalty": 5,
+       "patience": -5
+      },
+      "next": "pack2"
+     },
+     {
+      "text": "Давайте без лишних разговоров, называйте минимальную цену.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 3,
+       "loyalty": -15,
+       "patience": -10
+      },
+      "next": "pressed"
+     }
+    ]
+   },
+   {
+    "id": "pack",
+    "npcLine": "За пакет могу сделать {{price|tg}} за ролик. Что скажете?",
+    "options": [
+     {
+      "text": "Если платим сразу за все три и даём свободу в подаче, можно ещё немного подвинуться?",
+      "tactic": "influence",
+      "effect": {
+       "price": 4,
+       "loyalty": 5,
+       "patience": -5
+      },
+      "next": "long"
+     },
+     {
+      "text": "Этого мало. Минус ещё десять процентов, иначе уйду.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 5,
+       "loyalty": -20,
+       "patience": -15
+      },
+      "next": "pressed2"
+     },
+     {
+      "text": "Подходит, договорились.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     }
+    ]
+   },
+   {
+    "id": "pack2",
+    "npcLine": "Оплата заранее мне подходит. Тогда {{price|tg}} за ролик. Что ещё важно?",
+    "options": [
+     {
+      "text": "Хотим запускать ролики как партнёрскую рекламу из вашего аккаунта. Обсудим условия?",
+      "tactic": "influence",
+      "effect": {
+       "price": 3,
+       "loyalty": 5,
+       "patience": -5
+      },
+      "next": "rights"
+     },
+     {
+      "text": "Отлично, фиксируем эту цену.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     }
+    ]
+   },
+   {
+    "id": "long",
+    "npcLine": "Долгая работа мне интересна. {{price|tg}} за ролик. А что с правами на рекламу?",
+    "options": [
+     {
+      "text": "Запустим ролики как партнёрскую рекламу на 30 дней, статистику будем показывать вам.",
+      "tactic": "influence",
+      "effect": {
+       "price": 3,
+       "loyalty": 5,
+       "patience": -5
+      },
+      "next": "rights"
+     },
+     {
+      "text": "Права нужны бесплатно и навсегда, это стандарт.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 4,
+       "loyalty": -20,
+       "patience": -15
+      },
+      "next": "pressed2"
+     },
+     {
+      "text": "Хорошо, этой цены достаточно.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     }
+    ]
+   },
+   {
+    "id": "rights",
+    "npcLine": "На 30 дней согласна. И сразу вопрос: как будем помечать рекламу?",
+    "options": [
+     {
+      "text": "Обязательно с пометкой «реклама», пропишем это в договоре. Так защищены и вы, и мы.",
+      "tactic": "info",
+      "effect": {
+       "loyalty": 10,
+       "patience": -5
+      },
+      "next": "marking"
+     },
+     {
+      "text": "Давайте без пометки, так охваты лучше.",
+      "tactic": "pressure",
+      "effect": {
+       "loyalty": -25,
+       "patience": -20
+      },
+      "next": "ethics"
+     }
+    ]
+   },
+   {
+    "id": "marking",
+    "npcLine": "Спасибо, что сразу об этом сказали. С такими брендами работать приятно. Текущая цена {{price|tg}}.",
+    "options": [
+     {
+      "text": "Может, учтём, что мы берём три ролика и рассказываем о вас в своих соцсетях?",
+      "tactic": "influence",
+      "effect": {
+       "price": 2,
+       "patience": -5
+      },
+      "next": "final"
+     },
+     {
+      "text": "Договорились на этой цене.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     }
+    ]
+   },
+   {
+    "id": "final",
+    "npcLine": "Хорошо, {{price|tg}} за ролик. Это моё лучшее предложение.",
+    "options": [
+     {
+      "text": "Спасибо, Дана. Подписываем.",
+      "tactic": "neutral",
+      "effect": {
+       "loyalty": 5
+      },
+      "next": "$deal"
+     },
+     {
+      "text": "Нет, давайте ещё ниже.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 3,
+       "loyalty": -25,
+       "patience": -20
+      },
+      "next": "pressed3"
+     }
+    ]
+   },
+   {
+    "id": "ethics",
+    "npcLine": "Я так не работаю. Для меня это вопрос закона и доверия аудитории.",
+    "options": [
+     {
+      "text": "Вы правы, простите. Делаем с пометкой и в договоре.",
+      "tactic": "info",
+      "effect": {
+       "loyalty": 15,
+       "patience": -5
+      },
+      "next": "marking"
+     },
+     {
+      "text": "Тогда снижайте цену, раз усложняете.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 3,
+       "loyalty": -20,
+       "patience": -25
+      },
+      "next": "pressed3"
+     }
+    ]
+   },
+   {
+    "id": "pressed",
+    "npcLine": "Мне неприятен такой тон. Сейчас могу {{price|tg}}, но обсуждать так дальше сложно.",
+    "options": [
+     {
+      "text": "Извините, начал резко. Давайте спокойно: нам важно работать с вами долго.",
+      "tactic": "info",
+      "effect": {
+       "loyalty": 10,
+       "patience": -5
+      },
+      "next": "recover"
+     },
+     {
+      "text": "Ниже. Или ищу другого блогера.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 5,
+       "loyalty": -20,
+       "patience": -20
+      },
+      "next": "pressed2"
+     },
+     {
+      "text": "Тогда не будем работать.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$walk"
+     }
+    ]
+   },
+   {
+    "id": "recover",
+    "npcLine": "Хорошо, давайте заново. Сейчас {{price|tg}} за ролик. Что предлагаете?",
+    "options": [
+     {
+      "text": "Берём пакет из трёх роликов и платим заранее.",
+      "tactic": "influence",
+      "effect": {
+       "price": 2,
+       "loyalty": 5,
+       "patience": -10
+      },
+      "next": "pack"
+     },
+     {
+      "text": "Меня устраивает эта цена.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     }
+    ]
+   },
+   {
+    "id": "pressed2",
+    "npcLine": "Ладно, {{price|tg}}. Но мне уже не очень хочется этим заниматься.",
+    "options": [
+     {
+      "text": "Ещё ниже, вы же хотите заработать.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 4,
+       "loyalty": -15,
+       "patience": -25
+      },
+      "next": "pressed3"
+     },
+     {
+      "text": "Берём.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     },
+     {
+      "text": "Я перегнул, простите. Давайте вернёмся к нормальному разговору.",
+      "tactic": "info",
+      "effect": {
+       "loyalty": 8,
+       "patience": -10
+      },
+      "next": "recover"
+     }
+    ]
+   },
+   {
+    "id": "pressed3",
+    "npcLine": "{{price|tg}}, и это край. Больше не уступлю.",
+    "options": [
+     {
+      "text": "Беру.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     },
+     {
+      "text": "Нет, ещё ниже.",
+      "tactic": "pressure",
+      "effect": {
+       "price": 3,
+       "loyalty": -15,
+       "patience": -30
+      },
+      "next": "pressed4"
+     }
+    ]
+   },
+   {
+    "id": "pressed4",
+    "npcLine": "Вы слышите меня? Либо {{price|tg}}, либо расходимся.",
+    "options": [
+     {
+      "text": "Хорошо, беру.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$deal"
+     },
+     {
+      "text": "Тогда расходимся.",
+      "tactic": "neutral",
+      "effect": {},
+      "next": "$walk"
+     }
+    ]
+   }
+  ]
+ }
 ]

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Game } from '../game/useGame'
+import { planWeekN } from '../game/plan'
 import { GROUPS, skillState } from '../game/skills'
 import { Card, Label, Title } from '../components/ui'
 import { SkillCard } from './arsenal/SkillCard'
@@ -47,7 +48,7 @@ export default function Arsenal({ game }: { game: Game }) {
             if (!list.length) return null
             return (
               <section key={gk} className="space-y-2">
-                <Label tone={gk === 'kaspi' ? 'gold' : undefined}>{GROUPS[gk].label}</Label>
+                <Label tone={gk === 'base' ? 'gold' : undefined}>{GROUPS[gk].label}</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {list.map(({ skill, state }) => <SkillCard key={skill.id} skill={skill} state={state} onOpen={() => setOpenId(skill.id)} />)}
                 </div>
@@ -59,11 +60,11 @@ export default function Arsenal({ game }: { game: Game }) {
 
       {tab === 'formulas' && (
         <>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск: маржа, СУММ, $…" className="surface min-h-12 w-full rounded-xl border border-line px-4 outline-none focus:border-gold" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск: CPL, ROMI, хук…" className="surface min-h-12 w-full rounded-xl border border-line px-4 outline-none focus:border-gold" />
           {shown.length === 0 && <p className="text-[14px] text-parch/80">{cards.length ? 'Ничего не нашлось.' : 'Пройди первый урок — его формула ляжет сюда.'}</p>}
           {shown.map((l) => (
             <Card key={l.id}>
-              <Label>Неделя {l.week} · {l.title}</Label>
+              <Label>Неделя {planWeekN(c.weeks, (w) => w.lessonIds.includes(l.id), l.week)} · {l.title}</Label>
               <div className="mt-1 font-serif text-[20px] text-gold">{l.arsenalCard.title}</div>
               <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{l.arsenalCard.body}</pre>
             </Card>

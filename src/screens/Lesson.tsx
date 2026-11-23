@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
 import { completeLesson } from '../game/engine'
+import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
 import { TableView } from '../components/TableView'
+import { VideoBlock } from '../components/VideoBlock'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
 type Phase = 'why' | 'demo' | 'guided' | 'solo' | 'report'
@@ -36,7 +38,7 @@ export default function LessonScreen() {
   const touchX = useRef<number | null>(null)
 
   // Контекст урока фиксируется на старте, чтобы цифры не прыгали при смене настроек
-  const scope = useMemo(() => (game.loading || !lesson ? null : withVars(lesson.useRealData ? game.scopeReal : game.scope, lesson.vars)), [game.loading, lesson]) // eslint-disable-line react-hooks/exhaustive-deps
+  const scope = useMemo(() => (game.loading || !lesson ? null : withVars(game.scope, lesson.vars)), [game.loading, lesson]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!lesson) return <Missing onBack={() => nav('/')} />
   if (!scope) return null
@@ -110,7 +112,7 @@ export default function LessonScreen() {
         </div>
       </div>
 
-      <Label>Неделя {lesson.week} · {lesson.title}</Label>
+      <Label>Неделя {game.loading ? lesson.week : planWeekN(game.content.weeks, (w) => w.lessonIds.includes(lesson.id), lesson.week)} · {lesson.title}</Label>
 
       {phase === 'why' && (
         <div className="animate-rise mt-10 space-y-8">
@@ -122,6 +124,7 @@ export default function LessonScreen() {
       {phase === 'demo' && demo && (
         <div className="mt-4 space-y-4" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <div className="text-[13px] text-muted">Разбор {demoIdx + 1} из {lesson.demo.length} · листай свайпом</div>
+          {lesson.video && demoIdx === 0 && <VideoBlock video={lesson.video} />}
           <div key={demoIdx} className="animate-rise space-y-4">
             <p className="text-[17px] leading-relaxed">{render(demo.text, scope)}</p>
             {demo.table && <TableView grid={resolveTable(demo.table, scope)} highlight={demo.highlight} />}
@@ -142,7 +145,7 @@ export default function LessonScreen() {
 
       {phase === 'solo' && (
         <div className="mt-4 space-y-3">
-          <div className="text-[13px] text-muted">Сам: проверяется только итог, допуск ±1%</div>
+          <div className="text-[13px] text-muted">{lesson.solo.choice ? 'Сам: выбери решение' : lesson.solo.textCheck ? 'Сам: напиши так, чтобы прошло модерацию' : 'Сам: проверяется только итог'}</div>
           <ExerciseView key="solo" ex={lesson.solo} scope={scope} mode="solo" reveal={reveal} doneLabel="К докладу" onOff={() => setSoloOffs((n) => n + 1)} onSolved={(r) => finishSolo(r.attempts)} />
           {soloOffs >= 2 && helpIdx === 0 && <p className="text-center text-[13px] text-muted">Застрял? Кнопка «Не понял» внизу — советник подскажет.</p>}
         </div>
@@ -177,7 +180,7 @@ export default function LessonScreen() {
             <div className="space-y-3">
               {helpItems.slice(0, Math.max(helpIdx, 1)).filter((h) => h.kind !== 'reveal').map((h, i) => (
                 <div key={i} className="rounded-xl bg-white/[0.05] p-4">
-                  <Label>{h.kind === 'analogy' ? 'По-заводскому' : `Подсказка советника`}</Label>
+                  <Label>{h.kind === 'analogy' ? 'Простыми словами' : `Подсказка советника`}</Label>
                   <p className="mt-1 text-[16px] leading-relaxed">{h.text}</p>
                 </div>
               ))}
