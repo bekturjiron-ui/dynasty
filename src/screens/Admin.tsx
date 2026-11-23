@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../content'
-import { ADMIN_PIN, adjustPlayer, previewCeremony, resetAll, setAllBuildings, setRank } from '../game/admin'
+import { ADMIN_PIN, adjustPlayer, clearAllProgress, completeAllProgress, previewCeremony, resetAll, setAllBuildings, setRank } from '../game/admin'
 import { downloadBlob, exportState } from '../game/backup'
 import type { Game } from '../game/useGame'
 import { fmtNum } from '../lib/format'
@@ -97,6 +97,14 @@ export default function Admin({ game }: { game: Game }) {
           <Button variant="ghost" className="flex-1" onClick={() => setAllBuildings(true)}>Открыть все</Button>
           <Button variant="ghost" className="flex-1" onClick={() => setAllBuildings(false)}>Закрыть все</Button>
         </div>
+      </Card>
+
+      <Card className="space-y-3">
+        <Label>Прохождение курса · уроков пройдено {game.st.progress.size} из {Object.keys(content.lessons).length}</Label>
+        <p className="text-[13px] text-muted">Для проверки закрытых недель. Награды (XP, Капитал) не начисляются.</p>
+        <Button variant="ghost" full onClick={() => completeAllProgress(false)}>Пройти все уроки</Button>
+        <Button variant="ghost" full onClick={() => completeAllProgress(true)}>Пройти всё: уроки, боссы, переговоры</Button>
+        <Button variant="ghost" full onClick={() => clearAllProgress()}>Снять прохождение</Button>
       </Card>
 
       <Card className="space-y-3">

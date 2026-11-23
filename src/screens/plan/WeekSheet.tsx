@@ -21,6 +21,8 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
   const w: Week = s.week
   const key = w.key ?? w.n
   const state = bossState(s, game)
+  // Порядок уроков меняется только в админ-панели (после ввода её PIN)
+  const isAdmin = sessionStorage.getItem('dynasty-admin') === '1'
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -74,7 +76,7 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
                 const closed = lessonLocked(id, c, game.st)
                 return (
                   <div className={`flex items-center gap-2 rounded-xl bg-white/[0.05] pl-1 ${closed ? 'opacity-50' : ''}`}>
-                    <span {...h.handle} className="flex h-11 w-8 items-center justify-center"><Grip /></span>
+                    {isAdmin ? <span {...h.handle} className="flex h-11 w-8 items-center justify-center"><Grip /></span> : <span className="w-3" />}
                     <button disabled={closed} onClick={() => nav(`/lesson/${id}`)} className="flex flex-1 items-center gap-3 py-3 pr-3 text-left">
                       <span className={pr ? 'text-gain' : 'text-muted'}>{pr ? <Icon name="check" size={18} /> : closed ? <Icon name="lock" size={18} /> : <span className="inline-block w-[18px] text-center text-[13px]">{i + 1}</span>}</span>
                       <span className="flex-1 text-[14px]">{l.title}</span>

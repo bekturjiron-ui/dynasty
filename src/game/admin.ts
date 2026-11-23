@@ -40,6 +40,30 @@ export async function setAllBuildings(owned: boolean) {
   })
 }
 
+/** Отмечает пройденными все уроки (и при withBosses — боссов и переговоры), чтобы проверить закрытые недели. Награды не начисляются. */
+export async function completeAllProgress(withBosses: boolean) {
+  const at = new Date().toISOString()
+  await db.transaction('rw', [db.progress, db.bosses, db.negotiations], async () => {
+    for (const lessonId of Object.keys(content.lessons)) {
+      if (!(await db.progress.get(lessonId))) await db.progress.put({ lessonId, status: 'done', at, attempts: 1, hintsUsed: 0 })
+    }
+    if (!withBosses) return
+    for (const w of content.weeks) {
+      if (w.bossId && content.bosses[w.bossId] && !(await db.bosses.get(w.bossId))) await db.bosses.put({ bossId: w.bossId, week: w.key ?? w.n, at, attempts: 1, livesLeft: 3 })
+      if (w.negotiationId && content.negotiations[w.negotiationId] && !(await db.negotiations.get(w.negotiationId))) {
+        await db.negotiations.put({ id: w.negotiationId, at, end: 'deal', discount: 0, loyalty: 50, saving: 0, runs: 1, rewarded: true })
+      }
+    }
+  })
+}
+
+/** Снимает прохождение уроков, боссов и переговоров: недели снова закрываются по порядку. Ресурсы и титулы не трогает. */
+export async function clearAllProgress() {
+  await db.transaction('rw', [db.progress, db.bosses, db.negotiations], async () => {
+    await Promise.all([db.progress.clear(), db.bosses.clear(), db.negotiations.clear()])
+  })
+}
+
 /** Полный сброс: игрок, прогресс, постройки, настройки, план. После него игра начинается с экрана основания Дома. */
 export async function resetAll() {
   await db.transaction('rw', db.tables, async () => {
