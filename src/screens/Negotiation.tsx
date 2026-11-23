@@ -8,6 +8,7 @@ import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import { fmtTg } from '../lib/format'
 import { render } from '../lib/template'
+import { TermText } from '../components/Glossary'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
 type Line = { who: 'npc' | 'me' | 'note'; text: string; loyalty?: number }
@@ -108,8 +109,8 @@ export default function NegotiationScreen() {
       {!st && (
         <div className="animate-rise space-y-4">
           <Label tone="copper">Переговоры · неделя {game.loading ? n.week : planWeekN(game.content.weeks, (w) => w.negotiationId === n.id, n.week)}</Label>
-          <h1 className="font-serif text-[26px] leading-tight">{n.title}</h1>
-          <Advisor>{render(n.intro, scope)}</Advisor>
+          <h1 className="font-serif text-[26px] leading-tight"><TermText text={n.title} /></h1>
+          <Advisor><TermText text={render(n.intro, scope)} /></Advisor>
           <p className="text-[14px] leading-relaxed text-muted">
             Сколько блогер может уступить, ты не знаешь. Видно цену и лояльность. Давление даёт скидку сейчас, но если партнёр остынет, через 2 хода разговор закончится, а замена стоит дороже. Итог считается на пакет из {n.orders} роликов.
           </p>
@@ -124,7 +125,7 @@ export default function NegotiationScreen() {
               <div key={i} className="animate-rise mx-auto max-w-[90%] rounded-xl border border-loss/40 bg-loss/5 px-3 py-2 text-center text-[13px] text-loss">{l.text}</div>
             ) : (
               <div key={i} className={`animate-rise flex flex-col ${l.who === 'me' ? 'items-end' : 'items-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${l.who === 'me' ? 'rounded-br-md bg-gradient-to-br from-gold/25 to-gold/10 text-parch shadow-[inset_0_1px_0_rgba(255,240,180,0.12)]' : 'surface rounded-bl-md border border-line text-parch'}`}>{l.text}</div>
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${l.who === 'me' ? 'rounded-br-md bg-gradient-to-br from-gold/25 to-gold/10 text-parch shadow-[inset_0_1px_0_rgba(255,240,180,0.12)]' : 'surface rounded-bl-md border border-line text-parch'}`}><TermText text={l.text} /></div>
                 {l.who === 'me' && l.loyalty !== undefined && l.loyalty !== 0 && (
                   <span className={`mt-1 text-[11px] ${l.loyalty > 0 ? 'text-gain' : 'text-loss'}`}>лояльность {l.loyalty > 0 ? '+' : ''}{l.loyalty}</span>
                 )}
@@ -136,7 +137,7 @@ export default function NegotiationScreen() {
             <div className="space-y-2 pt-2">
               {nodes[st.node].options.map((o, i) => (
                 <button key={`${st.moves}-${i}`} onClick={() => pick(o)} className="choice surface w-full rounded-xl border border-line px-4 py-3.5 text-left text-[15px] leading-snug">
-                  {render(o.text, scope)}
+                  <TermText text={render(o.text, scope)} interactiveParent />
                 </button>
               ))}
             </div>

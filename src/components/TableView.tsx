@@ -1,4 +1,5 @@
 import { addr, colLetter, displayCell, isFormula, type Grid } from '../lib/sheet'
+import { TermText } from './Glossary'
 
 type Props = {
   grid: Grid
@@ -71,7 +72,15 @@ export function TableView({ grid, highlight = [], editable = [], selected, verif
                         isSel ? 'outline outline-2 -outline-offset-2 outline-gold' : '',
                       ].join(' ')}
                     >
-                      <div className="truncate">{d.text || (isEd ? <span className="text-gold/50">?</span> : '')}</div>
+                      <div className="truncate">
+                        {d.text
+                          ? !onSelect && !d.isNum && !d.error
+                            ? <TermText text={d.text} />
+                            : d.text
+                          : isEd
+                            ? <span className="text-gold/50">?</span>
+                            : ''}
+                      </div>
                     </td>
                   )
                 })}

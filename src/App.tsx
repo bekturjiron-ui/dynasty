@@ -3,6 +3,7 @@ import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { foundHouse } from './game/engine'
 import { useGame, type Game } from './game/useGame'
 import { Button, Icon, Label, Seal } from './components/ui'
+import { GlossaryProvider } from './components/Glossary'
 import { RankCeremony } from './components/RankCeremony'
 import { ResourceBar } from './components/ResourceBar'
 import { StageBackdrop } from './components/StageBackdrop'
@@ -37,7 +38,7 @@ export default function App() {
 
   const tab = (el: (g: Game) => ReactNode) => <Shell game={game}>{el(game)}</Shell>
   return (
-    <>
+    <GlossaryProvider>
       <Routes>
         <Route path="/" element={tab((g) => <Today game={g} />)} />
         <Route path="/plan" element={tab((g) => <Plan game={g} />)} />
@@ -51,7 +52,7 @@ export default function App() {
         <Route path="*" element={tab((g) => <Today game={g} />)} />
       </Routes>
       <RankCeremony />
-    </>
+    </GlossaryProvider>
   )
 }
 

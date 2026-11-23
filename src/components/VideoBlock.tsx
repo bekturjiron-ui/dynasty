@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Video } from '../content/schema'
+import { TermText } from './Glossary'
 import { Advisor, Button, Icon, Label } from './ui'
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -31,17 +32,17 @@ export function VideoBlock({ video }: { video: Video }) {
         )}
       </div>
       <div className="text-[14px] leading-snug text-parch">{video.title}{video.channel ? <span className="text-muted"> · {video.channel}</span> : null}</div>
-      <p className="text-[14px] leading-relaxed text-muted">На что смотреть: {video.focus}</p>
+      <p className="text-[14px] leading-relaxed text-muted">На что смотреть: <TermText text={video.focus} /></p>
       <a href={watchUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-1 text-[13px] text-gold underline-offset-4 active:underline">Открыть на YouTube</a>
       {q && (
         <div className="space-y-2 border-t border-line pt-3">
-          <p className="text-[15px] leading-relaxed">{q.prompt}</p>
+          <p className="text-[15px] leading-relaxed"><TermText text={q.prompt} /></p>
           {q.choice.options.map((o, i) => (
             <button key={i} onClick={() => setPicked(i)} className={`choice w-full rounded-xl border px-3 py-3 text-left text-[14px] leading-snug ${picked === i ? (o.correct ? 'border-gain/60 bg-gain/5' : 'border-loss/60 bg-loss/5') : 'border-line'}`}>
-              <span className="flex items-start gap-2">{picked === i && o.correct && <span className="text-gain"><Icon name="check" size={16} /></span>}{o.text}</span>
+              <span className="flex items-start gap-2">{picked === i && o.correct && <span className="text-gain"><Icon name="check" size={16} /></span>}<span><TermText text={o.text} interactiveParent /></span></span>
             </button>
           ))}
-          {chosen && <Advisor tone={chosen.correct ? 'gain' : 'loss'}>{chosen.why}</Advisor>}
+          {chosen && <Advisor tone={chosen.correct ? 'gain' : 'loss'}><TermText text={chosen.why} /></Advisor>}
           {chosen && !chosen.correct && <Button variant="quiet" full onClick={() => setPicked(null)}>Выбрать ещё раз</Button>}
         </div>
       )}

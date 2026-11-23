@@ -7,6 +7,7 @@ import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
+import { TermText } from '../components/Glossary'
 import { TableView } from '../components/TableView'
 import { VideoBlock } from '../components/VideoBlock'
 import { Advisor, Button, Icon, Label } from '../components/ui'
@@ -112,21 +113,21 @@ export default function LessonScreen() {
         </div>
       </div>
 
-      <Label>Неделя {game.loading ? lesson.week : planWeekN(game.content.weeks, (w) => w.lessonIds.includes(lesson.id), lesson.week)} · {lesson.title}</Label>
+      <Label>Неделя {game.loading ? lesson.week : planWeekN(game.content.weeks, (w) => w.lessonIds.includes(lesson.id), lesson.week)} · <TermText text={lesson.title} /></Label>
 
       {phase === 'why' && (
         <div className="animate-rise mt-10 space-y-8">
-          <p className="font-serif text-[28px] leading-snug text-parch">{render(lesson.why, scope)}</p>
+          <p className="font-serif text-[28px] leading-snug text-parch"><TermText text={render(lesson.why, scope)} /></p>
           <Button full onClick={() => go('demo')}>Смотреть, как делает профи</Button>
         </div>
       )}
 
       {phase === 'demo' && demo && (
         <div className="mt-4 space-y-4" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <div className="text-[13px] text-muted">Разбор {demoIdx + 1} из {lesson.demo.length} · листай свайпом</div>
+          <div className="text-[13px] text-muted">Разбор {demoIdx + 1} из {lesson.demo.length} · листай свайпом · нажми на подсвеченный термин для расшифровки</div>
           {lesson.video && demoIdx === 0 && <VideoBlock video={lesson.video} />}
           <div key={demoIdx} className="animate-rise space-y-4">
-            <p className="text-[17px] leading-relaxed">{render(demo.text, scope)}</p>
+            <p className="text-[17px] leading-relaxed"><TermText text={render(demo.text, scope)} /></p>
             {demo.table && <TableView grid={resolveTable(demo.table, scope)} highlight={demo.highlight} />}
           </div>
           <div className="flex gap-2">
@@ -160,8 +161,8 @@ export default function LessonScreen() {
           </Advisor>
           <div className="surface-gold rounded-2xl border p-4">
             <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-gold"><Icon name="arsenal" size={16} /> В Арсенал добавлено навсегда</div>
-            <div className="font-serif text-[20px] text-parch">{lesson.arsenalCard.title}</div>
-            <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{lesson.arsenalCard.body}</pre>
+            <div className="font-serif text-[20px] text-parch"><TermText text={lesson.arsenalCard.title} /></div>
+            <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90"><TermText text={lesson.arsenalCard.body} /></pre>
           </div>
           <Button full onClick={() => nav('/')}>В Дом</Button>
         </div>
@@ -181,7 +182,7 @@ export default function LessonScreen() {
               {helpItems.slice(0, Math.max(helpIdx, 1)).filter((h) => h.kind !== 'reveal').map((h, i) => (
                 <div key={i} className="rounded-xl bg-white/[0.05] p-4">
                   <Label>{h.kind === 'analogy' ? 'Простыми словами' : `Подсказка советника`}</Label>
-                  <p className="mt-1 text-[16px] leading-relaxed">{h.text}</p>
+                  <p className="mt-1 text-[16px] leading-relaxed"><TermText text={h.text} /></p>
                 </div>
               ))}
               {phase === 'demo' && helpIdx >= helpItems.length && (

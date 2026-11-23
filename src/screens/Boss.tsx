@@ -9,6 +9,7 @@ import { useGame } from '../game/useGame'
 import type { Scope } from '../lib/expr'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
+import { TermText } from '../components/Glossary'
 import { TableView } from '../components/TableView'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
@@ -67,11 +68,11 @@ export default function BossScreen() {
         </div>
       </div>
       <Label tone="boss">Босс недели {planWeekN(game.content.weeks, (w) => w.bossId === boss.id, boss.week)}</Label>
-      <h1 className="mt-1 font-serif text-[26px] leading-tight">{boss.title}</h1>
+      <h1 className="mt-1 font-serif text-[26px] leading-tight"><TermText text={boss.title} /></h1>
 
       {!result && (
         <div className="mt-4 space-y-4">
-          <p className="text-[16px] leading-relaxed text-parch/90">{render(boss.story, sc)}</p>
+          <p className="text-[16px] leading-relaxed text-parch/90"><TermText text={render(boss.story, sc)} /></p>
           {boss.table && <TableView grid={resolveTable(boss.table, sc)} showFormulaBar={false} />}
           <div className="text-[13px] text-muted">Раунд {round + 1} из {boss.rounds.length}</div>
           <ExerciseView key={`${run}-${round}`} ex={boss.rounds[round]} scope={sc} mode="solo" onOff={off} onSolved={(r) => solved(r.attempts)} doneLabel={round < boss.rounds.length - 1 ? 'Следующий раунд' : 'Добить босса'} />
