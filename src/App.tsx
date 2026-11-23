@@ -6,6 +6,7 @@ import { Button, Icon, Label, Seal } from './components/ui'
 import { GlossaryProvider } from './components/Glossary'
 import { RankCeremony } from './components/RankCeremony'
 import { ResourceBar } from './components/ResourceBar'
+import { VersionBadge } from './components/ChangelogModal'
 import { StageBackdrop } from './components/StageBackdrop'
 import Today from './screens/Today'
 import Plan from './screens/Plan'
@@ -84,7 +85,7 @@ function Shell({ children, game }: { children: ReactNode; game: Game }) {
       </aside>
       <div className="relative mx-auto min-h-dvh max-w-xl md:ml-56 md:max-w-none">
         <main key={loc.pathname} className={`animate-rise mx-auto max-w-xl px-4 pb-28 md:pb-10 ${loc.pathname === '/empire' ? 'md:max-w-6xl' : 'md:max-w-4xl'}`}>
-          {p && <ResourceBar capital={p.capital} xp={p.xp} reputation={p.reputation} />}
+          {p && <ResourceBar capital={p.capital} xp={p.xp} reputation={p.reputation} right={<VersionBadge />} />}
           {children}
         </main>
       </div>
