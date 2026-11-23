@@ -602,7 +602,7 @@ select:focus-visible {
 .pm-label-sub.done { color: #8fc287; }
 
 .pm-road-gold { filter: drop-shadow(0 0 5px rgba(232, 205, 114, 0.7)); transition: stroke-dasharray 1.6s cubic-bezier(0.4, 0, 0.2, 1); }
-.pm-fog { position: absolute; left: -20%; right: -20%; height: 22%; background: radial-gradient(ellipse at 50% 50%, rgba(255, 236, 200, 0.10), rgba(255, 236, 200, 0) 68%); pointer-events: none; will-change: transform; }
+.pm-fog { position: absolute; left: 0; right: 0; height: 22%; background: radial-gradient(ellipse at 50% 50%, rgba(255, 236, 200, 0.10), rgba(255, 236, 200, 0) 68%); pointer-events: none; will-change: transform; }
 .pm-fog-a { top: 18%; transform: translate3d(0, calc(var(--sy, 0) * -0.10px), 0); }
 .pm-fog-b { top: 58%; transform: translate3d(0, calc(var(--sy, 0) * -0.18px), 0); }
 
