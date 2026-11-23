@@ -44,7 +44,7 @@ export default function LessonScreen() {
 
   if (!lesson) return <Missing onBack={() => nav('/')} />
   if (!scope) return null
-  if (lessonLocked(id, game.content ?? content, game.st)) return <LockedGate message="Этот урок откроется, когда ты пройдёшь предыдущие уроки и недели плана. Совет идёт по порядку." />
+  if (game.content && game.st && lessonLocked(id, game.content, game.st)) return <LockedGate message="Этот урок откроется, когда ты пройдёшь предыдущие уроки и недели плана. Совет идёт по порядку." />
 
   const phaseIdx = PHASES.findIndex((p) => p.key === phase)
   const exercise = phase === 'guided' ? lesson.guided : phase === 'solo' ? lesson.solo : null
