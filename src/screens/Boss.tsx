@@ -9,6 +9,7 @@ import { useGame } from '../game/useGame'
 import type { Scope } from '../lib/expr'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
+import { BossDefeatAnim } from '../components/BossDefeatAnim'
 import { TermText } from '../components/Glossary'
 import { LockedGate } from '../components/LockedGate'
 import { TableView } from '../components/TableView'
@@ -84,8 +85,8 @@ export default function BossScreen() {
       )}
 
       {result === 'won' && (
-        <div className="animate-rise mt-8 space-y-4 text-center">
-          <div className="animate-crown surface-gold mx-auto flex h-24 w-24 items-center justify-center rounded-full border text-gold-soft"><Icon name="check" size={48} /></div>
+        <div className="animate-rise mt-5 space-y-4 text-center">
+          <BossDefeatAnim bossId={boss.id} title={boss.title} />
           <p className="font-serif text-[24px]">Вылазка удалась</p>
           <Advisor tone="gain">
             {gain && gain.capital ? <>В казну: <b className="text-gold">+{gain.capital} ₸ Капитала</b>, <b className="text-gold">+{gain.xp} XP</b>. Жизней осталось: {lives}.</> : <>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}
