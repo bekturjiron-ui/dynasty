@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { content } from '../content'
 import type { Release } from '../content/schema'
 import { Button, Label } from './ui'
@@ -18,10 +19,36 @@ function fmtDate(iso: string): string {
   return y && m && d ? `${d}.${m}.${y}` : iso
 }
 
+/** Выделяет **ключевое** или заголовок до двоеточия золотым акцентом с мягким подчёркиванием. */
+function renderChange(text: string): ReactNode {
+  if (text.includes('**')) {
+    return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+      part.startsWith('**') && part.endsWith('**') ? (
+        <span key={i} className="font-semibold text-gold-soft underline decoration-gold/45 underline-offset-4">
+          {part.slice(2, -2)}
+        </span>
+      ) : (
+        <span key={i}>{part}</span>
+      ),
+    )
+  }
+  const idx = text.indexOf(':')
+  if (idx > 0 && idx < 64) {
+    return (
+      <>
+        <span className="font-semibold text-gold-soft underline decoration-gold/45 underline-offset-4">
+          {text.slice(0, idx)}
+        </span>
+        <span>{text.slice(idx)}</span>
+      </>
+    )
+  }
+  return text
+}
+
 /**
  * Кнопка версии в шапке ресурсов + окно «Что нового».
- * При появлении новой версии в content/changelog.json окно открывается один раз автоматически;
- * по нажатию на кнопку версии его всегда можно открыть снова и перепрочитать изменения.
+ * Рендерится в document.body через портал, чтобы backdrop-filter шапки не смещал модалку.
  */
 export function VersionBadge() {
   const releases = content.changelog
@@ -40,8 +67,13 @@ export function VersionBadge() {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKey)
+    }
   }, [open, latest?.version])
 
   if (!latest) return null
@@ -59,7 +91,7 @@ export function VersionBadge() {
         <span>v{latest.version}</span>
         {isNew && <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden="true" />}
       </button>
-      {open && <ChangelogDialog releases={releases} onClose={close} />}
+      {open && createPortal(<ChangelogDialog releases={releases} onClose={close} />, document.body)}
     </>
   )
 }
@@ -68,61 +100,65 @@ function ChangelogDialog({ releases, onClose }: { releases: Release[]; onClose: 
   const [latest, ...older] = releases
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end bg-black/75 backdrop-blur-[2px] md:items-center md:justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`Что нового в версии ${latest.version}`}
     >
       <div
-        className="pb-safe animate-rise surface flex max-h-[85dvh] w-full flex-col rounded-t-3xl border-t border-gold/35 px-5 pt-5 md:max-w-md md:rounded-3xl md:border md:pb-5"
+        className="animate-rise surface-gold relative flex max-h-[86dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-gold/40 p-5 sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <Label>Что нового</Label>
-            <div className="mt-1 flex items-baseline gap-2">
-              <h2 className="gold-text font-serif text-[26px] leading-none">Версия {latest.version}</h2>
-              <span className="text-[12px] tabular-nums text-muted">{fmtDate(latest.date)}</span>
-            </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Закрыть"
+          className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/25 text-[18px] leading-none text-muted transition-colors hover:border-gold/40 hover:text-parch"
+        >
+          ×
+        </button>
+
+        <div className="pr-10">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-gold/45 bg-gold/15 px-2.5 py-0.5 text-[11px] font-semibold tracking-wider text-gold-soft uppercase">
+              Версия {latest.version}
+            </span>
+            <span className="text-[12px] tabular-nums text-muted">{fmtDate(latest.date)}</span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Закрыть"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[18px] leading-none text-muted transition-colors hover:text-parch"
-          >
-            ×
-          </button>
+          <h2 className="gold-text mt-2.5 font-serif text-[28px] leading-[1.15] tracking-wide">
+            {latest.title}
+          </h2>
+          <div className="mt-3 h-px w-full bg-gradient-to-r from-gold/60 via-gold/20 to-transparent" />
         </div>
 
         <div className="mt-4 overflow-y-auto pr-1">
-          <div className="rounded-2xl border border-gold/25 bg-gold/5 p-3.5">
-            <div className="text-[15px] font-semibold text-parch">{latest.title}</div>
-            <ul className="mt-2.5 space-y-2 text-[14px] leading-relaxed text-parch/90">
-              {latest.changes.map((item, i) => (
-                <li key={i} className="flex gap-2">
-                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-hidden="true" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul className="space-y-2.5">
+            {latest.changes.map((item, i) => (
+              <li
+                key={i}
+                className="flex gap-3 rounded-2xl border border-gold/20 bg-ink/55 px-3.5 py-3 text-[14px] leading-relaxed text-parch/95"
+              >
+                <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-gold shadow-[0_0_8px_rgba(216,170,66,0.8)]" aria-hidden="true" />
+                <span>{renderChange(item)}</span>
+              </li>
+            ))}
+          </ul>
 
           {older.length > 0 && (
-            <div className="mt-4 space-y-3">
+            <div className="mt-5 space-y-2.5">
               <Label>Прошлые обновления</Label>
               {older.map((rel) => (
-                <div key={rel.version} className="rounded-2xl border border-line/70 bg-panel/70 p-3.5">
+                <div key={rel.version} className="rounded-2xl border border-line/70 bg-ink/45 p-3.5">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[14px] font-semibold text-gold-soft">v{rel.version} · {rel.title}</span>
+                    <span className="font-serif text-[16px] text-gold-soft">v{rel.version} · {rel.title}</span>
                     <span className="shrink-0 text-[11px] tabular-nums text-muted">{fmtDate(rel.date)}</span>
                   </div>
                   <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
                     {rel.changes.map((item, i) => (
                       <li key={i} className="flex gap-2">
-                        <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-muted/70" aria-hidden="true" />
-                        <span>{item}</span>
+                        <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-gold/60" aria-hidden="true" />
+                        <span>{renderChange(item)}</span>
                       </li>
                     ))}
                   </ul>
@@ -132,7 +168,7 @@ function ChangelogDialog({ releases, onClose }: { releases: Release[]; onClose: 
           )}
         </div>
 
-        <div className="mt-4 pt-1">
+        <div className="mt-5">
           <Button full onClick={onClose}>Понятно</Button>
         </div>
       </div>
