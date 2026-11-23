@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { content as baseContent } from '../../content'
 import type { Mission, Week } from '../../content/schema'
-import { resetPlan, savePlan, setMentorPin, setPlanOffset } from '../../game/engine'
+import { resetPlan, savePlan, setMentorPin, setPlanOffset, syncRank } from '../../game/engine'
 import { downloadBlob } from '../../game/backup'
 import { blankWeek, deadlineOf, parsePlanFile, planToFile, renumber, weekKey } from '../../game/plan'
 import type { Game } from '../../game/useGame'
@@ -27,6 +27,7 @@ export function PlanEditor({ game, onClose }: { game: Game; onClose: () => void 
 
   async function save() {
     await savePlan(weeks, missions, baseContent.weeks, baseContent.missions)
+    await syncRank(baseContent)
     if (offset !== (p.planOffsetWeeks ?? 0)) await setPlanOffset(offset)
     setDirty(false)
     setMsg({ tone: 'gain', text: 'План сохранён. Игрок увидит его сразу.' })

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Game } from '../game/useGame'
+import { planWeekN } from '../game/plan'
 import { GROUPS, skillState } from '../game/skills'
 import { Card, Label, Title } from '../components/ui'
 import { SkillCard } from './arsenal/SkillCard'
@@ -63,7 +64,7 @@ export default function Arsenal({ game }: { game: Game }) {
           {shown.length === 0 && <p className="text-[14px] text-parch/80">{cards.length ? 'Ничего не нашлось.' : 'Пройди первый урок — его формула ляжет сюда.'}</p>}
           {shown.map((l) => (
             <Card key={l.id}>
-              <Label>Неделя {l.week} · {l.title}</Label>
+              <Label>Неделя {planWeekN(c.weeks, (w) => w.lessonIds.includes(l.id), l.week)} · {l.title}</Label>
               <div className="mt-1 font-serif text-[20px] text-gold">{l.arsenalCard.title}</div>
               <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90">{l.arsenalCard.body}</pre>
             </Card>

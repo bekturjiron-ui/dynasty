@@ -4,6 +4,7 @@ import { content } from '../content'
 import type { NegOption } from '../content/schema'
 import { completeNegotiation } from '../game/engine'
 import { choose, COLD_LIMIT, negScope, outcome, startNeg, type NegOutcome, type NegState } from '../game/negotiation'
+import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import { fmtTg } from '../lib/format'
 import { render } from '../lib/template'
@@ -106,7 +107,7 @@ export default function NegotiationScreen() {
 
       {!st && (
         <div className="animate-rise space-y-4">
-          <Label tone="copper">Переговоры · неделя {n.week}</Label>
+          <Label tone="copper">Переговоры · неделя {game.loading ? n.week : planWeekN(game.content.weeks, (w) => w.negotiationId === n.id, n.week)}</Label>
           <h1 className="font-serif text-[26px] leading-tight">{n.title}</h1>
           <Advisor>{render(n.intro, scope)}</Advisor>
           <p className="text-[14px] leading-relaxed text-muted">

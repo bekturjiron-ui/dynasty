@@ -1,7 +1,7 @@
 // План поверх контента: наставник правит недели, порядок, тексты, свои миссии.
 // Базовый план — content/plan.json; правки — в IndexedDB (таблица plan). Прогресс привязан к Week.key, не к позиции.
 import { z } from 'zod'
-import { MissionSchema, WeekSchema, type Content, type Mission, type Week } from '../content/schema'
+import { MissionSchema, WeekSchema, type Content, type Mission, type Rank, type Week } from '../content/schema'
 import { addDays } from '../lib/dates'
 
 export const weekKey = (w: Week) => w.key ?? w.n
@@ -74,6 +74,12 @@ export function effectiveContent(base: Content, override?: { weeks: Week[]; miss
   const added = base.missions.filter((m) => !known.has(m.id) && !own.some((o) => o.id === m.id))
   return { ...base, weeks, missions: [...own, ...added].filter((m) => keys.has(m.weekKey)) }
 }
+
+/** Контракты титула, которые ещё есть в плане: удалённая наставником неделя не должна блокировать повышение. */
+export const rankContracts = (rank: Rank, weeks: Week[]) => rank.promoteWhen.contracts.filter((k) => weeks.some((w) => weekKey(w) === k))
+
+/** Номер недели по текущему плану: уроки и боссы можно переставлять, а в контенте лежит исходный номер. */
+export const planWeekN = (weeks: Week[], has: (w: Week) => boolean, fallback: number) => weeks.find(has)?.n ?? fallback
 
 /** Дедлайн недели: свой или конец недели по дате старта и растяжению. */
 export function deadlineOf(w: Week, startedAt: string, planOffsetWeeks = 0): string {

@@ -4,6 +4,7 @@ import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
 import { completeBoss } from '../game/engine'
 import { jitterVars } from '../game/jitter'
+import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import type { Scope } from '../lib/expr'
 import { render } from '../lib/template'
@@ -65,7 +66,7 @@ export default function BossScreen() {
           ))}
         </div>
       </div>
-      <Label tone="boss">Босс недели {boss.week}</Label>
+      <Label tone="boss">Босс недели {planWeekN(game.content.weeks, (w) => w.bossId === boss.id, boss.week)}</Label>
       <h1 className="mt-1 font-serif text-[26px] leading-tight">{boss.title}</h1>
 
       {!result && (

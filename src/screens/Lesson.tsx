@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
 import { completeLesson } from '../game/engine'
+import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
@@ -111,7 +112,7 @@ export default function LessonScreen() {
         </div>
       </div>
 
-      <Label>Неделя {lesson.week} · {lesson.title}</Label>
+      <Label>Неделя {game.loading ? lesson.week : planWeekN(game.content.weeks, (w) => w.lessonIds.includes(lesson.id), lesson.week)} · {lesson.title}</Label>
 
       {phase === 'why' && (
         <div className="animate-rise mt-10 space-y-8">
