@@ -4,13 +4,12 @@ import { db, DEFAULT_SETTINGS, type Settings } from '../db'
 import { content } from '../content'
 import { baseScope } from '../content/scope'
 import { computeStreak, currentWeek, focusWeek, rankProgress, type State } from './engine'
-import { applyFilter, applyOverrides, overridesFrom } from './importKaspi'
 import { effectiveContent } from './plan'
 
 /** Всё живое состояние игры из IndexedDB, пересчитывается при каждом изменении. */
 export function useGame() {
   const data = useLiveQuery(async () => {
-    const [player, settings, progress, bosses, contracts, activity, negotiations, buildings, reports, kaspi, plan, missionResults] = await Promise.all([
+    const [player, settings, progress, bosses, contracts, activity, negotiations, buildings, reports, plan, missionResults] = await Promise.all([
       db.player.get('me'),
       db.settings.get('main'),
       db.progress.toArray(),
@@ -20,11 +19,10 @@ export function useGame() {
       db.negotiations.toArray(),
       db.buildings.toArray(),
       db.reports.toArray(),
-      db.imports.get('kaspi'),
       db.plan.get('main'),
       db.missionResults.toArray(),
     ])
-    return { player, settings: settings ?? DEFAULT_SETTINGS, progress, bosses, contracts, activity, negotiations, buildings, reports, kaspi, plan, missionResults }
+    return { player, settings: settings ?? DEFAULT_SETTINGS, progress, bosses, contracts, activity, negotiations, buildings, reports, plan, missionResults }
   })
 
   return useMemo(() => {
@@ -39,12 +37,7 @@ export function useGame() {
     // план с правками наставника поверх content/plan.json
     const eff = effectiveContent(content, data.plan)
     const settings: Settings = data.settings
-    const scope = baseScope(content.products, settings)
-    // Уроки с useRealData берут продажи (и, если включено, цены/доставку) из импорта архива Kaspi
-    const kaspi = data.kaspi
-    const kept = kaspi ? applyFilter(kaspi.rows, kaspi.filter) : []
-    const overrides = kaspi ? overridesFrom(kept, content.products) : []
-    const scopeReal = kaspi && overrides.length ? baseScope(applyOverrides(content.products, overrides, kaspi.apply), settings) : scope
+    const scope = baseScope(content.offers)
     const streak = computeStreak(data.activity.map((a) => a.day))
     const player = data.player
     const now = player ? currentWeek(player, undefined, eff.weeks.length) : 1
@@ -59,11 +52,7 @@ export function useGame() {
       buildings: new Set(data.buildings.map((x) => x.id)),
       activity: data.activity,
       reports: [...data.reports].sort((a, b) => a.week - b.week),
-      kaspi,
-      kaspiRows: kept,
-      overrides,
       scope,
-      scopeReal,
       streak,
       weekNow: now,
       focus: player ? focusWeek(eff, st, now) : undefined,

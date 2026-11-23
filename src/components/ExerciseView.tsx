@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Exercise } from '../content/schema'
+import { checkAd, type AdIssue } from '../content/adCheck'
 import { checkSteps, exerciseScope, resolveTable } from '../content/scope'
 import { checkTarget, expectedValues, setCell, type SheetVerdict } from '../content/sheetCheck'
 import { evalNum, type Scope } from '../lib/expr'
@@ -24,7 +25,78 @@ type Props = {
 }
 
 export function ExerciseView(props: Props) {
+  if (props.ex.choice) return <ChoiceExercise {...props} />
+  if (props.ex.textCheck) return <TextExercise {...props} />
   return props.ex.sheet ? <SheetExercise {...props} /> : <NumberExercise {...props} />
+}
+
+// ---------------- Выбор решения ----------------
+
+function ChoiceExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Дальше', reveal }: Props) {
+  const scope = useMemo(() => exerciseScope(scope0, ex), [scope0, ex])
+  // Порядок вариантов перемешан один раз, чтобы верный ответ не стоял всегда на одном месте
+  const [options] = useState(() => ex.choice!.options.map((o) => ({ o, k: Math.random() })).sort((a, b) => a.k - b.k).map((x) => x.o))
+  const [tried, setTried] = useState<number[]>([])
+  const [picked, setPicked] = useState<number | null>(null)
+  const solved = picked !== null && options[picked].correct
+
+  function pick(i: number) {
+    if (solved || tried.includes(i)) return
+    setPicked(i)
+    setTried((t) => [...t, i])
+    if (!options[i].correct) onOff?.()
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <div className="space-y-2">
+        {options.map((o, i) => {
+          const was = tried.includes(i)
+          const hint = reveal && o.correct && !solved
+          return (
+            <button key={i} onClick={() => pick(i)} disabled={solved || was} className={`choice surface w-full rounded-xl border px-4 py-3.5 text-left text-[15px] leading-snug ${was ? (o.correct ? 'border-gain/60' : 'border-loss/50 opacity-70') : hint ? 'border-gold' : 'border-line'}`}>
+              <span className="flex items-start gap-2">{was && o.correct && <span className="text-gain"><Icon name="check" size={18} /></span>}{render(o.text, scope)}</span>
+            </button>
+          )
+        })}
+      </div>
+      {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник подсветил решение золотой рамкой.</p>}
+      {picked !== null && <Advisor tone={options[picked].correct ? 'gain' : 'loss'}>{render(options[picked].why, scope)}</Advisor>}
+      {solved && <Button full onClick={() => onSolved({ attempts: tried.length })}>{doneLabel}</Button>}
+    </div>
+  )
+}
+
+// ---------------- Текст объявления ----------------
+
+function TextExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Дальше', reveal }: Props) {
+  const c = ex.textCheck!
+  const scope = useMemo(() => exerciseScope(scope0, ex), [scope0, ex])
+  const [val, setVal] = useState('')
+  const [issues, setIssues] = useState<AdIssue[] | null>(null)
+  const [attempts, setAttempts] = useState(0)
+  const solved = issues !== null && issues.length === 0
+  const len = val.trim().length
+
+  function check() {
+    const found = checkAd(val, c)
+    setAttempts((a) => a + 1)
+    setIssues(found)
+    if (found.length) onOff?.()
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <textarea value={val} readOnly={solved} onChange={(e) => { setVal(e.target.value); setIssues(null) }} rows={4} placeholder={c.placeholder ?? 'Текст объявления'} className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-[16px] leading-relaxed text-parch outline-none focus:border-gold" />
+      <div className={`text-right text-[13px] tabular-nums ${len > c.maxLength ? 'text-loss' : 'text-muted'}`}>{len} / {c.maxLength}</div>
+      {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник: например, «{render(c.sample, scope)}»</p>}
+      {issues && issues.length > 0 && <Advisor tone="loss">{issues.map((x) => x.text).join(' ')}</Advisor>}
+      {solved && <Advisor tone="gain">Объявление проходит проверку: {len} знаков, правила площадки соблюдены.</Advisor>}
+      {solved ? <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button> : <Button full onClick={check} disabled={!len}>Проверить объявление</Button>}
+    </div>
+  )
 }
 
 // ---------------- Числовые задачи ----------------
@@ -119,7 +191,7 @@ function keysFor(solutions: string[]): string[] {
 }
 
 function verdictText(cell: string, v: Extract<SheetVerdict, { ok: false }>): string {
-  if (v.reason === 'missing' && v.missing === ';0)') return `Значение в ${cell} сходится случайно. Поставь в конце ВПР 0: без него таблица ищет примерно и на другом товаре подставит чужую цену.`
+  if (v.reason === 'missing' && v.missing === ';0)') return `Значение в ${cell} сходится случайно. Поставь в конце ВПР 0: без него таблица ищет примерно и подставит чужое значение.`
   if (v.reason === 'not_found') return `В ${cell} таблица показывает #Н/Д: такого значения нет там, где она ищет. Проверь, что ищешь по нужной ячейке и в нужном диапазоне.`
   switch (v.reason) {
     case 'empty': return `В ${cell} пока пусто.`

@@ -1,30 +1,21 @@
-// Базовый контекст для формул контента: товары, комиссии, спецтовары worst/best.
+// Базовый контекст для формул контента: учебные офферы o1…oN и их экономика.
 import { evaluate, evalNum, type Scope } from '../lib/expr'
 import { render } from '../lib/template'
-import type { Exercise, Product, Table } from './schema'
+import type { Exercise, Offer, Table } from './schema'
 import type { Grid } from '../lib/sheet'
 
-export type SettingsLike = { kaspiFeePct: number; deliveryCost: number; taxPct: number; packPct?: number }
-
-export const PACK_DEFAULT_PCT = 1
-
-export function unitProfit(p: Product, s: SettingsLike): number {
-  const fee = s.kaspiFeePct / 100, tax = s.taxPct / 100, pack = (s.packPct ?? PACK_DEFAULT_PCT) / 100
-  return p.price - p.price * fee - (p.delivery ?? s.deliveryCost) - p.price * tax - p.price * pack - p.cost - p.inbound
+/** Потолки в ноль: прибыль с продажи → цена клиента → цена заявки → цена клика. */
+export function offerEconomy(o: Pick<Offer, 'price' | 'margin' | 'clickToLead' | 'leadToSale'>) {
+  const profit = o.price * o.margin
+  const maxCac = profit
+  const maxCpl = maxCac * o.leadToSale
+  const maxCpc = maxCpl * o.clickToLead
+  return { profit, maxCac, maxCpl, maxCpc }
 }
 
-export function baseScope(products: Product[], s: SettingsLike): Scope {
-  const scope: Scope = {
-    fee: s.kaspiFeePct / 100,
-    tax: s.taxPct / 100,
-    pack: (s.packPct ?? PACK_DEFAULT_PCT) / 100,
-    delivery: s.deliveryCost,
-  }
-  const withShort = products.map((p) => ({ ...p, short: p.short ?? p.name, delivery: p.delivery ?? s.deliveryCost }))
-  for (const p of withShort) scope[p.id] = p
-  const byProfit = [...withShort].sort((a, b) => unitProfit(a, s) - unitProfit(b, s))
-  scope.worst = byProfit[0]
-  scope.best = byProfit[byProfit.length - 1]
+export function baseScope(offers: Offer[]): Scope {
+  const scope: Scope = {}
+  for (const o of offers) scope[o.id] = { ...o, short: o.short ?? o.name, ...offerEconomy(o) }
   return scope
 }
 

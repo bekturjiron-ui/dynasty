@@ -110,7 +110,7 @@ function Welcome() {
       <img src="./icons/icon-192.png" alt="" className="mx-auto h-24 w-24 rounded-3xl" />
       <h1 className="gold-text mt-6 text-center font-serif text-[40px] leading-none">Династия</h1>
       <p className="mt-4 text-center text-[16px] leading-relaxed text-parch/90">
-        24 недели: от Посыльного до Главы Дома. Титулы здесь не покупаются кликами — только верным расчётом, сданной таблицей, реальной сделкой.
+        12 недель: от Посыльного до Главы Дома. Учимся запускать рекламу в Instagram и Telegram. Титулы здесь не покупаются: только верным расчётом, рабочим креативом и реальным запуском.
       </p>
       <div className="mt-8 space-y-3">
         <Label>Как назовём твой Дом?</Label>

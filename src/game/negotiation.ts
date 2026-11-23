@@ -1,6 +1,6 @@
 // Движок переговоров: чистые функции, без React и базы — их же гоняет валидатор.
 import type { Negotiation, NegOption } from '../content/schema'
-import { evaluate, evalNum, type Scope } from '../lib/expr'
+import { evalNum, type Scope } from '../lib/expr'
 import { withVars } from '../content/scope'
 
 export type NegEnd = 'deal' | 'walk' | 'walkout' | 'left'
@@ -22,7 +22,7 @@ export type NegState = {
 
 const clamp = (x: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, x))
 
-/** Через сколько ходов похолодания поставщик уходит («через 2 хода» после первого предупреждения). */
+/** Через сколько ходов похолодания партнёр уходит («через 2 хода» после первого предупреждения). */
 export const COLD_LIMIT = 3
 
 export function startNeg(n: Negotiation): NegState {
@@ -57,7 +57,6 @@ export function negScope(n: Negotiation, base: Scope, st?: NegState): Scope {
   const discount = st?.discount ?? 0
   return {
     ...sc,
-    product: evaluate(n.product, sc),
     start,
     volume: n.volume,
     discount: discount / 100,
@@ -70,7 +69,7 @@ export type NegOutcome = {
   start: number
   dealUnit?: number
   orders: NegOrder[]
-  /** Экономия за все партии против стартовой цены, ₸ (может быть минус) */
+  /** Экономия за все размещения против стартовой цены, ₸ (может быть минус) */
   saving: number
   /** Сколько можно было сэкономить: потолок скидки при сохранённых отношениях */
   bestSaving: number
@@ -80,7 +79,7 @@ export type NegOutcome = {
   verdict: string
 }
 
-/** Итог: что сделка даст Дому за несколько партий. Низкая лояльность — скидка только на первую партию. */
+/** Итог: что сделка даст Дому за несколько размещений. Низкая лояльность — скидка только на первое. */
 export function outcome(n: Negotiation, st: NegState, base: Scope): NegOutcome {
   const sc = negScope(n, base, st)
   const start = sc.start as number
@@ -93,24 +92,24 @@ export function outcome(n: Negotiation, st: NegState, base: Scope): NegOutcome {
   let xp = false
 
   if (st.end === 'deal' && st.loyalty >= n.coldBelow) {
-    for (let i = 1; i <= n.orders; i++) orders.push({ n: i, unit: deal, note: i === 1 ? 'по новой цене' : st.loyalty >= 70 ? 'по новой цене, поставщик сам предлагает бонусы' : 'по новой цене' })
+    for (let i = 1; i <= n.orders; i++) orders.push({ n: i, unit: deal, note: i === 1 ? 'по новой цене' : st.loyalty >= 70 ? 'по новой цене, блогер сам предлагает идеи' : 'по новой цене' })
     verdict = st.loyalty >= 70
-      ? 'Скидка есть, и партнёр на твоей стороне. Так строили дом Ротшильды: доверие приносит деньги каждый следующий раз.'
+      ? 'Цена снижена, и блогер на твоей стороне. Такой партнёр снимает живее, а доверие его аудитории работает на рекламу каждый следующий раз.'
       : 'Сделка рабочая. Отношения ровные — не друг, но и не враг.'
     reputation = Math.round(clamp((st.loyalty - 50) / 5, -10, 10))
     influence = st.loyalty >= 50 ? n.reward.influence : 10
     xp = true
   } else if (st.end === 'deal') {
-    orders.push({ n: 1, unit: deal, note: 'скидку выжал' })
+    orders.push({ n: 1, unit: deal, note: 'скидку выжал, ролик снят без души' })
     for (let i = 2; i <= n.orders; i++)
-      orders.push({ n: i, unit: replacement, note: i === 2 ? 'поставщик «не успел» отгрузить — взял у другого дороже' : 'старый поставщик больше не отвечает' })
-    verdict = 'Скидку выжал — и потерял поставщика. Униженный партнёр не отгружает вторую партию, а замена стоит дороже. XP за такую сделку не даётся: в сумме Дом в минусе.'
+      orders.push({ n: i, unit: replacement, note: i === 2 ? 'блогер «занят», взяли другого дороже' : 'прежний блогер больше не отвечает' })
+    verdict = 'Скидку выжал и потерял блогера. Следующие ролики пришлось покупать у другого, дороже. XP за такую сделку не даётся: в сумме Дом в минусе.'
     reputation = -8
   } else {
-    for (let i = 1; i <= n.orders; i++) orders.push({ n: i, unit: replacement, note: 'у другого поставщика, дороже' })
+    for (let i = 1; i <= n.orders; i++) orders.push({ n: i, unit: replacement, note: 'у другого блогера, дороже' })
     verdict =
-      st.end === 'left' ? 'Поставщик закончил разговор: отношения остыли. Товар теперь берём у другого — дороже.'
-      : st.end === 'walkout' ? 'У поставщика кончилось терпение. Переговоры сорваны.'
+      st.end === 'left' ? 'Блогер закончил разговор: отношения остыли. Размещение теперь берём у другого, дороже.'
+      : st.end === 'walkout' ? 'У блогера кончилось терпение. Переговоры сорваны.'
       : 'Ты ушёл без сделки. Иногда это правильно — но здесь потолок скидки был выше нуля.'
     reputation = st.end === 'walk' ? 0 : -8
   }

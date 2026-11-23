@@ -5,7 +5,7 @@ import { addDays, dayKey, daysBetween, weekStart } from '../lib/dates'
 import type { Content, Mission, Week } from '../content/schema'
 import { emitRankUp } from './events'
 
-export const TOTAL_WEEKS = 24
+export const TOTAL_WEEKS = 12
 export const CONTRACT_REWARD = { capital: 500, xp: 200 }
 
 // ---------- Серия дней со щитом ----------
@@ -250,7 +250,7 @@ export async function resetPlan() {
 /** «Растянуть план на N недель»: сдвигает текущую неделю, дедлайны и график соперника. */
 export async function setPlanOffset(weeks: number) {
   const p = await db.player.get('me')
-  if (p) await db.player.put({ ...p, planOffsetWeeks: Math.max(0, Math.min(24, Math.round(weeks))) })
+  if (p) await db.player.put({ ...p, planOffsetWeeks: Math.max(0, Math.min(TOTAL_WEEKS, Math.round(weeks))) })
 }
 export async function setMentorPin(pin: string) {
   const s = (await db.settings.get('main')) ?? { ...DEFAULT_SETTINGS }
@@ -268,7 +268,7 @@ async function completeMissionRaw(content: Content, m: Mission, data: { value?: 
 
 export const REPORT_REWARD = { xp: 40 }
 
-/** Совет Дома: недельные цифры Novelia. XP — один раз за неделю плана; исправить цифры можно без награды. */
+/** Совет Дома: недельные цифры рекламной кампании. XP — один раз за неделю плана; исправить цифры можно без награды. */
 async function saveWeeklyReportRaw(content: Content, r: WeeklyReport) {
   const prev = await db.reports.get(r.week)
   await db.reports.put({ ...r, at: new Date().toISOString() })

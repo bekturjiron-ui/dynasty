@@ -2,6 +2,7 @@
 
 Прочитайте перед началом работы: `AGENTS.md`, `CLAUDE.md`, `docs/AI-HANDOFF.md`, `docs/PARALLEL-WORK.md`.
 
+- **Важно:** курс заменён на таргетинг (Kaspi убран). Пока ветка `claude/work` не влита в `main`, не запускайте `node tools/ship.mjs` и не правьте `content/`: автослияние старого контента сломает сайт. После слияния сделайте `git merge origin/main`.
 - Интерфейс и контент на русском. Стиль: тёмная тема, золото. Mobile-first, проверять на ширине 390px.
 - Контент только в `content/*.json`; после правок `npm run validate`. Цифры из контента не хардкодить.
 - Формулы только через `src/lib/expr.ts` и `src/lib/sheet.ts`, никогда `eval` или `new Function`.

@@ -1,6 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { DEFAULT_SETTINGS } from './defaults'
-import type { Filter, Row } from './game/importKaspi'
 import type { Mission, Week } from './content/schema'
 
 export type Player = {
@@ -36,33 +35,25 @@ export type ContractResult = {
 /** День, когда игрок сделал хотя бы одно проверяемое действие — для серии. */
 export type Activity = { day: string; xp: number; actions: number }
 
-/** packPct — упаковка в % от цены; в старых сохранениях может отсутствовать */
-export type Settings = { id: 'main'; kaspiFeePct: number; deliveryCost: number; taxPct: number; packPct?: number; mentorPin: string }
+/** Бриф своего проекта: из него Совет считает потолки цены клиента, заявки и клика. */
+export type ProjectBrief = { name: string; niche: string; avgCheck: number; marginPct: number; clickToLeadPct: number; leadToSalePct: number; targetCacPct: number }
+export type Settings = { id: 'main'; mentorPin: string; project: ProjectBrief }
 
+/** Цифры рекламной кампании за неделю плана. */
 export type WeeklyReport = {
   week: number
+  spend: number
+  impressions: number
+  reach: number
+  clicks: number
+  leads: number
+  sales: number
   revenue: number
-  orders: number
-  reviews: number
-  adSpend: number
-  /** Маржа недели, в долях (0.12 = 12%) */
-  margin?: number
   note?: string
   at?: string
 }
 
 export { DEFAULT_SETTINGS }
-
-/** Импорт архива заказов Kaspi. В rows — только товар, дата, сумма, количество, статус, доставка, категория. */
-export type KaspiImport = {
-  id: 'kaspi'
-  at: string
-  fileName: string
-  rows: Row[]
-  filter: Filter
-  /** Что из архива подставлять в уроки с useRealData */
-  apply: { price: boolean; orders: boolean; delivery: boolean }
-}
 
 /** Правки плана наставником (и порядок уроков игроком). Нет записи — действует content/plan.json. */
 export type PlanOverride = {
@@ -105,7 +96,6 @@ class DynastyDB extends Dexie {
   reports!: EntityTable<WeeklyReport, 'week'>
   negotiations!: EntityTable<NegotiationResult, 'id'>
   buildings!: EntityTable<OwnedBuilding, 'id'>
-  imports!: EntityTable<KaspiImport, 'id'>
   plan!: EntityTable<PlanOverride, 'id'>
   missionResults!: EntityTable<MissionResult, 'id'>
 
@@ -124,10 +114,14 @@ class DynastyDB extends Dexie {
     this.version(2).stores({ negotiations: 'id' })
     // v3: постройки Империи
     this.version(3).stores({ buildings: 'id' })
-    // v4: импорт архива Kaspi (только обезличенные строки)
+    // v4: импорт архива (таблица удалена в v6)
     this.version(4).stores({ imports: 'id' })
     // v5: план наставника и свои миссии
     this.version(5).stores({ plan: 'id', missionResults: 'id' })
+    // v6: новый курс по таргетингу. Старые уроки, недели и настройки несовместимы: полный сброс один раз.
+    this.version(6).stores({ imports: null }).upgrade(async (tx) => {
+      for (const t of ['player', 'progress', 'bosses', 'contracts', 'activity', 'settings', 'reports', 'negotiations', 'buildings', 'plan', 'missionResults']) await tx.table(t).clear()
+    })
   }
 }
 

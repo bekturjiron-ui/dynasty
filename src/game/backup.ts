@@ -1,6 +1,9 @@
 import { db, type ContractResult, type MissionResult } from '../db'
 import { dayKey } from '../lib/dates'
 
+/** 2 — курс по таргетингу. Бэкапы старого курса несовместимы: другие уроки, недели и настройки. */
+const BACKUP_VERSION = 2
+
 const blobToDataUrl = (b: Blob) =>
   new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(b) })
 
@@ -11,7 +14,7 @@ export async function exportState(): Promise<Blob> {
   )
   const data = {
     app: 'dynasty',
-    version: 1,
+    version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     player: await db.player.toArray(),
     progress: await db.progress.toArray(),
@@ -42,7 +45,7 @@ const KEYS: Record<(typeof TABLES)[number], string> = { player: 'id', progress: 
 
 /** Проверка файла ДО очистки базы: версия, что таблицы — массивы объектов с ключом, и что игрок выглядит как игрок. */
 function validateBackup(data: Record<string, unknown>) {
-  if (data.version !== undefined && data.version !== 1) throw new Error('Бэкап сделан другой версией игры')
+  if (data.version !== BACKUP_VERSION) throw new Error('Этот бэкап сделан для прошлого курса и сюда не подходит')
   for (const t of TABLES) {
     const rows = data[t]
     if (rows === undefined) continue
