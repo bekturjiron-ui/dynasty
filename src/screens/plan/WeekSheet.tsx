@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Week } from '../../content/schema'
 import { deadlineOf } from '../../game/plan'
-import type { WeekStatus } from '../../game/engine'
+import { lessonLocked, type WeekStatus } from '../../game/engine'
 import type { Game } from '../../game/useGame'
 import { BossToken } from '../../components/BossToken'
 import { ContractCard } from '../../components/ContractCard'
@@ -54,6 +54,7 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
             <div className="font-serif text-[22px] leading-snug">{w.title}</div>
             <div className="mt-0.5 text-[12px] text-muted">
               до {fmtDate(deadlineOf(w, p.startedAt, p.planOffsetWeeks))} · {s.lessonsTotal ? `уроки ${s.lessonsDone}/${s.lessonsTotal}` : 'уроки готовятся'}
+              {s.locked ? ' · откроется после предыдущей недели' : ''}
               {s.missions.length ? ` · миссии ${s.missionsDone}/${s.missions.length}` : ''}{s.contractDone ? ' · контракт ✓' : ''}
             </div>
           </div>
@@ -70,11 +71,12 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
               render={(id, i, h) => {
                 const l = c.lessons[id]
                 const pr = game.st.progress.get(id)
+                const closed = lessonLocked(id, c, game.st)
                 return (
-                  <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] pl-1">
+                  <div className={`flex items-center gap-2 rounded-xl bg-white/[0.05] pl-1 ${closed ? 'opacity-50' : ''}`}>
                     <span {...h.handle} className="flex h-11 w-8 items-center justify-center"><Grip /></span>
-                    <button onClick={() => nav(`/lesson/${id}`)} className="flex flex-1 items-center gap-3 py-3 pr-3 text-left">
-                      <span className={pr ? 'text-gain' : 'text-muted'}>{pr ? <Icon name="check" size={18} /> : <span className="inline-block w-[18px] text-center text-[13px]">{i + 1}</span>}</span>
+                    <button disabled={closed} onClick={() => nav(`/lesson/${id}`)} className="flex flex-1 items-center gap-3 py-3 pr-3 text-left">
+                      <span className={pr ? 'text-gain' : 'text-muted'}>{pr ? <Icon name="check" size={18} /> : closed ? <Icon name="lock" size={18} /> : <span className="inline-block w-[18px] text-center text-[13px]">{i + 1}</span>}</span>
                       <span className="flex-1 text-[14px]">{l.title}</span>
                       {pr?.status === 'done_with_hints' && <span className="text-[11px] text-muted">с подсказками</span>}
                     </button>

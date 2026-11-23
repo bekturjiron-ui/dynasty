@@ -56,12 +56,43 @@ export type WeekStatus = {
   nextLessonId?: string
   bossReady: boolean // контент босса есть
   bossDone: boolean
-  bossUnlocked: boolean // уроки недели пройдены
+  bossUnlocked: boolean // уроки недели пройдены и неделя не закрыта
+  locked: boolean // не пройдены предыдущие недели
   contractDone: boolean
   missions: Mission[]
   missionsDone: number
   complete: boolean
   hasContent: boolean
+}
+
+/** Неделя «пройдена»: все уроки и босс (или переговоры). Контракт и миссии — задания в реальной жизни, они дорогу дальше не закрывают. */
+function weekPassed(week: Week, content: Content, st: State): boolean {
+  const ids = week.lessonIds.filter((id) => content.lessons[id])
+  const bossReady = !!(week.bossId && content.bosses[week.bossId])
+  const negReady = !!(week.negotiationId && content.negotiations[week.negotiationId])
+  return ids.every((id) => st.progress.has(id))
+    && (!bossReady || st.bosses.has(week.bossId!))
+    && (!negReady || !!st.negotiations?.has(week.negotiationId!))
+}
+
+/** Неделя закрыта, пока не пройдены все предыдущие недели с контентом. */
+export function weekLocked(week: Week, content: Content, st: State): boolean {
+  return content.weeks.some((w) => {
+    if (w.n >= week.n) return false
+    const hasContent = w.lessonIds.some((id) => content.lessons[id]) || !!(w.bossId && content.bosses[w.bossId])
+    return hasContent && !weekPassed(w, content, st)
+  })
+}
+
+/** Урок закрыт, если закрыта его неделя или не пройден какой-то из уроков выше в списке недели. Пройденный урок открыт всегда. */
+export function lessonLocked(lessonId: string, content: Content, st: State): boolean {
+  if (st.progress.has(lessonId)) return false
+  const week = content.weeks.find((w) => w.lessonIds.includes(lessonId))
+  if (!week) return false
+  if (weekLocked(week, content, st)) return true
+  const ids = week.lessonIds.filter((id) => content.lessons[id])
+  const idx = ids.indexOf(lessonId)
+  return ids.slice(0, idx).some((id) => !st.progress.has(id))
 }
 
 export function weekStatus(week: Week, content: Content, st: State): WeekStatus {
@@ -73,6 +104,7 @@ export function weekStatus(week: Week, content: Content, st: State): WeekStatus 
   const missions = content.missions.filter((m) => m.weekKey === (week.key ?? week.n))
   const missionsDone = missions.filter((m) => st.missions.has(m.id)).length
   const lessonsComplete = done.length === ids.length
+  const locked = weekLocked(week, content, st)
   // Диалог вместо босса: неделя закрыта, когда диалог сыгран хотя бы раз
   const negReady = !!(week.negotiationId && content.negotiations[week.negotiationId])
   const negDone = !negReady || !!st.negotiations?.has(week.negotiationId!)
@@ -83,7 +115,8 @@ export function weekStatus(week: Week, content: Content, st: State): WeekStatus 
     nextLessonId: ids.find((id) => !st.progress.has(id)),
     bossReady,
     bossDone,
-    bossUnlocked: lessonsComplete,
+    bossUnlocked: lessonsComplete && !locked,
+    locked,
     contractDone,
     missions,
     missionsDone,
