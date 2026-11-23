@@ -3,6 +3,7 @@ import type { WeekStatus } from '../../game/engine'
 import type { Game } from '../../game/useGame'
 import { BossToken, type BossState } from '../../components/BossToken'
 import { Icon } from '../../components/ui'
+import { bossState } from './bossState'
 
 const BASE = import.meta.env.BASE_URL
 const W = 390
@@ -19,14 +20,6 @@ function roadPath(n: number) {
   let d = `M${xOf(0)} ${yOf(0)}`
   for (let i = 1; i < n; i++) d += ` C${xOf(i - 1)} ${yOf(i - 1) + 80} ${xOf(i)} ${yOf(i) - 80} ${xOf(i)} ${yOf(i)}`
   return d
-}
-
-function bossState(s: WeekStatus, game: Game): BossState {
-  const w = s.week
-  // Переговоры закрыты до конца уроков, даже если диалог уже успели сыграть
-  if (w.negotiationId && game.content.negotiations[w.negotiationId]) return !s.bossUnlocked ? 'locked' : game.negotiations.has(w.negotiationId) ? 'done' : 'ready'
-  if (s.bossReady) return s.bossDone ? 'done' : s.bossUnlocked ? 'ready' : 'locked'
-  return 'locked'
 }
 
 const readSeen = () => { try { return new Set<string>(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')) } catch { return new Set<string>() } }

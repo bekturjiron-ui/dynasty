@@ -4,10 +4,12 @@ import type { Week } from '../../content/schema'
 import { deadlineOf } from '../../game/plan'
 import type { WeekStatus } from '../../game/engine'
 import type { Game } from '../../game/useGame'
+import { BossToken } from '../../components/BossToken'
 import { ContractCard } from '../../components/ContractCard'
 import { MissionCard } from '../../components/MissionCard'
 import { Grip, Sortable } from '../../components/Sortable'
 import { Icon, Label } from '../../components/ui'
+import { bossState } from './bossState'
 
 const fmtDate = (k: string) => new Date(k).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
 
@@ -18,6 +20,7 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
   const p = game.player!
   const w: Week = s.week
   const key = w.key ?? w.n
+  const state = bossState(s, game)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -29,11 +32,15 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
 
   return (
     <div className="fixed inset-0 z-40 flex items-end bg-black/65 md:items-center md:justify-center" onClick={onClose}>
+      <div className="animate-rise relative w-full md:max-w-2xl">
+      <div className="ws-boss" data-state={state}>
+        <BossToken art={w.bossId ?? w.negotiationId ?? null} state={state} woke={false} title={w.bossTitle} />
+      </div>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={`Неделя ${w.n}: ${w.title}`}
-        className="pb-safe animate-rise max-h-[86dvh] w-full overflow-y-auto rounded-t-3xl border-t border-gold/40 px-4 pt-4 md:max-w-2xl md:rounded-3xl md:border"
+        className="pb-safe max-h-[80dvh] md:max-h-[86dvh] w-full overflow-y-auto rounded-t-3xl border-t border-gold/40 px-4 pt-4 md:rounded-3xl md:border"
         style={{ background: 'linear-gradient(180deg, rgba(31,31,37,0.99), rgba(16,16,19,0.995))', backdropFilter: 'blur(18px)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -98,6 +105,7 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
           {s.missions.map((m) => <MissionCard key={m.id} mission={m} result={game.st.missions.get(m.id)} />)}
           <ContractCard week={w} result={game.st.contracts.get(key)} />
         </div>
+      </div>
       </div>
     </div>
   )
