@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import type { NegOption } from '../content/schema'
 import { completeNegotiation, weekStatus } from '../game/engine'
+import { isAdmin } from '../game/admin'
 import { LockedGate } from '../components/LockedGate'
 import { choose, COLD_LIMIT, negScope, outcome, startNeg, type NegOutcome, type NegState } from '../game/negotiation'
 import { planWeekN } from '../game/plan'
@@ -80,17 +81,48 @@ export default function NegotiationScreen() {
     }
   }
 
+  async function adminSkip() {
+    const fin: NegState = {
+      ...(st ?? startNeg(n)),
+      end: 'deal',
+      discount: Math.min(10, n.maxDiscountPct),
+      loyalty: Math.max(n.loyalty, n.coldBelow + 20),
+    }
+    const o2 = outcome(n, fin, base!)
+    let gain = { xp: 0, influence: 0, reputation: 0 }
+    try {
+      gain = await completeNegotiation(content, n.id, {
+        end: 'deal', discount: fin.discount, loyalty: fin.loyalty, saving: o2.saving, xp: o2.xp, influence: o2.influence, reputation: o2.reputation,
+      })
+      setSaveErr(false)
+    } catch {
+      setSaveErr(true)
+    }
+    setSt(fin)
+    setResult({ o: o2, gain })
+  }
+
   const claudePrompt = `Сыграй роль ${n.partner.name}, ${n.partner.role} («${n.partner.company}»). Я таргетолог бренда косметики в Казахстане. Обсуждаем партнёрскую рекламу: сейчас ${fmtTg(scope.start as number)} за ролик, пакет из ${n.orders} роликов. У тебя есть скрытый минимум цены и терпение; на давление и грубость реагируй холоднее, на честные аргументы и выгоду для обеих сторон теплее. После 8–10 реплик выйди из роли и разбери мои переговоры: где я давил, где влиял, что можно было улучшить.`
 
   return (
     <div className="scene-copper pt-safe mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-6">
       <div className="mb-3 flex items-center gap-3">
-        <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-copper/60 bg-copper/10 font-serif text-[18px] text-copper">{n.partner.name[0]}</div>
-        <div className="leading-tight">
-          <div className="text-[15px]">{n.partner.name}</div>
-          <div className="text-[12px] text-muted">{n.partner.role}, «{n.partner.company}»</div>
+        <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-copper/60 bg-copper/10 font-serif text-[18px] text-copper">{n.partner.name[0]}</div>
+        <div className="min-w-0 flex-1 leading-tight">
+          <div className="truncate text-[15px]">{n.partner.name}</div>
+          <div className="truncate text-[12px] text-muted">{n.partner.role}, «{n.partner.company}»</div>
         </div>
+        {!result && isAdmin() && (
+          <button
+            type="button"
+            onClick={adminSkip}
+            title="Админ: завершить переговоры сделкой с наградой"
+            className="min-h-8 shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-semibold text-gold-soft transition-colors hover:bg-gold/20 active:scale-95"
+          >
+            Скип
+          </button>
+        )}
       </div>
 
       {/* Шкалы «Цена» и «Лояльность» */}

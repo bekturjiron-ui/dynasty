@@ -30,6 +30,7 @@ const JOBS = [
   { src: 'tree1', name: 'tree1', tris: 2200, tex: 512 }, // деревья размножаются десятками — делаем совсем лёгкими
   { src: 'tree2', name: 'tree2', tris: 2200, tex: 512 },
   { src: 'Flyingstones', name: 'flyingstones', tris: 4000, tex: 1024 }, // парящие камни: несколько копий вокруг острова
+  { src: 'Sword', name: 'sword', tris: 6000, tex: 512 }, // меч для анимации повержения босса
 ]
 
 await MeshoptSimplifier.ready

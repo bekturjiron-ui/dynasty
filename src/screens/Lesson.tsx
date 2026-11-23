@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
 import { completeLesson, lessonLocked } from '../game/engine'
+import { isAdmin } from '../game/admin'
 import { LockedGate } from '../components/LockedGate'
 import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
@@ -98,11 +99,17 @@ export default function LessonScreen() {
     else go('guided')
   }
 
+  async function adminSkip() {
+    const g = await completeLesson(content, lesson.id, 0, 1)
+    setGain(g)
+    go('report')
+  }
+
   return (
     <div className="scene-lesson pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-28 md:pt-8">
       {/* Шапка: закрыть + 5 фаз цикла */}
       <div className="mb-5 flex items-center gap-3">
-        <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel">
+        <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted active:bg-panel">
           <Icon name="close" />
         </button>
         <div className="flex flex-1 gap-1.5">
@@ -113,6 +120,16 @@ export default function LessonScreen() {
             </div>
           ))}
         </div>
+        {phase !== 'report' && isAdmin() && (
+          <button
+            type="button"
+            onClick={adminSkip}
+            title="Админ: пропустить урок с получением награды"
+            className="min-h-8 shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-semibold text-gold-soft transition-colors hover:bg-gold/20 active:scale-95"
+          >
+            Скип
+          </button>
+        )}
       </div>
 
       <Label>Неделя {game.loading ? lesson.week : planWeekN(game.content.weeks, (w) => w.lessonIds.includes(lesson.id), lesson.week)} · <TermText text={lesson.title} /></Label>
