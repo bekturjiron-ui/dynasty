@@ -3,6 +3,7 @@ import { content as baseContent } from '../content'
 import { savePlan, weekStatus } from '../game/engine'
 import type { Game } from '../game/useGame'
 import { PlanEmbers } from '../components/PlanEmbers'
+import { ProjectCard } from '../components/ProjectCard'
 import { Button, Title } from '../components/ui'
 import { PlanEditor } from './plan/PlanEditor'
 import { PlanMap } from './plan/PlanMap'
@@ -39,6 +40,8 @@ export default function Plan({ game }: { game: Game }) {
         </p>
         <button onClick={() => setPinAsk(true)} className="mt-2 text-[14px] text-gold underline-offset-4 active:underline">Редактор плана (наставник) ›</button>
       </div>
+
+      <ProjectCard weeks={c.weeks} contracts={game.st.contracts} onOpen={setOpenKey} />
 
       <PlanMap game={game} statuses={statuses} focusKey={focusKey} onOpen={setOpenKey} />
 

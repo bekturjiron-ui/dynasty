@@ -131,6 +131,6 @@ export function blankWeek(weeks: Week[], act: string): Week {
     title: 'Новая неделя',
     lessonIds: [],
     bossTitle: '—',
-    contract: { text: 'Реальное действие в рекламном кабинете', proof: 'photo' },
+    contract: { text: 'Реальное действие в рекламном кабинете', proof: 'photo', steps: [] },
   }
 }

@@ -230,7 +230,17 @@ export const WeekSchema = z.object({
   bossId: z.string().optional(),
   negotiationId: z.string().optional(),
   bossTitle: z.string(),
-  contract: z.object({ text: z.string(), proof: ProofSchema, numberLabel: z.string().optional() }),
+  contract: z.object({
+    text: z.string(),
+    proof: ProofSchema,
+    numberLabel: z.string().optional(),
+    /** Название шага сквозного проекта («Карта ЦА»). Нет — показывается только текст. */
+    title: z.string().optional(),
+    /** Что именно сделать: короткие шаги в живом кабинете. */
+    steps: z.array(z.string()).default([]),
+    /** Что из этого шага идёт в итоговый кейс. */
+    deliverable: z.string().optional(),
+  }),
   resource: z
     .object({ title: z.string(), url: z.string().optional(), kind: z.enum(['course', 'guide', 'video', 'book', 'practice']) })
     .optional(),
