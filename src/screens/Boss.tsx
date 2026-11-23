@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
-import { completeBoss } from '../game/engine'
+import { completeBoss, weekStatus } from '../game/engine'
 import { jitterVars } from '../game/jitter'
 import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
@@ -10,6 +10,7 @@ import type { Scope } from '../lib/expr'
 import { render } from '../lib/template'
 import { ExerciseView } from '../components/ExerciseView'
 import { TermText } from '../components/Glossary'
+import { LockedGate } from '../components/LockedGate'
 import { TableView } from '../components/TableView'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
@@ -30,6 +31,9 @@ export default function BossScreen() {
 
   if (!boss) return <div className="pt-safe px-4 text-muted">Босс этой недели ещё готовится.</div>
   if (game.loading) return null
+  const bossWeek = game.content.weeks.find((w) => w.bossId === boss.id)
+  const gate = bossWeek && weekStatus(bossWeek, game.content, game.st)
+  if (gate && !gate.bossUnlocked) return <LockedGate done={gate.lessonsDone} total={gate.lessonsTotal} />
   const real = game.scope
   const sc = scope ?? withVars(real, boss.vars)
 
