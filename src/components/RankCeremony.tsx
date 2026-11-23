@@ -288,7 +288,10 @@ export function RankCeremony() {
             {unlocked.map((b) => <span key={b.id} className="rounded-full border border-gold/50 bg-gold/10 px-3 py-1 text-[13px] text-gold-soft">{b.title}</span>)}
           </div>
         )}
-        <Button className={`mt-9 w-full max-w-xs transition-opacity duration-500 ${ready ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => { clearRankUp(); setE(null) }}>Принять титул</Button>
+      </div>
+      {/* Кнопка в тёмной части внизу экрана, не сдвигает остальное */}
+      <div className="absolute inset-x-0 z-10 flex justify-center px-8" style={{ top: '79%' }}>
+        <Button className={`w-full max-w-xs transition-opacity duration-500 ${ready ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => { clearRankUp(); setE(null) }}>Принять титул</Button>
       </div>
     </div>
   )
