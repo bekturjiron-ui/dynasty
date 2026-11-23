@@ -1,556 +1,277 @@
 [
-  {
-    "n": 1,
-    "key": 1,
-    "act": "I. Фундамент",
-    "title": "Ячейки, формулы, СУММ, проценты, ссылки",
-    "lessonIds": [
-      "w01-l1",
-      "w01-l2",
-      "w01-l3",
-      "w01-l4",
-      "w01-l5"
-    ],
-    "bossId": "w01-boss",
-    "bossTitle": "Накладная с подвохом",
-    "contract": {
-      "text": "Перенеси одну реальную накладную Novelia в Google Таблицу: формулы сумм по строкам и итог через СУММ. Сфотографируй или сделай скриншот.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Т-Банк: Excel для работы и бизнеса (7 уроков)",
-      "kind": "course"
-    }
+ {
+  "n": 1,
+  "key": 201,
+  "act": "I. Фундамент",
+  "title": "Как работает таргет: сигналы, аукцион, метрики",
+  "lessonIds": [
+   "t01-l1",
+   "t01-l2",
+   "t01-l3",
+   "t01-l4",
+   "t01-l5"
+  ],
+  "bossId": "t01-boss",
+  "bossTitle": "Разбор первого отчёта",
+  "contract": {
+   "text": "Открой Meta Ad Library и сохрани скриншоты 3 активных объявлений косметики в Казахстане.",
+   "proof": "photo"
   },
-  {
-    "n": 2,
-    "key": 2,
-    "act": "I. Фундамент",
-    "title": "Юнит-экономика: себестоимость, комиссия, доставка, налог; маржа против наценки",
-    "lessonIds": [
-      "w02-l1",
-      "w02-l2",
-      "w02-l3",
-      "w02-l4",
-      "w02-l5"
-    ],
-    "bossId": "w02-boss",
-    "bossTitle": "Товар продаётся, а денег нет",
-    "contract": {
-      "text": "Таблица юнит-экономики на 8 реальных товаров Novelia: себестоимость, комиссия, доставка, налог, упаковка, прибыль с продажи, маржа. Скриншот таблицы.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Т-Банк: Как выйти на маркетплейсы (телеграм-бот)",
-      "kind": "course"
-    }
-  },
-  {
-    "n": 3,
-    "key": 3,
-    "act": "I. Фундамент",
-    "title": "ЕСЛИ, ВПР / ПРОСМОТРХ, фильтры, сортировка",
-    "bossTitle": "Свести заказы с прайсом",
-    "contract": {
-      "text": "Подтяни себестоимость в архив заказов Kaspi через ВПР или ПРОСМОТРХ. Скриншот.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Stepik: Excel и Google Таблицы для аналитика",
-      "kind": "course"
-    },
-    "lessonIds": [
-      "w03-l1",
-      "w03-l2",
-      "w03-l3",
-      "w03-l4",
-      "w03-l5"
-    ],
-    "bossId": "w03-boss"
-  },
-  {
-    "n": 4,
-    "key": 4,
-    "act": "I. Фундамент",
-    "title": "ROI, точка безубыточности, сколько денег приносит вложенный тенге",
-    "bossTitle": "Куда вложить 500 000 ₸ закупа",
-    "contract": {
-      "text": "Посчитай ROI следующего закупа Novelia.",
-      "proof": "number",
-      "numberLabel": "ROI закупа, %"
-    },
-    "resource": {
-      "title": "Eduson: Unit-экономика и метрики продукта",
-      "kind": "course"
-    },
-    "lessonIds": [
-      "w04-l1",
-      "w04-l2",
-      "w04-l3",
-      "w04-l4",
-      "w04-l5"
-    ],
-    "bossId": "w04-boss"
-  },
-  {
-    "n": 5,
-    "key": 25,
-    "act": "I. Фундамент",
-    "title": "Закуп и остатки: сколько заказать, замороженные деньги, сроки годности",
-    "lessonIds": [
-      "w05-l1",
-      "w05-l2",
-      "w05-l3",
-      "w05-l4",
-      "w05-l5"
-    ],
-    "bossTitle": "Склад полон, а денег нет",
-    "contract": {
-      "text": "Таблица остатков Novelia: остаток, продаж в месяц, на сколько дней хватит, ближайший срок годности, сколько заказать. Скриншот.",
-      "proof": "photo"
-    },
-    "bossId": "w05-boss"
-  },
-  {
-    "n": 6,
-    "key": 5,
-    "act": "II. Цена и ассортимент",
-    "title": "Минимально допустимая цена, позиция в карточке, конкуренты",
-    "bossTitle": "Конкурент сбросил цену на 15%",
-    "contract": {
-      "text": "Минимальная цена для всех 8 товаров Novelia и сравнение с ценой конкурентов. Скриншот таблицы.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: как располагаются продавцы в карточке",
-      "url": "https://guide.kaspi.kz/partner/ru/shop/goods/general/q3190",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w06-l1",
-      "w06-l2",
-      "w06-l3",
-      "w06-l4",
-      "w06-l5"
-    ],
-    "bossId": "w06-boss"
-  },
-  {
-    "n": 7,
-    "key": 6,
-    "act": "II. Цена и ассортимент",
-    "title": "Демпинг: когда отвечать на цену, а когда уйти",
-    "bossTitle": "Ценовая война на 5 ходов",
-    "contract": {
-      "text": "Проверь, что ни одна цена Novelia, включая автоматические настройки, если они есть, не может упасть ниже минимальной. Исправь опасные. Скриншот до/после.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: почему акцию с бонусами приостановили",
-      "url": "https://guide.kaspi.kz/partner/ru/marketing/bonus_purchase/q4867",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w07-l1",
-      "w07-l2",
-      "w07-l3",
-      "w07-l4",
-      "w07-l5"
-    ],
-    "bossId": "w07-boss"
-  },
-  {
-    "n": 8,
-    "key": 7,
-    "act": "II. Цена и ассортимент",
-    "title": "Акции, скидки, рассрочка: сколько реально стоит акция",
-    "bossTitle": "Выгодна ли скидка 20%?",
-    "contract": {
-      "text": "Расчёт одной акции Novelia до запуска: что теряем, что получаем.",
-      "proof": "photo"
-    },
-    "lessonIds": [
-      "w08-l1",
-      "w08-l2",
-      "w08-l3",
-      "w08-l4",
-      "w08-l5"
-    ],
-    "bossId": "w08-boss",
-    "resource": {
-      "title": "Kaspi Гид: условия акции с бонусами на товар",
-      "url": "https://guide.kaspi.kz/partner/ru/marketing/bonus_purchase/q3814",
-      "kind": "kaspi-guide"
-    }
-  },
-  {
-    "n": 9,
-    "key": 8,
-    "act": "II. Цена и ассортимент",
-    "title": "ABC-анализ (мостик к «Принципу 80/20»), сводные таблицы",
-    "bossTitle": "Развивать, держать или выводить",
-    "contract": {
-      "text": "ABC-анализ Novelia по архиву заказов: для каждого товара решение — развивать, держать или выводить. Скриншот сводной таблицы.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Stepik: Excel и Google Таблицы для аналитика",
-      "kind": "course"
-    },
-    "lessonIds": [
-      "w09-l1",
-      "w09-l2",
-      "w09-l3",
-      "w09-l4",
-      "w09-l5"
-    ],
-    "bossId": "w09-boss"
-  },
-  {
-    "n": 10,
-    "key": 26,
-    "act": "II. Цена и ассортимент",
-    "title": "Выбор товара: спрос, конкуренты и прибыль до закупа",
-    "lessonIds": [
-      "w10-l1",
-      "w10-l2",
-      "w10-l3",
-      "w10-l4",
-      "w10-l5"
-    ],
-    "bossTitle": "Какие 2 из 5 карточек добавить",
-    "contract": {
-      "text": "Оцени 5 кандидатов на новые карточки Novelia: спрос, конкуренты, минимальная цена, прибыль, документы. Предложи 2 лучших с расчётом. Скриншот.",
-      "proof": "photo"
-    },
-    "bossId": "w10-boss",
-    "resource": {
-      "title": "Kaspi Гид: документы на товар",
-      "url": "https://guide.kaspi.kz/partner/ru/shop/goods/limit/q2224",
-      "kind": "kaspi-guide"
-    }
-  },
-  {
-    "n": 11,
-    "key": 9,
-    "act": "III. Продвижение на Kaspi",
-    "title": "Карточка: название, фото, описание, что влияет на клик",
-    "bossTitle": "Найти 5 нарушений в чужой карточке",
-    "contract": {
-      "text": "Улучши 3 карточки Novelia. Скриншоты до/после.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: что нельзя писать в карточке",
-      "url": "https://guide.kaspi.kz/partner/ru/shop/goods/edit/q3555",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w11-l1",
-      "w11-l2",
-      "w11-l3",
-      "w11-l4",
-      "w11-l5"
-    ],
-    "bossId": "w11-boss"
-  },
-  {
-    "n": 12,
-    "key": 10,
-    "act": "III. Продвижение на Kaspi",
-    "title": "Операционка кабинета: заказы, отмены, возвраты, рейтинг, документы",
-    "bossTitle": "Рейтинг упал, почему?",
-    "contract": {
-      "text": "Разбор отмен и возвратов Novelia за месяц: причины и что исправить. Плюс папка документов на все 8 товаров: накладная и сертификат или декларация.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: показатели качества",
-      "url": "https://guide.kaspi.kz/partner/ru/shop/quality_index/general/q4034",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w12-l1",
-      "w12-l2",
-      "w12-l3",
-      "w12-l4",
-      "w12-l5"
-    ],
-    "bossId": "w12-boss"
-  },
-  {
-    "n": 13,
-    "key": 11,
-    "act": "III. Продвижение на Kaspi",
-    "title": "Реклама на Kaspi: цена клика, потолок ДРР, условие цены",
-    "bossTitle": "Слитый рекламный бюджет",
-    "contract": {
-      "text": "Потолок ДРР для всех 8 товаров и план небольшого теста на 2–3 товарах, где реклама может окупиться: бюджет, ставка, целевой ДРР.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: условия запуска рекламы товаров",
-      "url": "https://guide.kaspi.kz/partner/ru/marketing/advert_goods/launch/q2088",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w13-l1",
-      "w13-l2",
-      "w13-l3",
-      "w13-l4",
-      "w13-l5"
-    ],
-    "bossId": "w13-boss"
-  },
-  {
-    "n": 14,
-    "key": 12,
-    "act": "III. Продвижение на Kaspi",
-    "title": "Запуск теста и решение при малом числе продаж",
-    "bossTitle": "Отключить или масштабировать?",
-    "contract": {
-      "text": "Отчёт по рекламному тесту: расход, клики, продажи, ДРР и решение. Если продаж мало, так и напиши: вывод предварительный.",
-      "proof": "number",
-      "numberLabel": "ДРР теста, %"
-    },
-    "resource": {
-      "title": "Kaspi Гид: как увеличить продажи рекламой",
-      "url": "https://guide.kaspi.kz/partner/ru/marketing/advert_goods/general/q2720",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w14-l1",
-      "w14-l2",
-      "w14-l3",
-      "w14-l4",
-      "w14-l5"
-    ],
-    "bossId": "w14-boss"
-  },
-  {
-    "n": 15,
-    "key": 13,
-    "act": "III. Продвижение на Kaspi",
-    "title": "Негативные отзывы и честный сбор оценок по правилам Kaspi",
-    "bossTitle": "Разъярённый клиент",
-    "contract": {
-      "text": "Разбери все оценки Novelia за 90 дней в кабинете (Показатели качества → Рейтинг → Все оценки). По каждой оценке ниже 5 выясни причину и, если нужно, свяжись с покупателем через кабинет. Скриншот разбора.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Kaspi Гид: бонусы за отзыв — условия",
-      "url": "https://guide.kaspi.kz/partner/ru/marketing/bonus_review/q3955",
-      "kind": "kaspi-guide"
-    },
-    "lessonIds": [
-      "w15-l1",
-      "w15-l2",
-      "w15-l3",
-      "w15-l4",
-      "w15-l5"
-    ],
-    "bossId": "w15-boss"
-  },
-  {
-    "n": 16,
-    "key": 15,
-    "act": "IV. Переговоры",
-    "title": "Подготовка: лучшая альтернатива (BATNA), якорь, свои границы",
-    "bossTitle": "Переговоры без подготовки",
-    "contract": {
-      "text": "Карта поставщиков Novelia: по каждому товару поставщик, цена закупа, минимальная партия, граница цены и лучшая альтернатива с доставкой. Фото или скриншот.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "К. Восс «Никаких компромиссов»",
-      "kind": "book"
-    },
-    "lessonIds": [
-      "w16-l1",
-      "w16-l2",
-      "w16-l3",
-      "w16-l4",
-      "w16-l5"
-    ],
-    "bossId": "w16-boss"
-  },
-  {
-    "n": 17,
-    "key": 16,
-    "act": "IV. Переговоры",
-    "title": "Тактики и сохранение отношений: давление против влияния",
-    "bossTitle": "Поставщик, которого нельзя потерять",
-    "negotiationId": "w16-neg",
-    "contract": {
-      "text": "Скрипт разговора с реальным поставщиком.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Фишер, Ури «Переговоры без поражения»",
-      "kind": "book"
-    },
-    "lessonIds": [
-      "w17-l1",
-      "w17-l2",
-      "w17-l3",
-      "w17-l4",
-      "w17-l5"
-    ]
-  },
-  {
-    "n": 18,
-    "key": 17,
-    "act": "IV. Переговоры",
-    "title": "Условия кроме цены: отсрочка, объём, возвраты, маркетинг",
-    "bossTitle": "Скидки не дадут — что ещё взять?",
-    "contract": {
-      "text": "Посчитай цену отсрочки платежа для Novelia в ₸ за месяц: закуп в месяц × ставка × дни / 30. Ставку денег возьми свою или 3% в месяц.",
-      "proof": "number",
-      "numberLabel": "Цена отсрочки, ₸"
-    },
-    "resource": {
-      "title": "Ролевая игра с Claude",
-      "kind": "practice"
-    },
-    "lessonIds": [
-      "w18-l1",
-      "w18-l2",
-      "w18-l3",
-      "w18-l4",
-      "w18-l5"
-    ],
-    "bossId": "w18-boss"
-  },
-  {
-    "n": 19,
-    "key": 18,
-    "act": "IV. Переговоры",
-    "title": "Реальные переговоры + разбор",
-    "bossTitle": "Итоги переговоров: сколько выиграл Дом",
-    "contract": {
-      "text": "Переговоры с дистрибьютором. Итог в ₸: сколько выиграл Дом.",
-      "proof": "number",
-      "numberLabel": "Итог переговоров, ₸"
-    },
-    "resource": {
-      "title": "Ролевая игра с Claude",
-      "kind": "practice"
-    },
-    "lessonIds": [
-      "w19-l1",
-      "w19-l2",
-      "w19-l3",
-      "w19-l4",
-      "w19-l5"
-    ],
-    "bossId": "w19-boss"
-  },
-  {
-    "n": 20,
-    "key": 19,
-    "act": "V. Аналитика и управление",
-    "title": "Еженедельный дашборд в Google Таблицах",
-    "bossTitle": "Продажи упали на 20%, найди причину",
-    "contract": {
-      "text": "Дашборд Novelia (дальше ведёшь каждую неделю). Скриншот.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Stepik: Excel и Google Таблицы для аналитика",
-      "kind": "course"
-    },
-    "lessonIds": [
-      "w20-l1",
-      "w20-l2",
-      "w20-l3",
-      "w20-l4",
-      "w20-l5"
-    ],
-    "bossId": "w20-boss"
-  },
-  {
-    "n": 21,
-    "key": 21,
-    "act": "V. Аналитика и управление",
-    "title": "Делегирование, KPI, регламенты, основы найма",
-    "bossTitle": "Сотрудник провалил задачу — чья вина?",
-    "contract": {
-      "text": "Регламент одного процесса Novelia и профиль роли первого помощника + дашборд недели.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Т-Банк: Управление командой",
-      "kind": "course"
-    },
-    "lessonIds": [
-      "w21-l1",
-      "w21-l2",
-      "w21-l3",
-      "w21-l4",
-      "w21-l5"
-    ],
-    "bossId": "w21-boss"
-  },
-  {
-    "n": 22,
-    "key": 22,
-    "act": "V. Аналитика и управление",
-    "title": "Стратегия квартала: цели, бюджет, риски",
-    "bossTitle": "Совет директоров",
-    "contract": {
-      "text": "План Novelia на квартал на 1 странице + дашборд недели.",
-      "proof": "photo"
-    },
-    "lessonIds": [
-      "w22-l1",
-      "w22-l2",
-      "w22-l3",
-      "w22-l4",
-      "w22-l5"
-    ],
-    "bossId": "w22-boss"
-  },
-  {
-    "n": 23,
-    "key": 23,
-    "act": "VI. Выход на рынок",
-    "title": "Портфолио кейсов «до/после», резюме на hh.kz",
-    "bossTitle": "Резюме глазами HR за 6 секунд",
-    "contract": {
-      "text": "Портфолио из 3 кейсов + резюме + дашборд недели.",
-      "proof": "photo"
-    },
-    "resource": {
-      "title": "Разбор требований в вакансиях",
-      "kind": "practice"
-    },
-    "lessonIds": [
-      "w23-l1",
-      "w23-l2",
-      "w23-l3",
-      "w23-l4",
-      "w23-l5"
-    ],
-    "bossId": "w23-boss"
-  },
-  {
-    "n": 24,
-    "key": 24,
-    "act": "VI. Выход на рынок",
-    "title": "Собеседование, обсуждение зарплаты",
-    "bossTitle": "Финальный босс: собеседование с собственником",
-    "contract": {
-      "text": "10 откликов + 1 реальное собеседование. Цель сезона — первый оффер от 350 тыс. ₸.",
-      "proof": "number",
-      "numberLabel": "Откликов отправлено"
-    },
-    "lessonIds": [
-      "w24-l1",
-      "w24-l2",
-      "w24-l3",
-      "w24-l4",
-      "w24-l5"
-    ],
-    "bossId": "w24-boss"
+  "resource": {
+   "title": "Meta Ad Library",
+   "url": "https://www.facebook.com/ads/library",
+   "kind": "practice"
   }
+ },
+ {
+  "n": 2,
+  "key": 202,
+  "act": "I. Фундамент",
+  "title": "ЦА, лестница Ханта, оффер и воронка",
+  "lessonIds": [
+   "t02-l1",
+   "t02-l2",
+   "t02-l3",
+   "t02-l4",
+   "t02-l5"
+  ],
+  "bossId": "t02-boss",
+  "bossTitle": "Карта аудитории бренда",
+  "contract": {
+   "text": "Выбери свой мини-проект и заполни карту ЦА на 3 сегмента: кто они, боли их словами, желания, возражения.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Stepik: интернет-маркетинг для начинающих",
+   "url": "https://stepik.org/course/102002",
+   "kind": "course"
+  }
+ },
+ {
+  "n": 3,
+  "key": 203,
+  "act": "I. Фундамент",
+  "title": "Экономика до запуска: CPL, CAC, ROAS, ROMI",
+  "lessonIds": [
+   "t03-l1",
+   "t03-l2",
+   "t03-l3",
+   "t03-l4",
+   "t03-l5"
+  ],
+  "bossId": "t03-boss",
+  "bossTitle": "Окупится ли проект",
+  "contract": {
+   "text": "Заполни бриф своего проекта в Совете Дома и впиши целевую цену заявки.",
+   "proof": "number",
+   "numberLabel": "Целевой CPL, ₸"
+  }
+ },
+ {
+  "n": 4,
+  "key": 204,
+  "act": "II. Креатив",
+  "title": "Креативы и тексты: хук, PAS, BAB, Reels",
+  "lessonIds": [
+   "t04-l1",
+   "t04-l2",
+   "t04-l3",
+   "t04-l4",
+   "t04-l5"
+  ],
+  "bossId": "t04-boss",
+  "bossTitle": "Матрица креативов",
+  "contract": {
+   "text": "Собери матрицу: 3 разных угла, для каждого картинка и текст, для одного сценарий Reels на 20 секунд.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Meta Ad Library",
+   "url": "https://www.facebook.com/ads/library",
+   "kind": "practice"
+  }
+ },
+ {
+  "n": 5,
+  "key": 205,
+  "act": "III. Meta и Instagram",
+  "title": "Meta: кабинет, Instagram, структура и цели",
+  "lessonIds": [
+   "t05-l1",
+   "t05-l2",
+   "t05-l3",
+   "t05-l4",
+   "t05-l5"
+  ],
+  "bossId": "t05-boss",
+  "bossTitle": "Сборка кабинета",
+  "contract": {
+   "text": "Создай Business Portfolio, подключи Instagram и рекламный аккаунт, включи 2FA. Деньги пока не трать.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Meta Blueprint",
+   "url": "https://www.facebookblueprint.com",
+   "kind": "course"
+  }
+ },
+ {
+  "n": 6,
+  "key": 206,
+  "act": "III. Meta и Instagram",
+  "title": "Meta: Pixel, CAPI, UTM, лид-форма, первый запуск",
+  "lessonIds": [
+   "t06-l1",
+   "t06-l2",
+   "t06-l3",
+   "t06-l4",
+   "t06-l5"
+  ],
+  "bossId": "t06-boss",
+  "bossTitle": "Предстартовый аудит",
+  "contract": {
+   "text": "Подготовь первую кампанию: UTM, форма или посадочная, чек-лист. Запусти тест на посильный бюджет или сохрани черновик.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Advertising Standards Meta",
+   "url": "https://transparency.meta.com/policies/ad-standards/",
+   "kind": "guide"
+  }
+ },
+ {
+  "n": 7,
+  "key": 207,
+  "act": "III. Meta и Instagram",
+  "title": "Meta: решения по цифрам, TCPL и тесты",
+  "lessonIds": [
+   "t07-l1",
+   "t07-l2",
+   "t07-l3",
+   "t07-l4",
+   "t07-l5"
+  ],
+  "bossId": "t07-boss",
+  "bossTitle": "Симулятор 14 дней",
+  "contract": {
+   "text": "Посчитай TCPL своего проекта и потолок активных объявлений.",
+   "proof": "number",
+   "numberLabel": "Твой TCPL, ₸"
+  }
+ },
+ {
+  "n": 8,
+  "key": 208,
+  "act": "III. Meta и Instagram",
+  "title": "Meta: выгорание, масштаб, Advantage+, партнёрская реклама",
+  "lessonIds": [
+   "t08-l1",
+   "t08-l2",
+   "t08-l3",
+   "t08-l4",
+   "t08-l5"
+  ],
+  "negotiationId": "t08-neg",
+  "bossTitle": "Переговоры с блогером",
+  "contract": {
+   "text": "Найди 3 микроблогеров в своей нише и составь для них короткое предложение о партнёрской рекламе с пометкой «реклама».",
+   "proof": "checkbox"
+  },
+  "resource": {
+   "title": "Закон РК об онлайн-платформах и онлайн-рекламе",
+   "url": "https://adilet.zan.kz/rus/docs/Z2300000018",
+   "kind": "guide"
+  }
+ },
+ {
+  "n": 9,
+  "key": 209,
+  "act": "IV. Telegram Ads",
+  "title": "Telegram: кабинет, канал и бот как посадочная",
+  "lessonIds": [
+   "t09-l1",
+   "t09-l2",
+   "t09-l3",
+   "t09-l4",
+   "t09-l5"
+  ],
+  "bossId": "t09-boss",
+  "bossTitle": "Подготовка посадочной",
+  "contract": {
+   "text": "Оформи Telegram-канал или бота проекта: описание, закреп, не меньше 10 постов.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Правила Telegram Ads",
+   "url": "https://ads.telegram.org/guidelines",
+   "kind": "guide"
+  }
+ },
+ {
+  "n": 10,
+  "key": 210,
+  "act": "IV. Telegram Ads",
+  "title": "Telegram: 160 знаков, каналы, CPM, модерация",
+  "lessonIds": [
+   "t10-l1",
+   "t10-l2",
+   "t10-l3",
+   "t10-l4",
+   "t10-l5"
+  ],
+  "bossId": "t10-boss",
+  "bossTitle": "Пройти модерацию",
+  "contract": {
+   "text": "Подбери 15 живых каналов в 3 группах и напиши 5 объявлений до 160 знаков.",
+   "proof": "photo"
+  },
+  "resource": {
+   "title": "Вебинар eLama по Telegram Ads",
+   "url": "https://www.youtube.com/watch?v=k4Toeez9z9s",
+   "kind": "video"
+  }
+ },
+ {
+  "n": 11,
+  "key": 211,
+  "act": "V. Система",
+  "title": "Аналитика: атрибуция, окупаемость, диагностика",
+  "lessonIds": [
+   "t11-l1",
+   "t11-l2",
+   "t11-l3",
+   "t11-l4",
+   "t11-l5"
+  ],
+  "bossId": "t11-boss",
+  "bossTitle": "Сломанная воронка",
+  "contract": {
+   "text": "Сдай в Совете Дома отчёт по кампании (свой тест или учебные цифры) и выпиши, какое узкое место назвал советник.",
+   "proof": "checkbox"
+  },
+  "resource": {
+   "title": "Google Analytics",
+   "url": "https://analytics.google.com",
+   "kind": "practice"
+  }
+ },
+ {
+  "n": 12,
+  "key": 212,
+  "act": "V. Система",
+  "title": "Комплексный запуск: медиаплан, Meta + Telegram, портфолио",
+  "lessonIds": [
+   "t12-l1",
+   "t12-l2",
+   "t12-l3",
+   "t12-l4",
+   "t12-l5"
+  ],
+  "bossId": "t12-boss",
+  "bossTitle": "Запуск проекта",
+  "contract": {
+   "text": "Собери портфолио-кейс своего проекта: задача, аудитория, креативы, цифры, выводы.",
+   "proof": "photo"
+  }
+ }
 ]

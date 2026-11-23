@@ -8,3 +8,5 @@
 4. `docs/PARALLEL-WORK.md`: **как работать параллельно с Claude Code: своя ветка `ag/…`, своя папка, push в свою ветку, слияние в `main` через pull request.**
 
 Работаете в ветке `ag/work`, в `main` напрямую не пушьте. Перед задачей: `git fetch origin && git merge origin/main`. Готовую работу отправляйте командой `node tools/ship.mjs` (сам вливает только изменения в `content/`, `docs/`, `public/art/`, остальное ждёт владельца).
+
+**Важно:** курс заменён на таргетинг (Kaspi убран). Пока ветка `claude/work` не влита в `main`, не запускайте `node tools/ship.mjs` и не правьте `content/`: автослияние старого контента сломает сайт. После слияния сделайте `git merge origin/main`.

@@ -47,7 +47,7 @@ export default function Arsenal({ game }: { game: Game }) {
             if (!list.length) return null
             return (
               <section key={gk} className="space-y-2">
-                <Label tone={gk === 'kaspi' ? 'gold' : undefined}>{GROUPS[gk].label}</Label>
+                <Label tone={gk === 'base' ? 'gold' : undefined}>{GROUPS[gk].label}</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {list.map(({ skill, state }) => <SkillCard key={skill.id} skill={skill} state={state} onOpen={() => setOpenId(skill.id)} />)}
                 </div>
@@ -59,7 +59,7 @@ export default function Arsenal({ game }: { game: Game }) {
 
       {tab === 'formulas' && (
         <>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск: маржа, СУММ, $…" className="surface min-h-12 w-full rounded-xl border border-line px-4 outline-none focus:border-gold" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск: CPL, ROMI, хук…" className="surface min-h-12 w-full rounded-xl border border-line px-4 outline-none focus:border-gold" />
           {shown.length === 0 && <p className="text-[14px] text-parch/80">{cards.length ? 'Ничего не нашлось.' : 'Пройди первый урок — его формула ляжет сюда.'}</p>}
           {shown.map((l) => (
             <Card key={l.id}>

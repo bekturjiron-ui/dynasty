@@ -1,9 +1,81 @@
 [
-  {"n":1,"title":"Посыльный","weeks":"1–2","requirement":"Первая таблица с формулами сдана","promoteWhen":{"contracts":[1]}},
-  {"n":2,"title":"Приказчик","weeks":"3–6","requirement":"Посчитал юнит-экономику 8 реальных товаров Novelia","promoteWhen":{"contracts":[2]}},
-  {"n":3,"title":"Старший приказчик","weeks":"7–10","requirement":"Посчитал минимальные цены и исправил опасные","promoteWhen":{"contracts":[5,6]}},
-  {"n":4,"title":"Управляющий лавкой","weeks":"11–14","requirement":"Посчитал потолок ДРР и провёл тест рекламы","promoteWhen":{"contracts":[11,12]}},
-  {"n":5,"title":"Компаньон","weeks":"15–18","requirement":"Провёл реальные переговоры с поставщиком и зафиксировал итог","promoteWhen":{"contracts":[18]}},
-  {"n":6,"title":"Глава торгового дома","weeks":"19–22","requirement":"Еженедельный дашборд Novelia ведётся им 4 недели подряд","promoteWhen":{"contracts":[19,21,22,23]}},
-  {"n":7,"title":"Глава Дома","weeks":"23–24","requirement":"Портфолио собрано, 10 откликов отправлено, 1 собеседование пройдено","promoteWhen":{"contracts":[]}}
+ {
+  "n": 1,
+  "title": "Посыльный",
+  "weeks": "1–2",
+  "requirement": "Собрана карта ЦА своего проекта",
+  "promoteWhen": {
+   "contracts": [
+    202
+   ]
+  }
+ },
+ {
+  "n": 2,
+  "title": "Приказчик",
+  "weeks": "3–4",
+  "requirement": "Посчитана экономика и собрана матрица креативов",
+  "promoteWhen": {
+   "contracts": [
+    203,
+    204
+   ]
+  }
+ },
+ {
+  "n": 3,
+  "title": "Старший приказчик",
+  "weeks": "5–6",
+  "requirement": "Настроен кабинет Meta и подготовлен первый запуск",
+  "promoteWhen": {
+   "contracts": [
+    205,
+    206
+   ]
+  }
+ },
+ {
+  "n": 4,
+  "title": "Управляющий лавкой",
+  "weeks": "7–8",
+  "requirement": "Решения по рекламе принимаются по цифрам, найдены партнёры",
+  "promoteWhen": {
+   "contracts": [
+    207,
+    208
+   ]
+  }
+ },
+ {
+  "n": 5,
+  "title": "Компаньон",
+  "weeks": "9–10",
+  "requirement": "Готовы посадочная и объявления для Telegram Ads",
+  "promoteWhen": {
+   "contracts": [
+    209,
+    210
+   ]
+  }
+ },
+ {
+  "n": 6,
+  "title": "Глава торгового дома",
+  "weeks": "11",
+  "requirement": "Сдан отчёт кампании с разбором узкого места",
+  "promoteWhen": {
+   "contracts": [
+    211
+   ]
+  }
+ },
+ {
+  "n": 7,
+  "title": "Глава Дома",
+  "weeks": "12",
+  "requirement": "Собран кейс комплексного запуска",
+  "promoteWhen": {
+   "contracts": []
+  }
+ }
 ]

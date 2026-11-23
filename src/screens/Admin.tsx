@@ -111,7 +111,7 @@ export default function Admin({ game }: { game: Game }) {
 
       <Card className="space-y-3 !border-loss/50">
         <Label>Сброс</Label>
-        <p className="text-[13px] leading-relaxed text-muted">Удалит игрока, весь прогресс, постройки, настройки, правки плана и импорт Kaspi с этого устройства. Начнёшь с экрана основания Дома. Отменить нельзя.</p>
+        <p className="text-[13px] leading-relaxed text-muted">Удалит игрока, весь прогресс, постройки, настройки и правки плана с этого устройства. Начнёшь с экрана основания Дома. Отменить нельзя.</p>
         <Button variant="ghost" full onClick={async () => downloadBlob(await exportState())}>Сначала сохранить бэкап</Button>
         <button onClick={() => setConfirm(true)} className="min-h-12 w-full rounded-xl border border-loss/60 text-[15px] font-semibold text-loss active:bg-loss/10">Сбросить всё…</button>
       </Card>

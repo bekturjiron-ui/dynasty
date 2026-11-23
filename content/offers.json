@@ -1,0 +1,55 @@
+{
+ "demo": true,
+ "offers": [
+  {
+   "id": "o1",
+   "name": "Набор ухода «Жемчуг Степи»",
+   "short": "набор ухода",
+   "kind": "product",
+   "price": 18000,
+   "margin": 0.55,
+   "clickToLead": 0.06,
+   "leadToSale": 0.25
+  },
+  {
+   "id": "o2",
+   "name": "Сыворотка «Жемчуг Степи»",
+   "short": "сыворотка",
+   "kind": "product",
+   "price": 9500,
+   "margin": 0.6,
+   "clickToLead": 0.05,
+   "leadToSale": 0.2
+  },
+  {
+   "id": "o3",
+   "name": "Онлайн-курс макияжа",
+   "short": "курс макияжа",
+   "kind": "project",
+   "price": 35000,
+   "margin": 0.8,
+   "clickToLead": 0.08,
+   "leadToSale": 0.12
+  },
+  {
+   "id": "o4",
+   "name": "Студия бровей в Алматы",
+   "short": "студия бровей",
+   "kind": "service",
+   "price": 12000,
+   "margin": 0.6,
+   "clickToLead": 0.1,
+   "leadToSale": 0.4
+  },
+  {
+   "id": "o5",
+   "name": "Настройка рекламы для салона",
+   "short": "настройка рекламы",
+   "kind": "service",
+   "price": 150000,
+   "margin": 0.7,
+   "clickToLead": 0.04,
+   "leadToSale": 0.2
+  }
+ ]
+}

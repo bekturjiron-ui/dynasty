@@ -28,7 +28,7 @@ export default function BossScreen() {
 
   if (!boss) return <div className="pt-safe px-4 text-muted">Босс этой недели ещё готовится.</div>
   if (game.loading) return null
-  const real = boss.useRealData ? game.scopeReal : game.scope
+  const real = game.scope
   const sc = scope ?? withVars(real, boss.vars)
 
   function restart() {

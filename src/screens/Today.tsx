@@ -123,10 +123,6 @@ export default function Today({ game }: { game: Game }) {
       {focus.missions.map((m) => <MissionCard key={m.id} mission={m} result={st.missions.get(m.id)} />)}
       <ContractCard week={focus.week} result={st.contracts.get(focus.week.key ?? focus.week.n)} />
       </div>
-
-      {content.productsAreDemo && (
-        <p className="px-1 text-center text-[12px] text-muted">Цифры в уроках — демо-косметика. Наставник заменит их на товары Novelia.</p>
-      )}
     </div>
   )
 }
