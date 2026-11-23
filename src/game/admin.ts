@@ -6,6 +6,11 @@ import { emitRankUp } from './events'
 /** Админ-панель: только для проверки того, как игра меняется. Работает с локальной базой этого устройства. */
 export const ADMIN_PIN = '0000'
 
+/** Включён ли режим админ-панели в текущей вкладке браузера. */
+export function isAdmin(): boolean {
+  try { return sessionStorage.getItem('dynasty-admin') === '1' } catch { return false }
+}
+
 export async function adjustPlayer(d: { capital?: number; xp?: number; influence?: number; reputation?: number }) {
   const p = await db.player.get('me')
   if (!p) return

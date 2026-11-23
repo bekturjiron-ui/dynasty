@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import { resolveTable, withVars } from '../content/scope'
 import { completeBoss, weekStatus } from '../game/engine'
+import { isAdmin } from '../game/admin'
 import { jitterVars } from '../game/jitter'
 import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
@@ -62,14 +63,32 @@ export default function BossScreen() {
     })
   }
 
+  async function adminSkip() {
+    if (lostTimer.current) clearTimeout(lostTimer.current)
+    setGain(await completeBoss(content, boss.id, boss.rounds.length, lives))
+    setResult('won')
+  }
+
   return (
     <div className="scene-boss pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
-        <div className="flex gap-1.5" aria-label={`Жизней: ${lives}`}>
-          {[0, 1, 2].map((i) => (
-            <span key={`${i}-${i < lives}`} className={i < lives ? 'text-gold-soft drop-shadow-[0_0_6px_rgba(232,205,114,0.5)]' : 'life-lost text-line'}><Icon name="shield" size={22} /></span>
-          ))}
+        <div className="flex items-center gap-3">
+          {!result && isAdmin() && (
+            <button
+              type="button"
+              onClick={adminSkip}
+              title="Админ: сразу победить босса с наградой"
+              className="min-h-8 rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-[11px] font-semibold text-gold-soft transition-colors hover:bg-gold/20 active:scale-95"
+            >
+              Скип
+            </button>
+          )}
+          <div className="flex gap-1.5" aria-label={`Жизней: ${lives}`}>
+            {[0, 1, 2].map((i) => (
+              <span key={`${i}-${i < lives}`} className={i < lives ? 'text-gold-soft drop-shadow-[0_0_6px_rgba(232,205,114,0.5)]' : 'life-lost text-line'}><Icon name="shield" size={22} /></span>
+            ))}
+          </div>
         </div>
       </div>
       <Label tone="boss">Босс недели {planWeekN(game.content.weeks, (w) => w.bossId === boss.id, boss.week)}</Label>
