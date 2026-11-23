@@ -1,5 +1,6 @@
 # Dynasty — игра-тренажёр навыков Kaspi-менеджера
 Полное ТЗ: SPEC.md. Читай его перед каждым этапом.
+**Текущее состояние, как мы работаем и открытые хвосты: NOTES.md. Читай его первым в новом окне и обновляй в конце пачки правок.**
 - Стек: React + TypeScript + Vite, Tailwind, Dexie, vite-plugin-pwa, SheetJS, Recharts.
 - Без сервера и платных API. Деплой — GitHub Pages через GitHub Actions (.github/workflows/deploy.yml).
 - Mobile-first: проверяй вёрстку на ширине 390px, safe-area для iPhone.
