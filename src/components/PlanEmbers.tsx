@@ -126,8 +126,8 @@ export function PlanEmbers({ paused = false }: { paused?: boolean }) {
             auraPos[o] = cx + Math.cos(a) * rad
             auraPos[o + 1] = vh - (cy + Math.sin(a) * rad * 0.7 - rise)
             auraPos[o + 2] = 0
-            const k = Math.sin((rise / 60) * Math.PI) // 0 → 1 → 0 за цикл
-            auraCol[o] = auraCol[o + 1] = auraCol[o + 2] = k
+            const fade = Math.sin((rise / 60) * Math.PI) // 0 → 1 → 0 за цикл
+            auraCol[o] = auraCol[o + 1] = auraCol[o + 2] = fade
           }
         })
         auraGeo.attributes.position.needsUpdate = true
