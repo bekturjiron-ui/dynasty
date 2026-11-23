@@ -6,6 +6,7 @@ import { diagnose, metrics } from '../../game/diagnose'
 import { REPORT_REWARD, saveWeeklyReport } from '../../game/engine'
 import type { Game } from '../../game/useGame'
 import { fmtNum, fmtTg, parseUserNumber } from '../../lib/format'
+import { TermText } from '../../components/Glossary'
 import { Advisor, Button, Card, Label } from '../../components/ui'
 
 const tip = { contentStyle: { background: '#1f1f23', border: '1px solid #2c2c31', borderRadius: 12, color: '#ede7d9', fontSize: 13 }, labelStyle: { color: '#9a9486' } }
@@ -64,7 +65,7 @@ export function WeekReport({ game }: { game: Game }) {
             {Array.from({ length: game.weekNow }, (_, i) => game.weekNow - i).map((w) => <option key={w} value={w}>Неделя {w}{game.reports.some((r) => r.week === w) ? ' ✓' : ''}</option>)}
           </select>
         </div>
-        <p className="text-[13px] text-muted">Цифры из Ads Manager или Telegram Ads, заявки и продажи из своей таблицы. {existing ? 'Отчёт уже сдан, можно поправить.' : `Первый отчёт недели: +${REPORT_REWARD.xp} XP.`}</p>
+        <p className="text-[13px] text-muted"><TermText text="Цифры из Ads Manager или Telegram Ads, заявки и продажи из своей таблицы." /> {existing ? 'Отчёт уже сдан, можно поправить.' : `Первый отчёт недели: +${REPORT_REWARD.xp} XP.`}</p>
         <div className="grid grid-cols-2 gap-3">
           {FIELDS.map(([k, label, suffix]) => (
             <label key={k} className="block min-w-0">
@@ -84,11 +85,11 @@ export function WeekReport({ game }: { game: Game }) {
       {m && verdict && (
         <Card className="space-y-3">
           <Label>Доклад советника</Label>
-          <Advisor tone={verdict.tone}><b>{verdict.title}.</b> {verdict.text}</Advisor>
+          <Advisor tone={verdict.tone}><b><TermText text={verdict.title} />.</b> <TermText text={verdict.text} /></Advisor>
           <div className="grid grid-cols-3 gap-2">
             {rows.map(([k, v]) => (
               <div key={k} className="min-w-0 rounded-xl bg-white/[0.04] px-2 py-2">
-                <div className="truncate text-[11px] text-muted">{k}</div>
+                <div className="truncate text-[11px] text-muted"><TermText text={k} /></div>
                 <div className="truncate text-[14px] font-semibold tabular-nums text-parch">{v}</div>
               </div>
             ))}

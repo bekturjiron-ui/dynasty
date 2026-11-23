@@ -4,6 +4,7 @@ import type { ArsenalSkill } from '../../content/schema'
 import type { Game } from '../../game/useGame'
 import { GROUPS, LEVEL_NAMES, skillState } from '../../game/skills'
 import { Bar, Icon, Label } from '../../components/ui'
+import { TermText } from '../../components/Glossary'
 import { SkillRing } from './SkillCard'
 
 /** Окно навыка: всё про навык в одном месте. Уроки открываются тапом, формулы лежат здесь же. */
@@ -36,13 +37,13 @@ export function SkillSheet({ skill, game, onClose }: { skill: ArsenalSkill; game
           <div className="mt-1 text-[12px] text-muted">{s.total ? `${s.done} из ${s.total} уроков` : 'Уроки этого навыка готовятся'}</div>
         </div>
 
-        <p className="mt-4 text-[15px] leading-relaxed">{skill.description}</p>
+        <p className="mt-4 text-[15px] leading-relaxed"><TermText text={skill.description} /></p>
 
         <div className="mt-5">
           <Label>После освоения ты сможешь</Label>
           <ul className="mt-2 space-y-2">
             {skill.outcomes.map((o) => (
-              <li key={o} className="flex gap-2 text-[14px] leading-snug"><span className={`mt-0.5 shrink-0 ${g.text}`}><Icon name="check" size={16} /></span>{o}</li>
+              <li key={o} className="flex gap-2 text-[14px] leading-snug"><span className={`mt-0.5 shrink-0 ${g.text}`}><Icon name="check" size={16} /></span><span><TermText text={o} /></span></li>
             ))}
           </ul>
         </div>
@@ -75,8 +76,8 @@ export function SkillSheet({ skill, game, onClose }: { skill: ArsenalSkill; game
             <Label>Формулы и правила из Арсенала</Label>
             {doneLessons.map((id) => (
               <div key={id} className="rounded-xl bg-white/[0.05] p-3">
-                <div className={`font-serif text-[17px] ${g.text}`}>{c.lessons[id].arsenalCard.title}</div>
-                <pre className="mt-1 whitespace-pre-wrap break-words font-sans text-[14px] leading-relaxed text-parch/90">{c.lessons[id].arsenalCard.body}</pre>
+                <div className={`font-serif text-[17px] ${g.text}`}><TermText text={c.lessons[id].arsenalCard.title} /></div>
+                <pre className="mt-1 whitespace-pre-wrap break-words font-sans text-[14px] leading-relaxed text-parch/90"><TermText text={c.lessons[id].arsenalCard.body} /></pre>
               </div>
             ))}
           </div>

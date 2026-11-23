@@ -190,6 +190,21 @@ export type ArsenalSkill = z.infer<typeof ArsenalSkillSchema>
 export type Building = z.infer<typeof BuildingSchema>
 export type Empire = z.infer<typeof EmpireSchema>
 
+/** Термин словаря: кликабельное слово/аббревиатура в текстах курса. */
+export const TermCategorySchema = z.enum(['metrics', 'meta', 'telegram', 'creative', 'analytics', 'basics'])
+export const TermSchema = z.object({
+  id: z.string().min(1),
+  term: z.string().min(1),
+  aliases: z.array(z.string().min(1)).optional(),
+  full: z.string().min(1),
+  ru: z.string().min(1),
+  meaning: z.string().min(1),
+  formula: z.string().optional(),
+  category: TermCategorySchema,
+})
+export type TermCategory = z.infer<typeof TermCategorySchema>
+export type Term = z.infer<typeof TermSchema>
+
 /** Своя миссия наставника: привязана к неделе по её постоянному key. */
 export const MissionSchema = z.object({
   id: z.string().min(1),
@@ -278,6 +293,7 @@ export type Content = {
   ranks: Rank[]
   offers: Offer[]
   skills: ArsenalSkill[]
+  glossary: Term[]
 }
 
 /** Разбирает и проверяет сырые JSON-файлы контента. Бросает понятную ошибку. */
@@ -290,6 +306,7 @@ export function parseContent(raw: {
   ranks: unknown
   offers: unknown
   skills?: unknown
+  glossary?: unknown
 }): Content {
   const lessons: Record<string, Lesson> = {}
   for (const [file, data] of Object.entries(raw.lessonFiles)) {
@@ -331,5 +348,7 @@ export function parseContent(raw: {
 
   const skills = z.array(ArsenalSkillSchema).parse(raw.skills ?? [])
   if (new Set(skills.map((s) => s.id)).size !== skills.length) throw new Error('Навыки: повторяются id')
-  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, offers: offerFile.offers, skills }
+  const glossary = z.array(TermSchema).parse(raw.glossary ?? [])
+  if (new Set(glossary.map((t) => t.id)).size !== glossary.length) throw new Error('Словарь: повторяются id терминов')
+  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, offers: offerFile.offers, skills, glossary }
 }

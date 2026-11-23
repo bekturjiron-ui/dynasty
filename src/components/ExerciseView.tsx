@@ -7,6 +7,7 @@ import { evalNum, type Scope } from '../lib/expr'
 import { closeEnough, fmtNum, fmtUnit, parseUserNumber, toRaw } from '../lib/format'
 import { parseAddr, type CellResult, type Grid } from '../lib/sheet'
 import { render } from '../lib/template'
+import { TermText } from './Glossary'
 import { TableView } from './TableView'
 import { Advisor, Button, Icon } from './ui'
 
@@ -49,20 +50,20 @@ function ChoiceExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Да�
 
   return (
     <div className="space-y-3">
-      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <p className="text-[17px] leading-relaxed"><TermText text={render(ex.prompt, scope)} /></p>
       <div className="space-y-2">
         {options.map((o, i) => {
           const was = tried.includes(i)
           const hint = reveal && o.correct && !solved
           return (
             <button key={i} onClick={() => pick(i)} disabled={solved || was} className={`choice surface w-full rounded-xl border px-4 py-3.5 text-left text-[15px] leading-snug ${was ? (o.correct ? 'border-gain/60' : 'border-loss/50 opacity-70') : hint ? 'border-gold' : 'border-line'}`}>
-              <span className="flex items-start gap-2">{was && o.correct && <span className="text-gain"><Icon name="check" size={18} /></span>}{render(o.text, scope)}</span>
+              <span className="flex items-start gap-2">{was && o.correct && <span className="text-gain"><Icon name="check" size={18} /></span>}<span><TermText text={render(o.text, scope)} interactiveParent /></span></span>
             </button>
           )
         })}
       </div>
       {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник подсветил решение золотой рамкой.</p>}
-      {picked !== null && <Advisor tone={options[picked].correct ? 'gain' : 'loss'}>{render(options[picked].why, scope)}</Advisor>}
+      {picked !== null && <Advisor tone={options[picked].correct ? 'gain' : 'loss'}><TermText text={render(options[picked].why, scope)} /></Advisor>}
       {solved && <Button full onClick={() => onSolved({ attempts: tried.length })}>{doneLabel}</Button>}
     </div>
   )
@@ -88,7 +89,7 @@ function TextExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Дал�
 
   return (
     <div className="space-y-3">
-      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <p className="text-[17px] leading-relaxed"><TermText text={render(ex.prompt, scope)} /></p>
       <textarea value={val} readOnly={solved} onChange={(e) => { setVal(e.target.value); setIssues(null) }} rows={4} placeholder={c.placeholder ?? 'Текст объявления'} className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-[16px] leading-relaxed text-parch outline-none focus:border-gold" />
       <div className={`text-right text-[13px] tabular-nums ${len > c.maxLength ? 'text-loss' : 'text-muted'}`}>{len} / {c.maxLength}</div>
       {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник: например, «{render(c.sample, scope)}»</p>}
@@ -143,18 +144,18 @@ function NumberExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = 
 
   return (
     <div className="space-y-4">
-      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <p className="text-[17px] leading-relaxed"><TermText text={render(ex.prompt, scope)} /></p>
 
       {done.map((d, i) => (
         <div key={i} className="flex items-center justify-between rounded-xl border border-gain/40 bg-gain/5 px-4 py-3">
-          <span className="text-[14px] text-muted">{d.label}</span>
+          <span className="text-[14px] text-muted"><TermText text={d.label} /></span>
           <span className="flex items-center gap-1 font-semibold text-gain tabular-nums"><Icon name="check" size={18} />{d.text}</span>
         </div>
       ))}
 
       {!solved && (
         <div className="space-y-2">
-          <label className="block text-[14px] text-muted">{steps.length > 1 ? `Шаг ${idx + 1} из ${steps.length}. ` : ''}{step.label}</label>
+          <label className="block text-[14px] text-muted">{steps.length > 1 ? `Шаг ${idx + 1} из ${steps.length}. ` : ''}<TermText text={step.label} /></label>
           <div className="flex gap-2">
             <input
               inputMode="decimal"
@@ -171,7 +172,7 @@ function NumberExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = 
         </div>
       )}
 
-      {note && <Advisor tone={note.tone}>{note.text}</Advisor>}
+      {note && <Advisor tone={note.tone}><TermText text={note.text} /></Advisor>}
       {solved && <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button>}
     </div>
   )
@@ -261,10 +262,10 @@ function SheetExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = '
 
   return (
     <div className="space-y-3">
-      <p className="text-[17px] leading-relaxed">{render(ex.prompt, scope)}</p>
+      <p className="text-[17px] leading-relaxed"><TermText text={render(ex.prompt, scope)} /></p>
       {!solved && current && (
         <div className="rounded-xl border border-gold/30 bg-gold/5 px-3 py-2 text-[14px]">
-          <span className="font-semibold text-gold">{sel}</span> · {mode === 'guided' ? targets[guidedIdx]?.label : current.label}
+          <span className="font-semibold text-gold">{sel}</span> · <TermText text={mode === 'guided' ? targets[guidedIdx]?.label ?? '' : current.label} />
         </div>
       )}
 
@@ -294,7 +295,7 @@ function SheetExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = '
         </>
       )}
 
-      {note && <Advisor tone={note.tone}>{note.text}</Advisor>}
+      {note && <Advisor tone={note.tone}><TermText text={note.text} /></Advisor>}
       {solved && <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button>}
     </div>
   )

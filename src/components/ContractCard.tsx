@@ -4,6 +4,7 @@ import type { Week } from '../content/schema'
 import type { ContractResult } from '../db'
 import { CONTRACT_REWARD, completeContract } from '../game/engine'
 import { parseUserNumber, fmtNum } from '../lib/format'
+import { TermText } from './Glossary'
 import { Button, Icon, Label } from './ui'
 
 /** Реальный контракт недели: действие в живом рекламном кабинете с пруфом. */
@@ -36,7 +37,7 @@ export function ContractCard({ week, result }: { week: Week; result?: ContractRe
       <div className="flex items-start justify-between gap-3">
         <div>
           <Label tone="contract">Реальный контракт · неделя {week.n}</Label>
-          <p className="mt-1 text-[15px] leading-relaxed">{week.contract.text}</p>
+          <p className="mt-1 text-[15px] leading-relaxed"><TermText text={week.contract.text} /></p>
         </div>
         {result ? <span className="animate-check text-gain"><Icon name="check" /></span> : <span className="shrink-0 rounded-full bg-emerald/15 px-2.5 py-1 text-[12px] font-semibold text-emerald">+{CONTRACT_REWARD.xp} XP</span>}
       </div>
