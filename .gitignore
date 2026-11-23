@@ -11,5 +11,8 @@ data/
 /course_targeting_a_to_z/
 /targeting_courses_plan.md
 
+# Локальный граф проекта: у каждого агента свой
+/graphify-out/
+
 # Исходные 3D-модели и картинки (сотни МБ): в игру идут сжатые копии из public/
 /Models/

@@ -2,7 +2,7 @@
 
 Прочитайте перед началом работы: `AGENTS.md`, `CLAUDE.md`, `docs/AI-HANDOFF.md`, `docs/PARALLEL-WORK.md`.
 
-- **Важно:** курс заменён на таргетинг (Kaspi убран). Пока ветка `claude/work` не влита в `main`, не запускайте `node tools/ship.mjs` и не правьте `content/`: автослияние старого контента сломает сайт. После слияния сделайте `git merge origin/main`.
+- **Важно:** курс заменён на таргетинг (Kaspi убран). Перед каждой задачей обязательно `git fetch origin` и `git merge origin/main`, иначе вы работаете со старым контентом. `graphify-out/` в git не добавлять, git-хук Graphify не ставить: `.git/hooks` общий для обеих папок.
 - Интерфейс и контент на русском. Стиль: тёмная тема, золото. Mobile-first, проверять на ширине 390px.
 - Контент только в `content/*.json`; после правок `npm run validate`. Цифры из контента не хардкодить.
 - Формулы только через `src/lib/expr.ts` и `src/lib/sheet.ts`, никогда `eval` или `new Function`.
