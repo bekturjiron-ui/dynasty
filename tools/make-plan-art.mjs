@@ -45,14 +45,15 @@ async function cutout(file, width, outFile) {
 const names = []
 for (let n = 1; n <= 12; n++) {
   const nn = String(n).padStart(2, '0')
-  names.push([`boss-${nn}`, `bosses/t${nn}-${n === 8 ? 'neg' : 'boss'}.webp`, BOSS_W])
+  names.push([[`boss-${nn}`, `boss-${n}`], `bosses/t${nn}-${n === 8 ? 'neg' : 'boss'}.webp`, BOSS_W])
 }
 names.push(['plinth', 'plan/plinth.webp', PLINTH_W])
 
 let done = 0
 for (const [src, dst, w] of names) {
-  const file = ['.png', '.jpg', '.jpeg', '.webp'].map((e) => path.join(IN, src + e)).find((f) => fs.existsSync(f))
-  if (!file) { console.log('нет файла', src); continue }
+  const stems = Array.isArray(src) ? src : [src]
+  const file = stems.flatMap((st) => ['.png', '.jpg', '.jpeg', '.webp'].map((e) => path.join(IN, st + e))).find((f) => fs.existsSync(f))
+  if (!file) { console.log('нет файла', stems[0]); continue }
   await cutout(file, w, path.join(OUT, dst))
   done++
 }

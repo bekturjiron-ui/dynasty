@@ -34,7 +34,7 @@ export default defineConfig({
         // Фоны стадий кэшируем по мере открытия, чтобы они работали офлайн
         runtimeCaching: [
           { urlPattern: /\/art\/.*\.webp$/, handler: 'CacheFirst', options: { cacheName: 'art', expiration: { maxEntries: 80 } } },
-          { urlPattern: /\/models\/.*\.glb$/, handler: 'CacheFirst', options: { cacheName: 'models', expiration: { maxEntries: 10 } } },
+          { urlPattern: /\/models\/.*\.glb$/, handler: 'CacheFirst', options: { cacheName: 'models', expiration: { maxEntries: 20 } } },
         ],
       },
     }),
