@@ -1,4 +1,4 @@
-// Картинки для карты плана: Models/plan/boss-01..12.png и plinth.png на сплошном зелёном фоне (#00FF00)
+// Картинки для карты плана: Models/plan/boss-01..12 и plinth (png, jpg или webp) на сплошном зелёном фоне (#00FF00) или уже с прозрачным фоном
 // → public/art/bosses/tNN-boss.webp (неделя 8: t08-neg.webp) и public/art/plan/plinth.webp с прозрачным фоном.
 // Запуск из корня проекта:   node tools/make-plan-art.mjs            (sharp уже в devDependencies)
 // Другие папки:              node tools/make-plan-art.mjs <откуда> <куда>   (по умолчанию Models/plan и public/art)
@@ -15,17 +15,25 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 
 /** Зелёный фон → прозрачность. Зелёный отсвет на краях гасится, чтобы не оставалось светлой каймы. */
 async function cutout(file, width, outFile) {
-  const { data, info } = await sharp(file).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  // Если у картинки уже есть прозрачный фон (заметная доля пикселей с альфой), берём его как есть, зелёный ключ не нужен.
+  let clear = 0
+  for (let i = 3; i < data.length; i += 4) if (data[i] < 20) clear++
+  const hasAlpha = clear / (data.length / 4) > 0.05
   const out = Buffer.alloc(info.width * info.height * 4)
-  for (let i = 0, j = 0; i < data.length; i += 3, j += 4) {
+  for (let i = 0; i < data.length; i += 4) {
     let r = data[i], g = data[i + 1], b = data[i + 2]
-    const other = Math.max(r, b)
-    const dom = g - other
-    const k = g > 40 ? dom / g : 0
-    const alpha = 1 - smooth(0.22, 0.55, k)
-    if (dom > 0) g = Math.min(g, other + dom * 0.1)
-    out[j] = r; out[j + 1] = g; out[j + 2] = b; out[j + 3] = Math.round(alpha * 255)
+    let alpha = data[i + 3] / 255
+    if (!hasAlpha) {
+      const other = Math.max(r, b)
+      const dom = g - other
+      const k = g > 40 ? dom / g : 0
+      alpha = 1 - smooth(0.22, 0.55, k)
+      if (dom > 0) g = Math.min(g, other + dom * 0.1)
+    }
+    out[i] = r; out[i + 1] = g; out[i + 2] = b; out[i + 3] = Math.round(alpha * 255)
   }
+  if (hasAlpha) console.log('  (у картинки уже есть прозрачность, зелёный фон не вырезаю)')
   const raw = sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } })
   const trimmed = await raw.trim({ background: { r: 0, g: 0, b: 0, alpha: 0 }, threshold: 8 }).png().toBuffer()
   fs.mkdirSync(path.dirname(outFile), { recursive: true })
