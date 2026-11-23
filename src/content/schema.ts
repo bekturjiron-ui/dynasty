@@ -205,6 +205,15 @@ export const TermSchema = z.object({
 export type TermCategory = z.infer<typeof TermCategorySchema>
 export type Term = z.infer<typeof TermSchema>
 
+/** Запись об обновлении приложения: первая запись в content/changelog.json — текущая версия. */
+export const ReleaseSchema = z.object({
+  version: z.string().regex(/^\d+\.\d+[a-z]?$/),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  title: z.string().min(1),
+  changes: z.array(z.string().min(1)).min(1),
+})
+export type Release = z.infer<typeof ReleaseSchema>
+
 /** Своя миссия наставника: привязана к неделе по её постоянному key. */
 export const MissionSchema = z.object({
   id: z.string().min(1),
@@ -304,6 +313,7 @@ export type Content = {
   offers: Offer[]
   skills: ArsenalSkill[]
   glossary: Term[]
+  changelog: Release[]
 }
 
 /** Разбирает и проверяет сырые JSON-файлы контента. Бросает понятную ошибку. */
@@ -317,6 +327,7 @@ export function parseContent(raw: {
   offers: unknown
   skills?: unknown
   glossary?: unknown
+  changelog?: unknown
 }): Content {
   const lessons: Record<string, Lesson> = {}
   for (const [file, data] of Object.entries(raw.lessonFiles)) {
@@ -360,5 +371,7 @@ export function parseContent(raw: {
   if (new Set(skills.map((s) => s.id)).size !== skills.length) throw new Error('Навыки: повторяются id')
   const glossary = z.array(TermSchema).parse(raw.glossary ?? [])
   if (new Set(glossary.map((t) => t.id)).size !== glossary.length) throw new Error('Словарь: повторяются id терминов')
-  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, offers: offerFile.offers, skills, glossary }
+  const changelog = z.array(ReleaseSchema).parse(raw.changelog ?? [])
+  if (new Set(changelog.map((r) => r.version)).size !== changelog.length) throw new Error('Версии: повторяются номера версий в changelog.json')
+  return { lessons, bosses, negotiations, empire, weeks, missions: [], ranks, offers: offerFile.offers, skills, glossary, changelog }
 }

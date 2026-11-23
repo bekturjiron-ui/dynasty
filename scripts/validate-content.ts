@@ -21,7 +21,7 @@ const lessonFiles = Object.fromEntries(readdirSync(join(root, 'lessons')).filter
 let problems = 0
 const fail = (where: string, msg: string) => { problems++; console.log(`  ✗ ${where}: ${msg}`) }
 
-const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), offers: read('offers.json'), skills: read('skills.json'), glossary: read('glossary.json') })
+const content = parseContent({ lessonFiles, bosses: read('bosses.json'), negotiations: read('negotiations.json'), empire: read('empire.json'), plan: read('plan.json'), ranks: read('ranks.json'), offers: read('offers.json'), skills: read('skills.json'), glossary: read('glossary.json'), changelog: read('changelog.json') })
 const base = baseScope(content.offers)
 const WEEKS = 12
 
