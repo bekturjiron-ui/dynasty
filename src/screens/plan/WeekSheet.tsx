@@ -83,10 +83,10 @@ export function WeekSheet({ game, s, onClose, onReorder }: { game: Game; s: Week
             </button>
           )}
           {w.negotiationId && c.negotiations[w.negotiationId] && (
-            <button onClick={() => nav(`/negotiation/${w.negotiationId}`)} className="choice flex w-full items-center gap-3 rounded-xl border border-copper/40 bg-copper/[0.07] px-3 py-3 text-left">
-              <span className={game.negotiations.has(w.negotiationId) ? 'text-gain' : 'text-gold'}>{game.negotiations.has(w.negotiationId) ? <Icon name="check" size={18} /> : <Icon name="council" size={18} />}</span>
+            <button disabled={!s.bossUnlocked} onClick={() => nav(`/negotiation/${w.negotiationId}`)} className="choice flex w-full items-center gap-3 rounded-xl border border-copper/40 bg-copper/[0.07] px-3 py-3 text-left disabled:opacity-50">
+              <span className={s.bossUnlocked && game.negotiations.has(w.negotiationId) ? 'text-gain' : 'text-gold'}>{!s.bossUnlocked ? <Icon name="lock" size={18} /> : game.negotiations.has(w.negotiationId) ? <Icon name="check" size={18} /> : <Icon name="council" size={18} />}</span>
               <span className="flex-1 text-[14px]">Переговоры: {c.negotiations[w.negotiationId].title}</span>
-              <span className="text-[11px] text-muted">открыто всегда</span>
+              {!s.bossUnlocked && <span className="text-[11px] text-muted">после уроков</span>}
             </button>
           )}
           {!s.bossReady && !(w.negotiationId && c.negotiations[w.negotiationId]) && w.bossTitle !== '—' && <p className="px-1 text-[13px] text-muted">Босс недели: {w.bossTitle} — готовится.</p>}

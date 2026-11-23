@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { content } from '../content'
 import type { NegOption } from '../content/schema'
-import { completeNegotiation } from '../game/engine'
+import { completeNegotiation, weekStatus } from '../game/engine'
+import { LockedGate } from '../components/LockedGate'
 import { choose, COLD_LIMIT, negScope, outcome, startNeg, type NegOutcome, type NegState } from '../game/negotiation'
 import { planWeekN } from '../game/plan'
 import { useGame } from '../game/useGame'
@@ -32,7 +33,10 @@ export default function NegotiationScreen() {
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [log.length, result])
 
   if (!n) return <div className="pt-safe px-4 text-muted">Этих переговоров нет в контенте.</div>
-  if (!base || !scope) return null
+  if (game.loading || !base || !scope) return null
+  const negWeek = game.content.weeks.find((w) => w.negotiationId === n.id)
+  const gate = negWeek && weekStatus(negWeek, game.content, game.st)
+  if (gate && !gate.bossUnlocked) return <LockedGate done={gate.lessonsDone} total={gate.lessonsTotal} />
 
   function begin() {
     const s = startNeg(n)

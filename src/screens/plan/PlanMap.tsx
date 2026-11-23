@@ -23,7 +23,8 @@ function roadPath(n: number) {
 
 function bossState(s: WeekStatus, game: Game): BossState {
   const w = s.week
-  if (w.negotiationId && game.content.negotiations[w.negotiationId]) return game.negotiations.has(w.negotiationId) ? 'done' : 'ready'
+  // Переговоры закрыты до конца уроков, даже если диалог уже успели сыграть
+  if (w.negotiationId && game.content.negotiations[w.negotiationId]) return !s.bossUnlocked ? 'locked' : game.negotiations.has(w.negotiationId) ? 'done' : 'ready'
   if (s.bossReady) return s.bossDone ? 'done' : s.bossUnlocked ? 'ready' : 'locked'
   return 'locked'
 }
