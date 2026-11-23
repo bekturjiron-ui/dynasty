@@ -62,7 +62,7 @@ export function TableView({ grid, highlight = [], editable = [], selected, verif
                       onClick={onSelect ? () => onSelect(a) : undefined}
                       className={[
                         'h-9 max-w-[7.5rem] border-r border-b border-line px-1.5 last:border-r-0 transition-colors',
-                        d.isNum ? 'text-right tabular-nums' : 'text-left',
+                        d.isNum ? 'text-left tabular-nums' : 'text-left',
                         header ? 'font-semibold' : '',
                         // цвет текста — ровно один класс, чтобы не спорили между собой
                         d.error ? 'text-loss' : isOk ? 'text-gain' : isHl ? 'text-gold-soft' : header ? 'text-muted' : 'text-parch',
