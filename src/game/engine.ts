@@ -4,6 +4,7 @@ import { db, type BossResult, type ContractResult, type MissionResult, type Nego
 import { addDays, dayKey, daysBetween, weekStart } from '../lib/dates'
 import type { Content, Mission, Week } from '../content/schema'
 import { emitRankUp } from './events'
+import { effectiveContent, rankContracts } from './plan'
 
 export const TOTAL_WEEKS = 12
 export const CONTRACT_REWARD = { capital: 500, xp: 200 }
@@ -105,7 +106,7 @@ export function focusWeek(content: Content, st: State, now: number): WeekStatus 
 export function rankProgress(content: Content, player: Player, st: State) {
   const rank = content.ranks.find((r) => r.n === player.rank) ?? content.ranks[0]
   const next = content.ranks.find((r) => r.n === player.rank + 1)
-  const need = rank?.promoteWhen.contracts ?? []
+  const need = rank ? rankContracts(rank, content.weeks) : []
   const have = need.filter((w) => st.contracts.has(w)).length
   return { rank, next, need, have, ratio: need.length ? have / need.length : 1 }
 }
@@ -124,7 +125,7 @@ async function loadState(): Promise<State> {
 // Награды выдаются одной транзакцией: «был ли результат» и начисление не должны расходиться при двойном тапе.
 // Окно «новый титул» показываем после коммита, а не внутри транзакции.
 let pendingRank: { rank: number; title: string } | null = null
-const TX_TABLES = [db.player, db.activity, db.progress, db.bosses, db.contracts, db.missionResults, db.negotiations, db.reports]
+const TX_TABLES = [db.player, db.activity, db.progress, db.bosses, db.contracts, db.missionResults, db.negotiations, db.reports, db.plan]
 async function atomic<T>(fn: () => Promise<T>): Promise<T> {
   let r: T
   try {
@@ -135,6 +136,24 @@ async function atomic<T>(fn: () => Promise<T>): Promise<T> {
   }
   if (pendingRank) { emitRankUp(pendingRank); pendingRank = null }
   return r
+}
+
+/** Повышает титул, пока выполнены условия (может быть несколько подряд). Условия считаются по плану с правками. */
+async function promote(content: Content, p: Player) {
+  const [st, override] = await Promise.all([loadState(), db.plan.get('main')])
+  const { weeks } = effectiveContent(content, override)
+  const before = p.rank
+  for (;;) {
+    const r = content.ranks.find((x) => x.n === p.rank)
+    const next = content.ranks.find((x) => x.n === p.rank + 1)
+    if (!r || !next || r.promoteWhen.contracts.length === 0) break
+    if (!rankContracts(r, weeks).every((w) => st.contracts.has(w))) break
+    p.rank = next.n
+  }
+  if (p.rank > before) {
+    const r = content.ranks.find((x) => x.n === p.rank)!
+    pendingRank = { rank: r.n, title: r.title }
+  }
 }
 
 /** Начисляет награду, отмечает активность дня и проверяет повышение ранга. */
@@ -152,21 +171,8 @@ async function award(content: Content, gain: { capital?: number; xp?: number; in
   const act = await db.activity.get(today)
   await db.activity.put({ day: today, xp: (act?.xp ?? 0) + (gain.xp ?? 0), actions: (act?.actions ?? 0) + 1 })
 
-  // Повышение: условие текущего ранга выполнено → следующий титул (может быть несколько подряд)
-  const st = await loadState()
-  const before = updated.rank
-  for (;;) {
-    const r = content.ranks.find((x) => x.n === updated.rank)
-    const next = content.ranks.find((x) => x.n === updated.rank + 1)
-    if (!r || !next || r.promoteWhen.contracts.length === 0) break
-    if (!r.promoteWhen.contracts.every((w) => st.contracts.has(w))) break
-    updated.rank = next.n
-  }
+  await promote(content, updated)
   await db.player.put(updated)
-  if (updated.rank > before) {
-    const r = content.ranks.find((x) => x.n === updated.rank)!
-    pendingRank = { rank: r.n, title: r.title }
-  }
 }
 
 /** Урок решён. Первый раз — полная награда (половина Капитала, если были подсказки).
@@ -244,6 +250,14 @@ async function completeNegotiationRaw(
 export async function savePlan(weeks: Week[], missions: Mission[], baseWeeks: Week[], baseMissions: Mission[] = []) {
   await db.plan.put({ id: 'main', weeks: weeks.map((w, i) => ({ ...w, key: w.key ?? w.n, n: i + 1 })), missions, baseWeeks, baseMissionIds: baseMissions.map((m) => m.id), updatedAt: new Date().toISOString() })
 }
+/** После правки плана условие титула могло стать выполненным: например, удалена неделя с последним нужным контрактом. */
+export const syncRank = (content: Content) => atomic(async () => {
+  const p = await db.player.get('me')
+  if (!p) return
+  const updated = { ...p }
+  await promote(content, updated)
+  if (updated.rank !== p.rank) await db.player.put(updated)
+})
 export async function resetPlan() {
   await db.plan.delete('main')
 }
