@@ -37,7 +37,8 @@ export type Activity = { day: string; xp: number; actions: number }
 
 /** Бриф своего проекта: из него Совет считает потолки цены клиента, заявки и клика. */
 export type ProjectBrief = { name: string; niche: string; avgCheck: number; marginPct: number; clickToLeadPct: number; leadToSalePct: number; targetCacPct: number }
-export type Settings = { id: 'main'; mentorPin: string; project: ProjectBrief }
+/** caseNotes: свои заметки к шагам проекта («что сделал и вывод»), ключ — Week.key. Попадают в бэкап вместе с настройками. */
+export type Settings = { id: 'main'; mentorPin: string; project: ProjectBrief; caseNotes?: Record<number, string> }
 
 /** Цифры рекламной кампании за неделю плана. */
 export type WeeklyReport = {

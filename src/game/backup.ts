@@ -4,7 +4,7 @@ import { dayKey } from '../lib/dates'
 /** 2 — курс по таргетингу. Бэкапы старого курса несовместимы: другие уроки, недели и настройки. */
 const BACKUP_VERSION = 2
 
-const blobToDataUrl = (b: Blob) =>
+export const blobToDataUrl = (b: Blob) =>
   new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(b) })
 
 /** Полное состояние игры в JSON (фото контрактов — внутри как data URL). */
