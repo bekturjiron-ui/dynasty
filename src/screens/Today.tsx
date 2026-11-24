@@ -6,6 +6,7 @@ import { dayKey, daysBetween } from '../lib/dates'
 import { rivalCurve, rivalXpAt } from '../game/rival'
 import { ContractCard } from '../components/ContractCard'
 import { MissionCard } from '../components/MissionCard'
+import { MorningReview } from '../components/MorningReview'
 import { Bar, Button, Card, Icon, Label } from '../components/ui'
 
 export default function Today({ game }: { game: Game }) {
@@ -81,6 +82,8 @@ export default function Today({ game }: { game: Game }) {
           <Button variant="ghost" full className="mt-3" onClick={() => nav(`/lesson/${review.id}`)}>Лёгкая миссия: повторить «{review.title}»</Button>
         </Card>
       )}
+
+      <MorningReview game={game} />
 
       {/* Неделя */}
       <div className="pt-2">

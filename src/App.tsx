@@ -17,6 +17,7 @@ import Arsenal from './screens/Arsenal'
 const Council = lazy(() => import('./screens/Council'))
 // Админ-панель нужна редко: отдельный кусок
 const Admin = lazy(() => import('./screens/Admin'))
+import Case from './screens/Case'
 import LessonScreen from './screens/Lesson'
 import BossScreen from './screens/Boss'
 import NegotiationScreen from './screens/Negotiation'
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/arsenal" element={tab((g) => <Arsenal game={g} />)} />
         <Route path="/council" element={tab((g) => <Suspense fallback={<div className="pt-10 text-center text-muted">Собираем Совет…</div>}><Council game={g} /></Suspense>)} />
         <Route path="/admin" element={tab((g) => <Suspense fallback={null}><Admin game={g} /></Suspense>)} />
+        <Route path="/case" element={tab((g) => <Case game={g} />)} />
         <Route path="/lesson/:id" element={<LessonScreen />} />
         <Route path="/boss/:id" element={<BossScreen />} />
         <Route path="/negotiation/:id" element={<NegotiationScreen />} />

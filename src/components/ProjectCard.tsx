@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Week } from '../content/schema'
 import type { ContractResult } from '../db'
 import { Icon, Label } from './ui'
 
 /** Сквозной проект: 12 шагов контрактов ведут один мини-проект от разведки до портфолио-кейса. */
 export function ProjectCard({ weeks, contracts, onOpen }: { weeks: Week[]; contracts: Map<number, ContractResult>; onOpen: (key: number) => void }) {
+  const nav = useNavigate()
   const [open, setOpen] = useState(false)
   const steps = weeks.filter((w) => w.contract.title)
   if (steps.length === 0) return null
@@ -25,6 +27,7 @@ export function ProjectCard({ weeks, contracts, onOpen }: { weeks: Week[]; contr
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
         <div className="h-full rounded-full bg-emerald transition-all" style={{ width: `${(done / steps.length) * 100}%` }} />
       </div>
+      <button onClick={() => nav('/case')} className="mt-3 text-[14px] text-gold underline-offset-4 active:underline">Открыть кейс проекта ›</button>
       {open && (
         <ol className="mt-3 space-y-1">
           {steps.map((w) => {
