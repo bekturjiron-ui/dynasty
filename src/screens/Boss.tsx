@@ -13,6 +13,7 @@ import { ExerciseView } from '../components/ExerciseView'
 import { BossDefeatAnim } from '../components/BossDefeatAnim'
 import { TermText } from '../components/Glossary'
 import { LockedGate } from '../components/LockedGate'
+import { LessonBackdrop } from '../components/LessonBackdrop'
 import { TableView } from '../components/TableView'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
@@ -70,7 +71,9 @@ export default function BossScreen() {
   }
 
   return (
-    <div className="scene-boss pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
+    <>
+    <LessonBackdrop weekKey={bossWeek?.key} />
+    <div className="scene-boss pt-safe relative z-10 mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
       <div className="mb-4 flex items-center justify-between gap-2">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
         <div className="flex items-center gap-3">
@@ -124,5 +127,6 @@ export default function BossScreen() {
         </div>
       )}
     </div>
+    </>
   )
 }

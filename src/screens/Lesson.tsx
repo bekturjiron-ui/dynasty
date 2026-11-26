@@ -12,6 +12,7 @@ import { ExerciseView } from '../components/ExerciseView'
 import { TermText } from '../components/Glossary'
 import { TableView } from '../components/TableView'
 import { VideoBlock } from '../components/VideoBlock'
+import { LessonBackdrop } from '../components/LessonBackdrop'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
 type Phase = 'why' | 'demo' | 'guided' | 'solo' | 'report'
@@ -48,6 +49,7 @@ export default function LessonScreen() {
   if (game.content && game.st && lessonLocked(id, game.content, game.st)) return <LockedGate message="Этот урок откроется, когда ты пройдёшь предыдущие уроки и недели плана. Совет идёт по порядку." />
 
   const phaseIdx = PHASES.findIndex((p) => p.key === phase)
+  const weekKey = game.content?.weeks.find((w) => w.lessonIds.includes(id))?.key
   const exercise = phase === 'guided' ? lesson.guided : phase === 'solo' ? lesson.solo : null
 
   // Пункты «Не понял»: аналогия → подсказки текущего упражнения → решение
@@ -106,7 +108,9 @@ export default function LessonScreen() {
   }
 
   return (
-    <div className="scene-lesson pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-28 md:pt-8">
+    <>
+    <LessonBackdrop weekKey={weekKey} />
+    <div className="scene-lesson pt-safe relative z-10 mx-auto min-h-dvh max-w-2xl px-4 pb-28 md:pt-8">
       {/* Шапка: закрыть + 5 фаз цикла */}
       <div className="mb-5 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted active:bg-panel">
@@ -219,6 +223,7 @@ export default function LessonScreen() {
         </div>
       )}
     </div>
+    </>
   )
 }
 
