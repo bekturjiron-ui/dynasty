@@ -2,15 +2,42 @@ import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode 
 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'gold' | 'ghost' | 'quiet'; full?: boolean }
 
-export function Button({ variant = 'gold', full, className = '', ...rest }: BtnProps) {
-  const base = 'min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
+/**
+ * Кнопка. gold — главное действие: тёмная бронза в золотой оправе, по ней пробегает блик,
+ * от пальца вспыхивает свет и разлетаются искры. ghost — второстепенное, quiet — ссылка.
+ */
+export function Button({ variant = 'gold', full, className = '', children, onPointerDown, ...rest }: BtnProps) {
+  const [flares, setFlares] = useState<{ id: number; x: number; y: number }[]>([])
+  const nextId = useRef(0)
+  const base = 'relative min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
   const look =
     variant === 'gold'
-      ? 'btn-gold text-ink'
+      ? 'btn-gold overflow-hidden'
       : variant === 'ghost'
-        ? 'border border-gold/60 text-gold-soft active:bg-gold/10'
+        ? 'btn-ghost border border-gold/45 text-gold-soft active:bg-gold/10'
         : 'text-muted'
-  return <button className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} {...rest} />
+  function down(e: React.PointerEvent<HTMLButtonElement>) {
+    onPointerDown?.(e)
+    if (variant !== 'gold' || rest.disabled) return
+    const r = e.currentTarget.getBoundingClientRect()
+    const id = nextId.current++
+    setFlares((f) => [...f, { id, x: e.clientX - r.left, y: e.clientY - r.top }])
+    setTimeout(() => setFlares((f) => f.filter((x) => x.id !== id)), 700)
+  }
+  return (
+    <button className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
+      {variant === 'gold' ? <span className="btn-gold-label relative z-[1]">{children}</span> : children}
+      {flares.map((f) => (
+        <span key={f.id} className="pointer-events-none absolute" style={{ left: f.x, top: f.y }} aria-hidden>
+          <i className="btn-flare" />
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const ang = (i / 6) * Math.PI * 2 + f.id
+            return <i key={i} className="spark" style={{ ['--dx' as string]: `${Math.cos(ang) * 34}px`, ['--dy' as string]: `${Math.sin(ang) * 22 - 8}px` }} />
+          })}
+        </span>
+      ))}
+    </button>
+  )
 }
 
 export type Tone = 'plain' | 'gold' | 'boss' | 'contract' | 'copper'
@@ -46,9 +73,9 @@ export function Bar({ value, className = '' }: { value: number; className?: stri
 }
 
 /** Число плавно «накручивается» до значения. При смене значения идёт от прошлого к новому. */
-export function useCountUp(target: number, ms = 800) {
-  const [v, setV] = useState(target)
-  const from = useRef(target)
+export function useCountUp(target: number, ms = 800, initial = target) {
+  const [v, setV] = useState(initial)
+  const from = useRef(initial)
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || from.current === target) { from.current = target; setV(target); return }
     const start = performance.now()

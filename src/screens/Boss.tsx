@@ -14,6 +14,7 @@ import { BossDefeatAnim } from '../components/BossDefeatAnim'
 import { TermText } from '../components/Glossary'
 import { LockedGate } from '../components/LockedGate'
 import { LessonBackdrop } from '../components/LessonBackdrop'
+import { RewardPills } from '../components/Reward'
 import { TableView } from '../components/TableView'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
@@ -111,7 +112,7 @@ export default function BossScreen() {
           <BossDefeatAnim bossId={boss.id} title={boss.title} />
           <p className="font-serif text-[24px]">Вылазка удалась</p>
           <Advisor tone="gain">
-            {gain && gain.capital ? <>В казну: <b className="text-gold">+{gain.capital} ₸ Капитала</b>, <b className="text-gold">+{gain.xp} XP</b>. Жизней осталось: {lives}.</> : <>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}
+            {gain && gain.capital ? <div className="text-left">В казну Дома. Жизней осталось: {lives}.<RewardPills capital={gain.capital} xp={gain.xp} /></div> :<>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}
           </Advisor>
           <Button full onClick={() => nav('/')}>В Дом</Button>
         </div>

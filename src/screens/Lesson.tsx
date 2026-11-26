@@ -13,6 +13,7 @@ import { TermText } from '../components/Glossary'
 import { TableView } from '../components/TableView'
 import { VideoBlock } from '../components/VideoBlock'
 import { LessonBackdrop } from '../components/LessonBackdrop'
+import { RewardPills } from '../components/Reward'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
 type Phase = 'why' | 'demo' | 'guided' | 'solo' | 'report'
@@ -179,7 +180,11 @@ export default function LessonScreen() {
         <div className="animate-rise mt-6 space-y-4">
           <Advisor tone="gain">
             {gain && (gain.capital || gain.xp)
-              ? <>Урок закрыт{soloHints ? ' с помощью советника' : ' без подсказок'}. В казну Дома: <b className="text-gold">+{gain.capital} ₸ Капитала</b>{gain.xp ? <>, <b className="text-gold">+{gain.xp} XP</b></> : null}.{soloHints ? ' Пройди «Сам» ещё раз без подсказок — советник доплатит вторую половину Капитала.' : ''}</>
+              ? <>
+                  Урок закрыт{soloHints ? ' с помощью советника' : ' без подсказок'}. В казну Дома:
+                  <RewardPills capital={gain.capital} xp={gain.xp} />
+                  {soloHints ? <p className="mt-3 text-[14px] text-muted">Пройди «Сам» ещё раз без подсказок — советник доплатит вторую половину Капитала.</p> : null}
+                </>
               : <>Повтор засчитан в серию дней. Награда за этот урок уже в казне.</>}
           </Advisor>
           <div className="surface-gold rounded-2xl border p-4">
