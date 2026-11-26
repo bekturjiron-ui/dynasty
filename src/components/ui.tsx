@@ -1,16 +1,85 @@
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
-type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'gold' | 'ghost' | 'quiet'; full?: boolean }
+type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'gold' | 'ghost' | 'quiet'
+  full?: boolean
+  /** Акцент главной кнопки под тип экрана: boss — рубин, copper — медь (переговоры). */
+  tone?: 'boss' | 'copper'
+}
 
-export function Button({ variant = 'gold', full, className = '', ...rest }: BtnProps) {
-  const base = 'min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
-  const look =
-    variant === 'gold'
-      ? 'btn-gold text-ink'
-      : variant === 'ghost'
-        ? 'border border-gold/60 text-gold-soft active:bg-gold/10'
-        : 'text-muted'
-  return <button className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} {...rest} />
+const LABEL_PX = 20
+const LABEL_MIN_PX = 14
+const FRAME_PX = 17 // толщина неподвижных краёв плашки (рамка + угловой завиток), см. .btn-gold в index.css
+
+/** Уменьшает подпись главной кнопки, если она не помещается в одну строку между угловыми завитками. */
+function useLabelFit(enabled: boolean, deps: unknown) {
+  const btn = useRef<HTMLButtonElement>(null)
+  const label = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const b = btn.current
+    const l = label.current
+    if (!enabled || !b || !l) return
+    const fit = () => {
+      l.style.fontSize = `${LABEL_PX}px`
+      const room = b.offsetWidth - 2 * FRAME_PX - 24
+      const natural = l.scrollWidth
+      if (natural > room) l.style.fontSize = `${Math.max(LABEL_MIN_PX, (LABEL_PX * room) / natural)}px`
+    }
+    fit()
+    void document.fonts?.ready.then(fit)
+    const ro = new ResizeObserver(fit)
+    ro.observe(b)
+    return () => ro.disconnect()
+  }, [enabled, deps])
+  return { btn, label }
+}
+
+/**
+ * Кнопка. Набор плашек public/art/ui/btn-*.webp (исходники art-source/buttons): тёмная лакированная плита
+ * в тонкой гравированной рамке с угловыми завитками. Углы не тянутся, края и середина растягиваются под любую ширину.
+ * gold — главное действие (подпись Cormorant SC золотом, у нажатой своя картинка, от пальца искры);
+ * ghost — второстепенное (тише: бронзовая линия, без свечения); quiet — ссылка без плашки.
+ */
+export function Button({ variant = 'gold', full, tone, className = '', children, onPointerDown, ...rest }: BtnProps) {
+  const [flares, setFlares] = useState<{ id: number; x: number; y: number }[]>([])
+  const nextId = useRef(0)
+  const gold = variant === 'gold'
+  const { btn, label } = useLabelFit(gold, children)
+  const look = gold
+    ? `btn-plate btn-gold ${tone ? `btn-gold-${tone}` : ''}`
+    : variant === 'ghost'
+      ? 'btn-plate btn-ghost'
+      : 'relative min-h-12 rounded-xl px-5 text-[16px] font-semibold text-muted transition duration-150 active:scale-[0.97] disabled:opacity-40'
+  function down(e: React.PointerEvent<HTMLButtonElement>) {
+    onPointerDown?.(e)
+    if (!gold || rest.disabled) return
+    const el = e.currentTarget
+    const r = el.getBoundingClientRect()
+    const id = nextId.current++
+    // координаты от края всей плашки (вместе с рамкой): слой эффектов ниже покрывает её целиком
+    setFlares((f) => [...f, { id, x: e.clientX - r.left, y: e.clientY - r.top }])
+    setTimeout(() => setFlares((f) => f.filter((x) => x.id !== id)), 700)
+  }
+  return (
+    <button ref={btn} className={`${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
+      {gold ? <span ref={label} className="btn-gold-label relative z-[1]">{children}</span> : children}
+      {/* Вспышка и искры обрезаются по плашке: иначе они на миг раздувают прокручиваемое окно
+          (в шторке «Не понял» от этого мигала полоса прокрутки) */}
+      {flares.length > 0 && (
+        <span className="btn-fx pointer-events-none absolute overflow-hidden" aria-hidden>
+          {flares.map((f) => (
+            <span key={f.id} className="absolute" style={{ left: f.x, top: f.y }}>
+              <i className="btn-flare" />
+              {[0, 1, 2, 3, 4, 5].map((i) => {
+                const ang = (i / 6) * Math.PI * 2 + f.id
+                return <i key={i} className="spark" style={{ ['--dx' as string]: `${Math.cos(ang) * 34}px`, ['--dy' as string]: `${Math.sin(ang) * 22 - 8}px` }} />
+              })}
+            </span>
+          ))}
+        </span>
+      )}
+    </button>
+  )
 }
 
 export type Tone = 'plain' | 'gold' | 'boss' | 'contract' | 'copper'
@@ -46,9 +115,9 @@ export function Bar({ value, className = '' }: { value: number; className?: stri
 }
 
 /** Число плавно «накручивается» до значения. При смене значения идёт от прошлого к новому. */
-export function useCountUp(target: number, ms = 800) {
-  const [v, setV] = useState(target)
-  const from = useRef(target)
+export function useCountUp(target: number, ms = 800, initial = target) {
+  const [v, setV] = useState(initial)
+  const from = useRef(initial)
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || from.current === target) { from.current = target; setV(target); return }
     const start = performance.now()

@@ -13,6 +13,8 @@ import { ExerciseView } from '../components/ExerciseView'
 import { BossDefeatAnim } from '../components/BossDefeatAnim'
 import { TermText } from '../components/Glossary'
 import { LockedGate } from '../components/LockedGate'
+import { LessonBackdrop } from '../components/LessonBackdrop'
+import { RewardPills } from '../components/Reward'
 import { TableView } from '../components/TableView'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
@@ -70,7 +72,9 @@ export default function BossScreen() {
   }
 
   return (
-    <div className="scene-boss pt-safe mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
+    <>
+    <LessonBackdrop weekKey={bossWeek?.key} />
+    <div className="scene-boss pt-safe relative z-10 mx-auto min-h-dvh max-w-2xl px-4 pb-16 md:pt-8">
       <div className="mb-4 flex items-center justify-between gap-2">
         <button onClick={() => nav(-1)} aria-label="Закрыть" className="flex h-10 w-10 items-center justify-center rounded-full text-muted active:bg-panel"><Icon name="close" /></button>
         <div className="flex items-center gap-3">
@@ -108,7 +112,7 @@ export default function BossScreen() {
           <BossDefeatAnim bossId={boss.id} title={boss.title} />
           <p className="font-serif text-[24px]">Вылазка удалась</p>
           <Advisor tone="gain">
-            {gain && gain.capital ? <>В казну: <b className="text-gold">+{gain.capital} ₸ Капитала</b>, <b className="text-gold">+{gain.xp} XP</b>. Жизней осталось: {lives}.</> : <>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}
+            {gain && gain.capital ? <div className="text-left">В казну Дома. Жизней осталось: {lives}.<RewardPills capital={gain.capital} xp={gain.xp} /></div> :<>Босс повержен снова. Награда за него уже в казне, но день засчитан.</>}
           </Advisor>
           <Button full onClick={() => nav('/')}>В Дом</Button>
         </div>
@@ -119,10 +123,11 @@ export default function BossScreen() {
           <Advisor>
             Вылазка не удалась — так бывает. Прогресс недели на месте, уроки и Арсенал никуда не делись. Босс вернётся с другими цифрами: каждая попытка — тренировка.
           </Advisor>
-          <Button full onClick={restart}>Новая вылазка</Button>
+          <Button full tone="boss" onClick={restart}>Новая вылазка</Button>
           <Button variant="quiet" full onClick={() => nav('/arsenal')}>Заглянуть в Арсенал</Button>
         </div>
       )}
     </div>
+    </>
   )
 }

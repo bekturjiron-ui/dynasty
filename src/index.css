@@ -120,9 +120,281 @@ h3,
   box-shadow: 0 8px 28px -12px rgba(210, 138, 74, 0.4);
 }
 
+/* ---------- Кнопки: набор плашек public/art/ui/btn-*.webp (исходники art-source/buttons/*.jpg) ----------
+   Тёмная лакированная плита в тонкой гравированной рамке, угловые завитки с гранатами.
+   Нарезка на 9 частей: углы (92px картинки → 17px на экране) неподвижны, края и середина тянутся. */
+.btn-plate {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 8px;
+  border-style: solid;
+  border-width: 17px;
+  border-color: #1d1915;
+  background: none;
+  text-shadow: none;
+  transition: transform 0.08s ease-out, filter 0.12s ease-out;
+}
+.btn-plate:disabled {
+  filter: grayscale(0.85) brightness(0.7);
+  cursor: default;
+}
+/* Главная */
 .btn-gold {
-  background: linear-gradient(180deg, #e8cd72 0%, #c9a227 55%, #a78416 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 245, 200, 0.55), 0 6px 18px -6px rgba(201, 162, 39, 0.6);
+  white-space: nowrap;
+  border-image: url('/art/ui/btn-primary.webp') 92 fill / 17px stretch;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
+}
+.btn-gold:hover:not(:disabled) {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)) brightness(1.12);
+}
+.btn-gold:active:not(:disabled) {
+  border-image-source: url('/art/ui/btn-primary-pressed.webp');
+  transform: translateY(1px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+}
+.btn-gold-boss {
+  border-image-source: url('/art/ui/btn-boss.webp');
+}
+.btn-gold-copper {
+  border-image-source: url('/art/ui/btn-copper.webp');
+}
+.btn-gold-boss:active:not(:disabled),
+.btn-gold-copper:active:not(:disabled) {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55)) brightness(0.8);
+}
+/* Подпись главной: золото Cormorant SC */
+.btn-gold-label {
+  font-family: 'Cormorant SC', var(--font-serif);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #fff2c0 0%, #f0cc66 45%, #c18f22 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 0 10px rgba(240, 190, 90, 0.25));
+}
+/* Второстепенная: та же форма, тише — бронзовая линия, без свечения; подпись может переноситься */
+.btn-ghost {
+  border-image: url('/art/ui/btn-secondary.webp') 92 fill / 17px stretch;
+  font-family: 'Cormorant SC', var(--font-serif);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  color: #cdb27a;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9);
+}
+.btn-ghost:active:not(:disabled) {
+  border-image-source: url('/art/ui/btn-secondary-pressed.webp');
+  color: #ecc875;
+  transform: translateY(1px);
+}
+/* Слой эффектов нажатия: ровно по плашке вместе с рамкой (рамка = border 17px) */
+.btn-fx {
+  inset: -17px;
+  border-radius: 6px;
+}
+/* Вспышка света от пальца */
+.btn-flare {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 160px;
+  height: 160px;
+  margin: -80px 0 0 -80px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 228, 150, 0.45) 0%, rgba(232, 190, 90, 0.15) 35%, transparent 65%);
+  animation: btn-flare 0.6s ease-out forwards;
+}
+@keyframes btn-flare {
+  from { opacity: 1; transform: scale(0.2); }
+  to { opacity: 0; transform: scale(1.4); }
+}
+/* ---------- Начисление награды (RewardPills) ---------- */
+.reward-pill {
+  border: 1px solid var(--ring);
+  background: radial-gradient(120% 100% at 0% 50%, var(--glow) 0%, transparent 60%), rgba(20, 18, 22, 0.85);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 8px 24px -12px var(--glow);
+  animation: reward-pop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
+}
+.reward-gold { --ring: rgba(232, 205, 114, 0.45); --glow: rgba(216, 170, 66, 0.28); }
+.reward-xp { --ring: rgba(90, 169, 240, 0.45); --glow: rgba(90, 169, 240, 0.25); }
+.reward-rep { --ring: rgba(167, 123, 210, 0.45); --glow: rgba(167, 123, 210, 0.25); }
+.reward-icon {
+  background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+  animation: reward-flip 0.9s ease-out backwards;
+}
+@keyframes reward-pop {
+  0% { opacity: 0; transform: translateY(10px) scale(0.6); }
+  70% { opacity: 1; transform: translateY(0) scale(1.06); }
+  100% { transform: none; }
+}
+@keyframes reward-flip {
+  0% { transform: perspective(200px) rotateY(0) scale(1); filter: none; }
+  45% { transform: perspective(200px) rotateY(360deg) scale(1.25); filter: drop-shadow(0 0 8px currentColor); }
+  100% { transform: perspective(200px) rotateY(720deg) scale(1); filter: none; }
+}
+/* Шапка ресурсов: «+N» всплывает над значением, иконка подпрыгивает */
+.res-float {
+  position: absolute;
+  left: 26px;
+  top: -4px;
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+  animation: res-float 1.3s ease-out forwards;
+}
+@keyframes res-float {
+  0% { opacity: 0; transform: translateY(6px); }
+  20% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-18px); }
+}
+.res-bump {
+  animation: res-bump 0.6s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes res-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35) rotate(-8deg); filter: drop-shadow(0 0 8px currentColor); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-pill,
+  .reward-icon,
+  .res-float,
+  .res-bump {
+    animation: none;
+  }
+}
+
+/* ---------- Переговоры в стиле мессенджера ---------- */
+.chat-wall {
+  background-color: #0f0e11;
+  background-image:
+    radial-gradient(120% 50% at 50% 0%, rgba(210, 138, 74, 0.08) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' fill='none' stroke='%23d8aa42' stroke-opacity='0.07' stroke-width='1.2'%3E%3Ccircle cx='18' cy='20' r='7'/%3E%3Cpath d='M15 20h6M18 17v6'/%3E%3Cpath d='m78 14 2.4 5 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z'/%3E%3Cpath d='M40 70l4-7 4 7 5-4-1 9H36l-1-9z'/%3E%3Cpath d='M95 64h12v9H95zM97 64v-2h8v2'/%3E%3Cpath d='M20 98c4-6 10-6 14 0M60 104l8-8M64 96h4v4'/%3E%3Ccircle cx='100' cy='104' r='3'/%3E%3C/svg%3E");
+  background-size: auto, 120px 120px;
+}
+.chat-chip {
+  display: inline-block;
+  border-radius: 10px;
+  background: rgba(32, 29, 36, 0.92);
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.chat-chip-warn {
+  background: rgba(70, 40, 28, 0.92);
+  color: var(--color-loss);
+}
+.chat-bubble {
+  position: relative;
+  max-width: 84%;
+  border-radius: 14px;
+  padding: 7px 10px 6px 11px;
+  font-size: 15.5px;
+  line-height: 1.42;
+  color: var(--color-parch);
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.55);
+}
+.chat-npc {
+  background: #24212a;
+  border-top-left-radius: 4px;
+}
+.chat-me {
+  background: linear-gradient(180deg, #4a3a17 0%, #3d3013 100%);
+  border-top-right-radius: 4px;
+}
+/* Хвостик у первого сообщения в серии */
+.chat-npc:not(.chat-cont)::before,
+.chat-me:not(.chat-cont)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 9px;
+  height: 12px;
+}
+.chat-npc:not(.chat-cont)::before {
+  left: -7px;
+  background: #24212a;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.chat-me:not(.chat-cont)::before {
+  right: -7px;
+  background: #4a3a17;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.chat-cont {
+  border-radius: 14px;
+}
+.chat-meta {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 6px 0 -4px 10px;
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(241, 235, 221, 0.5);
+}
+.chat-in {
+  animation: chat-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+}
+.chat-in:has(.chat-me) {
+  transform-origin: 100% 0;
+}
+@keyframes chat-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.chat-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 12px 14px;
+}
+.chat-typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--color-muted);
+  animation: chat-dot 1.2s ease-in-out infinite;
+}
+.chat-typing i:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chat-dot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+.chat-reply {
+  border-radius: 16px;
+  border: 1px solid rgba(232, 205, 114, 0.35);
+  background: rgba(36, 31, 22, 0.92);
+  padding: 11px 14px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-parch);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-in,
+  .chat-typing i {
+    animation: none;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gold::before,
+  .btn-flare {
+    animation: none;
+    display: none;
+  }
 }
 
 /* ---------- Анимации ---------- */
@@ -271,6 +543,56 @@ a:active .tab-icon {
 }
 .scene-lesson {
   background: radial-gradient(110% 40% at 50% 0%, rgba(201, 162, 39, 0.14) 0%, transparent 70%);
+}
+
+/* Фон недели в уроке и у босса (LessonBackdrop): сцена сверху, текст поверх тёмной вуали */
+.lesson-bg {
+  background: #0e0e10;
+  transition: opacity 700ms ease;
+}
+.lesson-bg-img {
+  object-position: 50% 0%;
+  filter: brightness(0.8) saturate(1.1);
+  transform-origin: 50% 20%;
+  animation: lesson-bg-breathe 40s ease-in-out infinite alternate;
+}
+.lesson-bg-blur {
+  object-position: 50% 0%;
+  filter: blur(28px) brightness(0.45);
+  transform: scale(1.15);
+}
+.lesson-bg-shade {
+  /* шапка и первые строки читаются, ниже сцена уходит в почти чёрный */
+  background:
+    radial-gradient(90% 26% at 50% 24%, rgba(14, 14, 16, 0.5) 0%, rgba(14, 14, 16, 0) 100%),
+    linear-gradient(180deg, rgba(14, 14, 16, 0.55) 0%, rgba(14, 14, 16, 0.1) 12%, rgba(14, 14, 16, 0.2) 32%, rgba(14, 14, 16, 0.8) 50%, #0e0e10 66%);
+}
+/* Нижняя панель урока: плотная внизу, кверху растворяется в фоне недели.
+   Прозрачный верх не ловит нажатия — под ним остаётся контент урока. */
+.lesson-bar {
+  pointer-events: none;
+  background: linear-gradient(0deg, #0e0e10 0%, #0e0e10 58%, rgba(14, 14, 16, 0.85) 78%, rgba(14, 14, 16, 0) 100%);
+}
+.lesson-bar > * {
+  pointer-events: auto;
+}
+/* Текст поверх картинки: мягкая тень, чтобы буквы не терялись на светлых деталях */
+.lesson-bg + .scene-lesson,
+.lesson-bg + .scene-boss {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+@media (min-width: 768px) {
+  .lesson-bg-img {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  }
+}
+@keyframes lesson-bg-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-bg-img { animation: none; }
 }
 
 /* Утрата жизни: щит гаснет с лёгкой тряской */
