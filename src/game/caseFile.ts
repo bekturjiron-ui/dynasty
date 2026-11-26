@@ -112,7 +112,7 @@ export function renderCaseHtml(c: CaseModel, photos: Map<number, string>, opts: 
       const proof = !s.done
         ? '<p class="muted">Шаг ещё не сдан.</p>'
         : [
-            photos.get(s.key) ? `<img src="${photos.get(s.key)}" alt="Пруф шага ${s.n}">` : '',
+            photos.get(s.key) ? `<img src="${esc(photos.get(s.key)!)}" alt="Пруф шага ${s.n}">` : '',
             s.value !== undefined ? `<p class="val">${esc(s.numberLabel ?? 'Цифра')}: <b>${esc(fmtNum(s.value))}</b></p>` : '',
           ].join('')
       return `<section class="step"><h3>${s.n}. ${esc(s.title)}</h3>${s.deliverable ? `<p class="muted">${esc(s.deliverable)}</p>` : ''}${s.note ? `<p>${para(s.note)}</p>` : ''}${proof}${s.at ? `<p class="muted small">Сдан ${dayRu(s.at)}</p>` : ''}</section>`

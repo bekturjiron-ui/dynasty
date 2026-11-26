@@ -200,7 +200,7 @@ export default function NegotiationScreen() {
               </div>
               {saveErr && <p className="text-center text-[13px] text-loss">Награду записать не удалось: на телефоне не хватает места. Освободи память и пройди переговоры ещё раз.</p>}
               <p className="text-center text-[13px] text-muted">
-                {result.gain.xp ? `+${result.gain.xp} XP · +${result.gain.influence} Влияния · ` : !result.o.xp ? 'XP — только за сделку, после которой партнёр остаётся · ' : 'Награда за эти переговоры уже в казне · '}Репутация {result.gain.reputation >= 0 ? '+' : ''}{result.gain.reputation}
+                {result.gain.xp ? `+${result.gain.xp} XP · +${result.gain.influence} Влияния · ` : !result.o.xp ? 'XP — только за сделку, после которой партнёр остаётся · ' : 'Награда за эти переговоры уже в казне · '}{result.gain.reputation === 0 && result.o.reputation > 0 ? 'Репутация за такой результат уже учтена' : `Репутация ${result.gain.reputation >= 0 ? '+' : ''}${result.gain.reputation}`}
               </p>
               <Button variant="ghost" full onClick={begin}>Переговоры заново</Button>
               <Button variant="quiet" full onClick={async () => { try { await navigator.clipboard.writeText(claudePrompt); setCopied(true) } catch { setCopied(false) } }}>

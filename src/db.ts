@@ -42,6 +42,8 @@ export type Settings = { id: 'main'; mentorPin: string; project: ProjectBrief; c
 
 /** Цифры рекламной кампании за неделю плана. */
 export type WeeklyReport = {
+  /** Неделя кампании по календарю игрока (currentWeek: 1, 2, 3…), не неделя плана и не Week.key:
+   *  отчёт описывает живую рекламу за 7 дней и от перестановки уроков в плане не зависит. */
   week: number
   spend: number
   impressions: number
@@ -85,6 +87,8 @@ export type NegotiationResult = {
   runs: number
   /** XP и Влияние уже выданы (за первую сделку с сохранёнными отношениями) */
   rewarded?: boolean
+  /** Сколько Репутации уже выдано за эти переговоры (лучший результат). Повтор добавляет только прирост сверх него. */
+  reputationGiven?: number
 }
 
 class DynastyDB extends Dexie {
