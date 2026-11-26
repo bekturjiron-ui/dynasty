@@ -70,6 +70,11 @@ function weekPassed(week: Week, content: Content, st: State): boolean {
   const ids = week.lessonIds.filter((id) => content.lessons[id])
   const bossReady = !!(week.bossId && content.bosses[week.bossId])
   const negReady = !!(week.negotiationId && content.negotiations[week.negotiationId])
+  // Босс (или переговоры) открывается только после всех уроков недели, значит победа над ним = неделя пройдена.
+  // Так урок, добавленный в курс позже, не закрывает игроку следующие недели: он просто ждёт в своей неделе
+  const bossOk = !bossReady || st.bosses.has(week.bossId!)
+  const negOk = !negReady || !!st.negotiations?.has(week.negotiationId!)
+  if ((bossReady || negReady) && bossOk && negOk) return true
   return ids.every((id) => st.progress.has(id))
     && (!bossReady || st.bosses.has(week.bossId!))
     && (!negReady || !!st.negotiations?.has(week.negotiationId!))
