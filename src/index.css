@@ -194,6 +194,11 @@ h3,
   color: #ecc875;
   transform: translateY(1px);
 }
+/* Слой эффектов нажатия: ровно по плашке вместе с рамкой (рамка = border 17px) */
+.btn-fx {
+  inset: -17px;
+  border-radius: 6px;
+}
 /* Вспышка света от пальца */
 .btn-flare {
   position: absolute;

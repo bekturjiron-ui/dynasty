@@ -56,22 +56,28 @@ export function Button({ variant = 'gold', full, tone, className = '', children,
     const el = e.currentTarget
     const r = el.getBoundingClientRect()
     const id = nextId.current++
-    // координаты внутри области под текстом (без толщины краёв)
-    setFlares((f) => [...f, { id, x: e.clientX - r.left - el.clientLeft, y: e.clientY - r.top - el.clientTop }])
+    // координаты от края всей плашки (вместе с рамкой): слой эффектов ниже покрывает её целиком
+    setFlares((f) => [...f, { id, x: e.clientX - r.left, y: e.clientY - r.top }])
     setTimeout(() => setFlares((f) => f.filter((x) => x.id !== id)), 700)
   }
   return (
     <button ref={btn} className={`${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
       {gold ? <span ref={label} className="btn-gold-label relative z-[1]">{children}</span> : children}
-      {flares.map((f) => (
-        <span key={f.id} className="pointer-events-none absolute" style={{ left: f.x, top: f.y }} aria-hidden>
-          <i className="btn-flare" />
-          {[0, 1, 2, 3, 4, 5].map((i) => {
-            const ang = (i / 6) * Math.PI * 2 + f.id
-            return <i key={i} className="spark" style={{ ['--dx' as string]: `${Math.cos(ang) * 34}px`, ['--dy' as string]: `${Math.sin(ang) * 22 - 8}px` }} />
-          })}
+      {/* Вспышка и искры обрезаются по плашке: иначе они на миг раздувают прокручиваемое окно
+          (в шторке «Не понял» от этого мигала полоса прокрутки) */}
+      {flares.length > 0 && (
+        <span className="btn-fx pointer-events-none absolute overflow-hidden" aria-hidden>
+          {flares.map((f) => (
+            <span key={f.id} className="absolute" style={{ left: f.x, top: f.y }}>
+              <i className="btn-flare" />
+              {[0, 1, 2, 3, 4, 5].map((i) => {
+                const ang = (i / 6) * Math.PI * 2 + f.id
+                return <i key={i} className="spark" style={{ ['--dx' as string]: `${Math.cos(ang) * 34}px`, ['--dy' as string]: `${Math.sin(ang) * 22 - 8}px` }} />
+              })}
+            </span>
+          ))}
         </span>
-      ))}
+      )}
     </button>
   )
 }
