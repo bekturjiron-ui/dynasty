@@ -4,9 +4,12 @@
 Компонент: `src/components/LessonBackdrop.tsx`. Пока файла нет, экран выглядит как раньше.
 
 ## Файлы
-- `public/art/lessons/w{key}-p.webp` — телефон, 720×1440 (1:2), до ~150 КБ.
-- `public/art/lessons/w{key}-l.webp` — от 768px, 1920×1080 (16:9), до ~250 КБ. Необязателен: без него на ПК фон не покажется.
+- `public/art/lessons/w{key}.webp` — одна вертикальная картинка 1:2, ширина 1080, WebP качество ~76 (выходит 50–80 КБ).
+  Сцена — в верхней половине, низ тёмный: на телефоне картинка во весь экран, на ПК — полосой по центру с размытыми краями.
 - `{key}` — Week.key из content/plan.json (201…212), не номер недели.
+- Исходники (JPG 1440×2912) — `art-source/backgrounds/stage-N.jpg`, в git не попадают. Пересобрать webp:
+  `node -e "require('sharp')('art-source/backgrounds/stage-1.jpg').resize(1080).webp({quality:76}).toFile('public/art/lessons/w201.webp')"`
+- Затемнение и тень текста — классы `.lesson-bg*` в src/index.css.
 
 ## Общий стиль (дописывать в конец каждого промпта)
 ```
@@ -14,7 +17,6 @@ dark fantasy painterly digital illustration, same style as a medieval strategy g
 ```
 Негатив: `people, faces, text, watermark, letters, numbers in focus, bright colors, busy center, modern objects, UI`
 
-Для `-l` версии: заменить `vertical 1:2 composition` на `wide 16:9 composition, details pushed to left and right edges`.
 
 Совет: прикладывать как референс стиля портрет босса недели (`public/art/bosses/tNN-boss.webp`) и `public/art/stage-3-p.webp`.
 

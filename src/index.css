@@ -273,6 +273,47 @@ a:active .tab-icon {
   background: radial-gradient(110% 40% at 50% 0%, rgba(201, 162, 39, 0.14) 0%, transparent 70%);
 }
 
+/* Фон недели в уроке и у босса (LessonBackdrop): сцена сверху, текст поверх тёмной вуали */
+.lesson-bg {
+  background: #0e0e10;
+  transition: opacity 700ms ease;
+}
+.lesson-bg-img {
+  object-position: 50% 0%;
+  filter: brightness(0.8) saturate(1.1);
+  transform-origin: 50% 20%;
+  animation: lesson-bg-breathe 40s ease-in-out infinite alternate;
+}
+.lesson-bg-blur {
+  object-position: 50% 0%;
+  filter: blur(28px) brightness(0.45);
+  transform: scale(1.15);
+}
+.lesson-bg-shade {
+  /* шапка и первые строки читаются, ниже сцена уходит в почти чёрный */
+  background:
+    radial-gradient(90% 26% at 50% 24%, rgba(14, 14, 16, 0.5) 0%, rgba(14, 14, 16, 0) 100%),
+    linear-gradient(180deg, rgba(14, 14, 16, 0.55) 0%, rgba(14, 14, 16, 0.1) 12%, rgba(14, 14, 16, 0.2) 32%, rgba(14, 14, 16, 0.8) 50%, #0e0e10 66%);
+}
+/* Текст поверх картинки: мягкая тень, чтобы буквы не терялись на светлых деталях */
+.lesson-bg + .scene-lesson,
+.lesson-bg + .scene-boss {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+@media (min-width: 768px) {
+  .lesson-bg-img {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  }
+}
+@keyframes lesson-bg-breathe {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-bg-img { animation: none; }
+}
+
 /* Утрата жизни: щит гаснет с лёгкой тряской */
 @keyframes life-lost {
   0% { transform: scale(1); }

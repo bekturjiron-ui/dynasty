@@ -3,31 +3,27 @@ import { useState } from 'react'
 const BASE = import.meta.env.BASE_URL
 
 /**
- * Фон урока и босса: «логово» босса недели. Картинки — public/art/lessons/w<key>-p.webp (телефон)
- * и w<key>-l.webp (от 768px), имя по Week.key. Пока картинки нет, фон не рисуется: экран остаётся как был.
- * Сильно затемнён, чтобы текст урока читался.
+ * Фон урока и босса: «логово» босса недели. Картинка — public/art/lessons/w<key>.webp (вертикаль 1:2,
+ * сцена в верхней половине, низ тёмный), имя по Week.key. Пока картинки нет, фон не рисуется.
+ * Телефон: картинка во весь экран. От 768px: полоса до 60rem по центру (видна верхняя сцена), по бокам — размытая копия.
  */
 export function LessonBackdrop({ weekKey }: { weekKey?: number }) {
   const [loaded, setLoaded] = useState<number | null>(null)
   if (!weekKey) return null
+  const src = `${BASE}art/lessons/w${weekKey}.webp`
   const shown = loaded === weekKey
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden style={{ opacity: shown ? 1 : 0, transition: 'opacity 600ms ease' }}>
-      <picture key={weekKey}>
-        <source media="(min-width: 768px)" srcSet={`${BASE}art/lessons/w${weekKey}-l.webp`} />
-        <img
-          src={`${BASE}art/lessons/w${weekKey}-p.webp`}
-          alt=""
-          onLoad={() => setLoaded(weekKey)}
-          onError={() => setLoaded(null)}
-          className="h-full w-full object-cover"
-          style={{ objectPosition: '50% 35%', filter: 'brightness(0.5) saturate(0.9)' }}
-        />
-      </picture>
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(14,14,16,0.55) 0%, rgba(14,14,16,0.35) 22%, rgba(14,14,16,0.7) 50%, rgba(14,14,16,0.92) 100%)' }}
+    <div className="lesson-bg pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden style={{ opacity: shown ? 1 : 0 }}>
+      <img src={src} alt="" className="lesson-bg-blur absolute inset-0 hidden h-full w-full object-cover md:block" />
+      <img
+        key={weekKey}
+        src={src}
+        alt=""
+        onLoad={() => setLoaded(weekKey)}
+        onError={() => setLoaded(null)}
+        className="lesson-bg-img relative h-full w-full object-cover md:mx-auto md:w-[min(100%,60rem)]"
       />
+      <div className="lesson-bg-shade absolute inset-0" />
     </div>
   )
 }
