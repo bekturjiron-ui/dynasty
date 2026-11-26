@@ -120,52 +120,79 @@ h3,
   box-shadow: 0 8px 28px -12px rgba(210, 138, 74, 0.4);
 }
 
-/* Главная кнопка: кожаная плашка с сургучными печатями (public/art/ui/btn-leather*.webp, исходник art-source/buttons/button_2.jpg).
-   Нарезка на 9 частей: печати и узор по краям не тянутся, гладкая кожа посередине растягивается под любую ширину.
-   Высота фиксирована (58px), подпись в одну строку: размер шрифта подбирает useLeatherFit в ui.tsx. */
-.btn-gold {
+/* ---------- Кнопки: набор плашек public/art/ui/btn-*.webp (исходники art-source/buttons/*.jpg) ----------
+   Тёмная лакированная плита в тонкой гравированной рамке, угловые завитки с гранатами.
+   Нарезка на 9 частей: углы (92px картинки → 17px на экране) неподвижны, края и середина тянутся. */
+.btn-plate {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 58px;
-  padding: 0;
-  white-space: nowrap;
+  min-height: 56px;
+  padding: 0 8px;
   border-style: solid;
-  border-width: 11px 91px;
-  border-color: #3b2617;
-  border-image: url('/art/ui/btn-leather.webp') 46 377 fill / 11px 91px stretch;
+  border-width: 17px;
+  border-color: #1d1915;
   background: none;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
   text-shadow: none;
   transition: transform 0.08s ease-out, filter 0.12s ease-out;
 }
-.btn-gold-seal {
-  border-width: 11px 46px;
-  border-image: url('/art/ui/btn-leather-seal.webp') 46 190 fill / 11px 46px stretch;
+.btn-plate:disabled {
+  filter: grayscale(0.85) brightness(0.7);
+  cursor: default;
+}
+/* Главная */
+.btn-gold {
+  white-space: nowrap;
+  border-image: url('/art/ui/btn-primary.webp') 92 fill / 17px stretch;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
 }
 .btn-gold:hover:not(:disabled) {
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6)) brightness(1.08);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)) brightness(1.12);
 }
 .btn-gold:active:not(:disabled) {
-  transform: translateY(2px);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6)) brightness(0.86);
+  border-image-source: url('/art/ui/btn-primary-pressed.webp');
+  transform: translateY(1px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
 }
-/* Золотое тиснение по коже */
+.btn-gold-boss {
+  border-image-source: url('/art/ui/btn-boss.webp');
+}
+.btn-gold-copper {
+  border-image-source: url('/art/ui/btn-copper.webp');
+}
+.btn-gold-boss:active:not(:disabled),
+.btn-gold-copper:active:not(:disabled) {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55)) brightness(0.8);
+}
+/* Подпись главной: золото Cormorant SC */
 .btn-gold-label {
-  margin: 0 -40px;
   font-family: 'Cormorant SC', var(--font-serif);
   font-weight: 700;
-  font-size: 21px;
-  line-height: 1;
-  letter-spacing: 0.03em;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
   background: linear-gradient(180deg, #fff2c0 0%, #f0cc66 45%, #c18f22 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 -1px 0 rgba(255, 220, 150, 0.15));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.95)) drop-shadow(0 0 10px rgba(240, 190, 90, 0.25));
 }
-.btn-gold-seal .btn-gold-label {
-  margin: 0 -6px;
+/* Второстепенная: та же форма, тише — бронзовая линия, без свечения; подпись может переноситься */
+.btn-ghost {
+  border-image: url('/art/ui/btn-secondary.webp') 92 fill / 17px stretch;
+  font-family: 'Cormorant SC', var(--font-serif);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  color: #cdb27a;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9);
+}
+.btn-ghost:active:not(:disabled) {
+  border-image-source: url('/art/ui/btn-secondary-pressed.webp');
+  color: #ecc875;
+  transform: translateY(1px);
 }
 /* Вспышка света от пальца */
 .btn-flare {
@@ -356,15 +383,7 @@ h3,
   }
 }
 
-/* Второстепенная кнопка: тот же шрифт и высота, что у кожаной, но тихая — тёмная плашка с бронзовой рамкой */
-.btn-ghost {
-  min-height: 58px;
-  font-family: 'Cormorant SC', var(--font-serif);
-  font-weight: 700;
-  font-size: 19px;
-  letter-spacing: 0.03em;
-  background: linear-gradient(180deg, rgba(201, 162, 39, 0.07) 0%, rgba(201, 162, 39, 0.02) 100%), rgba(20, 17, 14, 0.7);
-}
+
 @media (prefers-reduced-motion: reduce) {
   .btn-gold::before,
   .btn-flare {

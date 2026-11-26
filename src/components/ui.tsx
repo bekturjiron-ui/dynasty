@@ -1,33 +1,29 @@
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
-type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'gold' | 'ghost' | 'quiet'; full?: boolean }
-
-/* Кожаная кнопка (public/art/ui/btn-leather*.webp): размеры краёв на экране при высоте 58px.
-   full — края с печатью и узором, seal — только печать (для узких кнопок и длинных подписей). */
-const LEATHER = {
-  full: { cap: 91, overlap: 40 }, // текст может заходить на узор на 40px, но не на печать
-  seal: { cap: 46, overlap: 6 },
+type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'gold' | 'ghost' | 'quiet'
+  full?: boolean
+  /** Акцент главной кнопки под тип экрана: boss — рубин, copper — медь (переговоры). */
+  tone?: 'boss' | 'copper'
 }
-const LABEL_PX = 21
-const LABEL_MIN_PX = 14
 
-/** Подбирает края и размер шрифта, чтобы подпись поместилась в одну строку между печатями. */
-function useLeatherFit(enabled: boolean, deps: unknown) {
+const LABEL_PX = 20
+const LABEL_MIN_PX = 14
+const FRAME_PX = 17 // толщина неподвижных краёв плашки (рамка + угловой завиток), см. .btn-gold в index.css
+
+/** Уменьшает подпись главной кнопки, если она не помещается в одну строку между угловыми завитками. */
+function useLabelFit(enabled: boolean, deps: unknown) {
   const btn = useRef<HTMLButtonElement>(null)
   const label = useRef<HTMLSpanElement>(null)
-  const [mode, setMode] = useState<'full' | 'seal'>('full')
   useEffect(() => {
     const b = btn.current
     const l = label.current
     if (!enabled || !b || !l) return
     const fit = () => {
       l.style.fontSize = `${LABEL_PX}px`
+      const room = b.offsetWidth - 2 * FRAME_PX - 24
       const natural = l.scrollWidth
-      const total = b.offsetWidth
-      const room = (m: keyof typeof LEATHER) => total - 2 * LEATHER[m].cap + 2 * LEATHER[m].overlap - 12
-      const m = natural <= room('full') ? 'full' : 'seal'
-      setMode(m)
-      l.style.fontSize = `${Math.max(LABEL_MIN_PX, Math.min(LABEL_PX, (LABEL_PX * room(m)) / natural))}px`
+      if (natural > room) l.style.fontSize = `${Math.max(LABEL_MIN_PX, (LABEL_PX * room) / natural)}px`
     }
     fit()
     void document.fonts?.ready.then(fit)
@@ -35,24 +31,25 @@ function useLeatherFit(enabled: boolean, deps: unknown) {
     ro.observe(b)
     return () => ro.disconnect()
   }, [enabled, deps])
-  return { btn, label, mode }
+  return { btn, label }
 }
 
 /**
- * Кнопка. gold — главное действие: кожаная плашка с сургучными печатями, золотое тиснение Cormorant SC,
- * при нажатии темнеет и проседает; от пальца вспыхивает свет и разлетаются искры. ghost — второстепенное, quiet — ссылка.
+ * Кнопка. Набор плашек public/art/ui/btn-*.webp (исходники art-source/buttons): тёмная лакированная плита
+ * в тонкой гравированной рамке с угловыми завитками. Углы не тянутся, края и середина растягиваются под любую ширину.
+ * gold — главное действие (подпись Cormorant SC золотом, у нажатой своя картинка, от пальца искры);
+ * ghost — второстепенное (тише: бронзовая линия, без свечения); quiet — ссылка без плашки.
  */
-export function Button({ variant = 'gold', full, className = '', children, onPointerDown, ...rest }: BtnProps) {
+export function Button({ variant = 'gold', full, tone, className = '', children, onPointerDown, ...rest }: BtnProps) {
   const [flares, setFlares] = useState<{ id: number; x: number; y: number }[]>([])
   const nextId = useRef(0)
   const gold = variant === 'gold'
-  const { btn, label, mode } = useLeatherFit(gold, children)
-  const base = gold ? 'relative disabled:opacity-40' : 'relative min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
+  const { btn, label } = useLabelFit(gold, children)
   const look = gold
-    ? `btn-gold ${mode === 'seal' ? 'btn-gold-seal' : ''}`
+    ? `btn-plate btn-gold ${tone ? `btn-gold-${tone}` : ''}`
     : variant === 'ghost'
-      ? 'btn-ghost border border-gold/45 text-gold-soft active:bg-gold/10'
-      : 'text-muted'
+      ? 'btn-plate btn-ghost'
+      : 'relative min-h-12 rounded-xl px-5 text-[16px] font-semibold text-muted transition duration-150 active:scale-[0.97] disabled:opacity-40'
   function down(e: React.PointerEvent<HTMLButtonElement>) {
     onPointerDown?.(e)
     if (!gold || rest.disabled) return
@@ -64,7 +61,7 @@ export function Button({ variant = 'gold', full, className = '', children, onPoi
     setTimeout(() => setFlares((f) => f.filter((x) => x.id !== id)), 700)
   }
   return (
-    <button ref={btn} className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
+    <button ref={btn} className={`${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
       {gold ? <span ref={label} className="btn-gold-label relative z-[1]">{children}</span> : children}
       {flares.map((f) => (
         <span key={f.id} className="pointer-events-none absolute" style={{ left: f.x, top: f.y }} aria-hidden>

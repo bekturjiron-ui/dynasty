@@ -197,7 +197,7 @@ export default function NegotiationScreen() {
           <p className="text-[14px] leading-relaxed text-muted">
             Сколько блогер может уступить, ты не знаешь. Видно цену и лояльность. Давление даёт скидку сейчас, но если партнёр остынет, через 2 хода разговор закончится, а замена стоит дороже. Итог считается на пакет из {n.orders} роликов.
           </p>
-          <Button full onClick={begin}>Начать переписку</Button>
+          <Button full tone="copper" onClick={begin}>Начать переписку</Button>
         </div>
       )}
 

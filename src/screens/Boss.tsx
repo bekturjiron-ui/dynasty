@@ -123,7 +123,7 @@ export default function BossScreen() {
           <Advisor>
             Вылазка не удалась — так бывает. Прогресс недели на месте, уроки и Арсенал никуда не делись. Босс вернётся с другими цифрами: каждая попытка — тренировка.
           </Advisor>
-          <Button full onClick={restart}>Новая вылазка</Button>
+          <Button full tone="boss" onClick={restart}>Новая вылазка</Button>
           <Button variant="quiet" full onClick={() => nav('/arsenal')}>Заглянуть в Арсенал</Button>
         </div>
       )}

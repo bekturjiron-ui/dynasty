@@ -12,6 +12,11 @@ import App from './App'
 
 registerSW({ immediate: true })
 
+// Плашки кнопок (по 3–9 КБ) грузим сразу: иначе при первом нажатии картинка нажатого состояния мигнёт
+for (const f of ['primary', 'primary-pressed', 'secondary', 'secondary-pressed', 'boss', 'copper']) {
+  new Image().src = `${import.meta.env.BASE_URL}art/ui/btn-${f}.webp`
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
