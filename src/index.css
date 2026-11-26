@@ -120,39 +120,60 @@ h3,
   box-shadow: 0 8px 28px -12px rgba(210, 138, 74, 0.4);
 }
 
-/* Главная кнопка: тёмная бронза в золотой оправе, золотые буквы, бегущий блик */
+/* Главная кнопка «Оправа»: тёмный камень в литой золотой рамке, сплошное золото букв (контраст ~12:1),
+   ромбы по бокам текста, уступ снизу — при нажатии кнопка проседает на 3px */
 .btn-gold {
-  border: 1.5px solid transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
   background:
-    radial-gradient(120% 140% at 50% -30%, rgba(236, 200, 117, 0.22) 0%, transparent 60%) padding-box,
-    linear-gradient(180deg, #2e2516 0%, #1b160e 55%, #120f0a 100%) padding-box,
-    linear-gradient(120deg, #f8e3a0 0%, #a47d1c 28%, #f3d580 50%, #8d6b15 74%, #e9c66a 100%) border-box;
+    radial-gradient(80% 110% at 50% -10%, rgba(240, 205, 120, 0.3), transparent 60%) padding-box,
+    linear-gradient(180deg, #2c2315 0%, #1a150d 60%, #120e09 100%) padding-box,
+    linear-gradient(180deg, #fff0b8 0%, #e0b448 30%, #9c7418 55%, #e9c461 80%, #a57c1a 100%) border-box;
   box-shadow:
-    inset 0 1px 0 rgba(255, 236, 170, 0.18),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 8px 22px -8px rgba(201, 162, 39, 0.55);
-  color: var(--color-gold-soft);
-  letter-spacing: 0.01em;
-  text-shadow: none;
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 3px rgba(232, 196, 98, 0.18),
+    0 3px 0 #5f4610,
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    0 0 28px -6px rgba(232, 196, 98, 0.55);
+  color: #f8dc88;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.9), 0 0 14px rgba(240, 200, 100, 0.35);
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
 }
 .btn-gold:hover:not(:disabled) {
   box-shadow:
-    inset 0 1px 0 rgba(255, 236, 170, 0.25),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 10px 28px -8px rgba(232, 205, 114, 0.7);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 3px rgba(232, 196, 98, 0.26),
+    0 3px 0 #5f4610,
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    0 0 34px -4px rgba(232, 196, 98, 0.7);
+}
+.btn-gold:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 3px rgba(232, 196, 98, 0.18),
+    0 0 0 #5f4610,
+    0 0 18px -6px rgba(232, 196, 98, 0.55);
 }
 .btn-gold-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-serif);
   font-weight: 400;
   font-size: 19px;
-  letter-spacing: 0.03em;
-  background: linear-gradient(180deg, #fff3c4 0%, #f0cf6a 50%, #d4a937 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.9));
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
+/* Ромбы-заклёпки у текста */
+.btn-gem {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin: 0 10px;
+  background: linear-gradient(135deg, #fff0b8, #c99a2a);
+  transform: rotate(45deg);
+  box-shadow: 0 0 6px rgba(240, 200, 100, 0.8);
 }
 /* Блик: косая полоса света раз в несколько секунд */
 .btn-gold::before {
@@ -162,7 +183,7 @@ h3,
   bottom: 0;
   left: -60%;
   width: 45%;
-  background: linear-gradient(100deg, transparent 0%, rgba(255, 230, 160, 0.06) 35%, rgba(255, 238, 190, 0.28) 50%, rgba(255, 230, 160, 0.06) 65%, transparent 100%);
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 230, 160, 0.05) 35%, rgba(255, 238, 190, 0.22) 50%, rgba(255, 230, 160, 0.05) 65%, transparent 100%);
   transform: skewX(-18deg);
   animation: btn-sheen 5.5s ease-in-out infinite;
   pointer-events: none;

@@ -3,16 +3,16 @@ import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'gold' | 'ghost' | 'quiet'; full?: boolean }
 
 /**
- * Кнопка. gold — главное действие: тёмная бронза в золотой оправе, по ней пробегает блик,
- * от пальца вспыхивает свет и разлетаются искры. ghost — второстепенное, quiet — ссылка.
+ * Кнопка. gold — главное действие («Оправа»): тёмный камень в литой золотой рамке, ромбы у текста,
+ * при нажатии проседает на уступ; по ней пробегает блик, от пальца вспыхивает свет и разлетаются искры. ghost — второстепенное, quiet — ссылка.
  */
 export function Button({ variant = 'gold', full, className = '', children, onPointerDown, ...rest }: BtnProps) {
   const [flares, setFlares] = useState<{ id: number; x: number; y: number }[]>([])
   const nextId = useRef(0)
-  const base = 'relative min-h-12 rounded-xl px-5 text-[16px] font-semibold transition duration-150 active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100'
+  const base = `relative min-h-12 rounded-xl px-5 text-[16px] font-semibold disabled:opacity-40 ${variant === 'gold' ? '' : 'transition duration-150 active:scale-[0.97] disabled:active:scale-100'}`
   const look =
     variant === 'gold'
-      ? 'btn-gold overflow-hidden'
+      ? 'btn-gold overflow-hidden px-4'
       : variant === 'ghost'
         ? 'btn-ghost border border-gold/45 text-gold-soft active:bg-gold/10'
         : 'text-muted'
@@ -26,7 +26,7 @@ export function Button({ variant = 'gold', full, className = '', children, onPoi
   }
   return (
     <button className={`${base} ${look} ${full ? 'w-full' : ''} ${className}`} onPointerDown={down} {...rest}>
-      {variant === 'gold' ? <span className="btn-gold-label relative z-[1]">{children}</span> : children}
+      {variant === 'gold' ? <span className="btn-gold-label relative z-[1]"><i className="btn-gem" aria-hidden />{children}<i className="btn-gem" aria-hidden /></span> : children}
       {flares.map((f) => (
         <span key={f.id} className="pointer-events-none absolute" style={{ left: f.x, top: f.y }} aria-hidden>
           <i className="btn-flare" />
