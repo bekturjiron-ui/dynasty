@@ -49,7 +49,8 @@ function tokenize(src: string): Tok[] {
 
 class Parser {
   private p = 0
-  constructor(private toks: Tok[]) {}
+  /** excel — порядок как в таблицах: унарный минус раньше степени (=-2^2 → 4), ^ слева направо (=2^3^2 → 64). */
+  constructor(private toks: Tok[], private excel = false) {}
   private peek() { return this.toks[this.p] }
   private isOp(v: string) { const t = this.peek(); return t && t.k === 'op' && t.v === v }
   private eat(v: string) { if (!this.isOp(v)) throw new Error(`Ожидалось «${v}»`); this.p++ }
@@ -65,7 +66,7 @@ class Parser {
   }
   private static LEVELS = [['||'], ['&&'], ['==', '!=', '<', '>', '<=', '>='], ['+', '-'], ['*', '/']]
   private bin(level: number): Node {
-    if (level >= Parser.LEVELS.length) return this.unary()
+    if (level >= Parser.LEVELS.length) return this.excel ? this.powExcel() : this.unary()
     let a = this.bin(level + 1)
     while (this.peek()?.k === 'op' && Parser.LEVELS[level].includes(this.peek().v)) {
       const op = this.toks[this.p++].v
@@ -76,6 +77,15 @@ class Parser {
   private unary(): Node {
     if (this.isOp('-') || this.isOp('+') || this.isOp('!')) { const op = this.toks[this.p++].v; return { t: 'un', op, a: this.unary() } }
     return this.pow()
+  }
+  private powExcel(): Node {
+    let a = this.unaryExcel()
+    while (this.isOp('^')) { this.p++; a = { t: 'bin', op: '^', a, b: this.unaryExcel() } }
+    return a
+  }
+  private unaryExcel(): Node {
+    if (this.isOp('-') || this.isOp('+') || this.isOp('!')) { const op = this.toks[this.p++].v; return { t: 'un', op, a: this.unaryExcel() } }
+    return this.postfix()
   }
   private pow(): Node {
     const a = this.postfix()
@@ -115,9 +125,10 @@ class Parser {
 }
 
 const cache = new Map<string, Node>()
-export function compile(src: string): Node {
-  let n = cache.get(src)
-  if (!n) { n = new Parser(tokenize(src)).parse(); cache.set(src, n) }
+export function compile(src: string, excel = false): Node {
+  const key = (excel ? 'x|' : 'j|') + src
+  let n = cache.get(key)
+  if (!n) { n = new Parser(tokenize(src), excel).parse(); cache.set(key, n) }
   return n
 }
 
@@ -189,7 +200,7 @@ export function evaluate(src: string, scope: Scope, funcs: Record<string, Fn> = 
     }
     throw new Error('Неизвестный узел')
   }
-  return run(compile(src))
+  return run(compile(src, !!opts.sheet))
 }
 
 export function evalNum(src: string, scope: Scope): number {

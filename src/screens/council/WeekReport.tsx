@@ -41,8 +41,19 @@ export function WeekReport({ game }: { game: Game }) {
   }, [week]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const parsed = Object.fromEntries(FIELDS.map(([k]) => [k, parseUserNumber(d[k] || '0')])) as Record<NumKey, number | null>
-  const valid = FIELDS.every(([k]) => parsed[k] !== null && parsed[k]! >= 0) && d.spend.trim() !== ''
-  const nums = valid ? (parsed as Record<NumKey, number>) : null
+  const numsOk = FIELDS.every(([k]) => parsed[k] !== null && parsed[k]! >= 0) && d.spend.trim() !== ''
+  const p = parsed as Record<NumKey, number>
+  // Цифры, которые не могут быть правдой: Совет такой отчёт не принимает, а советник говорит, что сверить
+  const blockers = !numsOk ? [] : [
+    p.spend <= 0 && 'Расход 0 ₸: кампания ещё не крутилась. Сдай отчёт, когда будут показы.',
+    p.impressions <= 0 && 'Показов нет — разбирать пока нечего.',
+    p.clicks > p.impressions && 'Кликов больше, чем показов. Сверь колонки в кабинете: возможно, взяты клики по всем ссылкам за другой период.',
+    p.reach > p.impressions && 'Охват больше показов. Охват — уникальные люди, их не бывает больше показов.',
+    p.sales > p.leads && p.leads > 0 && 'Продаж больше, чем заявок. Проверь, не попали ли в продажи клиенты не из рекламы.',
+  ].filter((x): x is string => !!x)
+  const warns = numsOk && p.leads > p.clicks ? ['Заявок больше кликов: так бывает с лид-формой или звонками, но проверь, что заявки только из этой кампании.'] : []
+  const valid = numsOk && blockers.length === 0
+  const nums = valid ? p : null
   const m = nums ? metrics(nums) : null
   const verdict = nums && nums.impressions > 0 ? diagnose(nums, game.settings.project) : null
 
@@ -78,6 +89,7 @@ export function WeekReport({ game }: { game: Game }) {
           <span className="text-[13px] text-muted">Что меняли на этой неделе</span>
           <textarea value={d.note} onChange={(e) => setD({ ...d, note: e.target.value })} rows={2} className="mt-1 w-full rounded-xl border border-line bg-ink px-4 py-3 text-[16px] outline-none focus:border-gold" />
         </label>
+        {[...blockers, ...warns].map((t) => <p key={t} className="text-[13px] text-muted">Советник: {t}</p>)}
         <Button full disabled={!valid} onClick={save}>{existing ? 'Обновить отчёт' : 'Сдать отчёт Совету'}</Button>
       </Card>
       {msg && <Advisor tone="gain">{msg}</Advisor>}

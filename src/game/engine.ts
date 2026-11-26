@@ -70,6 +70,11 @@ function weekPassed(week: Week, content: Content, st: State): boolean {
   const ids = week.lessonIds.filter((id) => content.lessons[id])
   const bossReady = !!(week.bossId && content.bosses[week.bossId])
   const negReady = !!(week.negotiationId && content.negotiations[week.negotiationId])
+  // Босс (или переговоры) открывается только после всех уроков недели, значит победа над ним = неделя пройдена.
+  // Так урок, добавленный в курс позже, не закрывает игроку следующие недели: он просто ждёт в своей неделе
+  const bossOk = !bossReady || st.bosses.has(week.bossId!)
+  const negOk = !negReady || !!st.negotiations?.has(week.negotiationId!)
+  if ((bossReady || negReady) && bossOk && negOk) return true
   return ids.every((id) => st.progress.has(id))
     && (!bossReady || st.bosses.has(week.bossId!))
     && (!negReady || !!st.negotiations?.has(week.negotiationId!))
@@ -79,7 +84,7 @@ function weekPassed(week: Week, content: Content, st: State): boolean {
 export function weekLocked(week: Week, content: Content, st: State): boolean {
   return content.weeks.some((w) => {
     if (w.n >= week.n) return false
-    const hasContent = w.lessonIds.some((id) => content.lessons[id]) || !!(w.bossId && content.bosses[w.bossId])
+    const hasContent = w.lessonIds.some((id) => content.lessons[id]) || !!(w.bossId && content.bosses[w.bossId]) || !!(w.negotiationId && content.negotiations[w.negotiationId])
     return hasContent && !weekPassed(w, content, st)
   })
 }
@@ -121,7 +126,7 @@ export function weekStatus(week: Week, content: Content, st: State): WeekStatus 
     missions,
     missionsDone,
     complete: lessonsComplete && (!bossReady || bossDone) && negDone && contractDone && missionsDone === missions.length,
-    hasContent: ids.length > 0 || bossReady || missions.length > 0,
+    hasContent: ids.length > 0 || bossReady || negReady || missions.length > 0,
   }
 }
 
@@ -236,7 +241,12 @@ async function completeBossRaw(content: Content, bossId: string, attempts: numbe
   if (!boss) return { capital: 0, xp: 0 }
   const prev = await db.bosses.get(bossId)
   const gain = prev ? { capital: 0, xp: 0 } : boss.reward
-  if (!prev) await db.bosses.put({ bossId, week: boss.week, at: new Date().toISOString(), attempts, livesLeft })
+  if (!prev) {
+    // week — постоянный ключ недели по плану с правками, не позиция (как в админке)
+    const { weeks } = effectiveContent(content, await db.plan.get('main'))
+    const w = weeks.find((x) => x.bossId === bossId)
+    await db.bosses.put({ bossId, week: w ? (w.key ?? w.n) : boss.week, at: new Date().toISOString(), attempts, livesLeft })
+  }
   await award(content, gain)
   return gain
 }
@@ -262,6 +272,9 @@ async function completeNegotiationRaw(
   const prev = await db.negotiations.get(id)
   const firstDeal = r.xp && !prev?.rewarded
   const better = !prev || r.saving > prev.saving
+  // Первый прогон — Репутация как есть (и плюс, и минус). Повтор — только прирост сверх лучшего выданного: перепроходить ради Репутации бесполезно
+  const given = prev ? (prev.reputationGiven ?? 0) : 0
+  const repGain = prev ? Math.max(0, r.reputation - given) : r.reputation
   await db.negotiations.put({
     id,
     at: new Date().toISOString(),
@@ -271,9 +284,9 @@ async function completeNegotiationRaw(
     saving: better ? r.saving : prev!.saving,
     runs: (prev?.runs ?? 0) + 1,
     rewarded: prev?.rewarded || firstDeal,
+    reputationGiven: Math.max(given, given + repGain),
   })
-  // Репутация меняется всегда: как ты ведёшь себя с партнёрами — запоминается
-  const gain = { xp: firstDeal ? n.reward.xp : 0, influence: firstDeal ? r.influence : 0, reputation: r.reputation }
+  const gain = { xp: firstDeal ? n.reward.xp : 0, influence: firstDeal ? r.influence : 0, reputation: repGain }
   await award(content, gain)
   return gain
 }

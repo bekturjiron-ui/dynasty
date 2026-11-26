@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { content } from '../content'
-import { ADMIN_PIN, adjustPlayer, clearAllProgress, completeAllProgress, previewCeremony, resetAll, setAllBuildings, setRank } from '../game/admin'
+import { checkAdminPin, adjustPlayer, clearAllProgress, completeAllProgress, previewCeremony, resetAll, setAllBuildings, setRank } from '../game/admin'
 import { downloadBlob, exportState } from '../game/backup'
 import type { Game } from '../game/useGame'
 import { fmtNum } from '../lib/format'
@@ -16,13 +16,14 @@ export default function Admin({ game }: { game: Game }) {
   const p = game.player
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('dynasty-admin') === '1')
   const [pin, setPin] = useState('')
-  const [pinErr, setPinErr] = useState(false)
+  const [pinErr, setPinErr] = useState<false | 'wrong' | 'default'>(false)
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
   const [timeMode, setTimeMode] = useState<string>(() => localStorage.getItem('dynasty-time') ?? 'auto')
 
   function check() {
-    if (pin === ADMIN_PIN) { sessionStorage.setItem('dynasty-admin', '1'); setUnlocked(true); setPin('') } else setPinErr(true)
+    const r = checkAdminPin(pin, game.settings.mentorPin)
+    if (r === 'ok') { sessionStorage.setItem('dynasty-admin', '1'); setUnlocked(true); setPin('') } else setPinErr(r)
   }
   async function doReset() {
     setBusy(true)
@@ -37,7 +38,7 @@ export default function Admin({ game }: { game: Game }) {
       <div className="stagger space-y-4">
         <div className="pt-2">
           <Title>Админ-панель</Title>
-          <p className="mt-1 text-[14px] text-muted">Только для проверки игры. Введи PIN.</p>
+          <p className="mt-1 text-[14px] text-muted">Только для проверки игры. Введи PIN наставника.</p>
         </div>
         <Card className="space-y-3">
           <input
@@ -46,7 +47,8 @@ export default function Admin({ game }: { game: Game }) {
             onKeyDown={(e) => { if (e.key === 'Enter') check() }}
             className={`min-h-12 w-full rounded-xl border bg-ink px-4 text-center text-[22px] tracking-[0.5em] outline-none ${pinErr ? 'border-loss' : 'border-line focus:border-gold'}`}
           />
-          {pinErr && <p className="text-center text-[13px] text-loss">Неверный PIN</p>}
+          {pinErr === 'wrong' && <p className="text-center text-[13px] text-loss">PIN не подходит</p>}
+          {pinErr === 'default' && <p className="text-center text-[13px] text-loss">Панель открывается PIN наставника. Сначала смени PIN 0000 в редакторе плана.</p>}
           <Button full onClick={check}>Открыть</Button>
           <Button variant="quiet" full onClick={() => nav(-1)}>Назад</Button>
         </Card>

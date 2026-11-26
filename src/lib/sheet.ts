@@ -85,6 +85,18 @@ const RU: [RegExp, string][] = [
   [/ЕСЛИ(?=\s*\()/g, 'IF'], [/МИН(?=\s*\()/g, 'MIN'], [/МАКС(?=\s*\()/g, 'MAX'], [/СЧ[ЕЁ]Т(?=\s*\()/g, 'COUNT'],
 ]
 
+function decimalCommaOutsideParens(s: string): string {
+  let depth = 0
+  let out = ''
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]
+    if (ch === '(') depth++
+    else if (ch === ')') depth = Math.max(0, depth - 1)
+    out += ch === ',' && depth === 0 && /\d/.test(s[i - 1] ?? '') && /\d/.test(s[i + 1] ?? '') ? '.' : ch
+  }
+  return out
+}
+
 /** Переводит формулу таблицы в выражение нашего вычислителя. Текст в кавычках не трогает. */
 export function translate(formula: string): string {
   const texts: string[] = []
@@ -95,7 +107,9 @@ export function translate(formula: string): string {
   for (const [re, en] of RU) s = s.replace(re, en)
   s = s.replace(/(^|[^A-ZА-ЯЁ0-9_])(?:ЛОЖЬ|FALSE)(?![A-ZА-ЯЁ0-9_])/g, '$10').replace(/(^|[^A-ZА-ЯЁ0-9_])(?:ИСТИНА|TRUE)(?![A-ZА-ЯЁ0-9_])/g, '$11')
   // Русская раскладка: «;» — разделитель аргументов, «,» — десятичная запятая
-  if (s.includes(';') || !s.includes('(')) s = s.replace(/(\d),(\d)/g, '$1.$2')
+  // Без «;» запятая внутри скобок — разделитель аргументов, а вне скобок она может быть только дробной: =СУММ(B2:B4)*1,2
+  if (s.includes(';')) s = s.replace(/(\d),(\d)/g, '$1.$2')
+  else s = decimalCommaOutsideParens(s)
   s = s.replace(/;/g, ',')
   s = s.replace(/(\d+(?:\.\d+)?)\s*%/g, '($1/100)')
   s = s.replace(/\$?([A-Z])\$?(\d+)\s*:\s*\$?([A-Z])\$?(\d+)/g, (_m, c1: string, r1: string, c2: string, r2: string) => {

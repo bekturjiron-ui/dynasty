@@ -3,8 +3,16 @@ import { db } from '../db'
 import { dayKey } from '../lib/dates'
 import { emitRankUp } from './events'
 
-/** Админ-панель: только для проверки того, как игра меняется. Работает с локальной базой этого устройства. */
-export const ADMIN_PIN = '0000'
+/** Админ-панель: только для проверки того, как игра меняется. Работает с локальной базой этого устройства.
+ *  Открывается PIN наставника. Пока стоит PIN по умолчанию, в собранной игре панель закрыта: иначе любой ученик
+ *  набрал бы 0000 и выдал себе титул. В режиме разработки (npm run dev) 0000 работает. */
+export const DEFAULT_PIN = '0000'
+export type AdminPinCheck = 'ok' | 'wrong' | 'default'
+export function checkAdminPin(pin: string, mentorPin: string | undefined, dev = import.meta.env.DEV): AdminPinCheck {
+  const real = mentorPin || DEFAULT_PIN
+  if (real === DEFAULT_PIN && !dev) return 'default'
+  return pin === real ? 'ok' : 'wrong'
+}
 
 /** Включён ли режим админ-панели в текущей вкладке браузера. */
 export function isAdmin(): boolean {
