@@ -9,6 +9,7 @@ import { parseAddr, type CellResult, type Grid } from '../lib/sheet'
 import { render } from '../lib/template'
 import { TermText } from './Glossary'
 import { TableView } from './TableView'
+import { Actions } from './ActionSlot'
 import { Advisor, Button, Icon } from './ui'
 
 type Props = {
@@ -64,7 +65,7 @@ function ChoiceExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Да�
       </div>
       {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник подсветил решение золотой рамкой.</p>}
       {picked !== null && <Advisor tone={options[picked].correct ? 'gain' : 'loss'}><TermText text={render(options[picked].why, scope)} /></Advisor>}
-      {solved && <Button full onClick={() => onSolved({ attempts: tried.length })}>{doneLabel}</Button>}
+      {solved && <Actions><Button full onClick={() => onSolved({ attempts: tried.length })}>{doneLabel}</Button></Actions>}
     </div>
   )
 }
@@ -95,7 +96,7 @@ function TextExercise({ ex, scope: scope0, onSolved, onOff, doneLabel = 'Дал�
       {reveal && !solved && <p className="text-[14px] text-gold-soft">Советник: например, «{render(c.sample, scope)}»</p>}
       {issues && issues.length > 0 && <Advisor tone="loss">{issues.map((x) => x.text).join(' ')}</Advisor>}
       {solved && <Advisor tone="gain">Объявление проходит проверку: {len} знаков, правила площадки соблюдены.</Advisor>}
-      {solved ? <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button> : <Button full onClick={check} disabled={!len}>Проверить объявление</Button>}
+      {solved ? <Actions><Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button></Actions> : <Button full onClick={check} disabled={!len}>Проверить объявление</Button>}
     </div>
   )
 }
@@ -173,7 +174,7 @@ function NumberExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = 
       )}
 
       {note && <Advisor tone={note.tone}><TermText text={note.text} /></Advisor>}
-      {solved && <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button>}
+      {solved && <Actions><Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button></Actions>}
     </div>
   )
 }
@@ -296,7 +297,7 @@ function SheetExercise({ ex, scope: scope0, mode, onSolved, onOff, doneLabel = '
       )}
 
       {note && <Advisor tone={note.tone}><TermText text={note.text} /></Advisor>}
-      {solved && <Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button>}
+      {solved && <Actions><Button full onClick={() => onSolved({ attempts })}>{doneLabel}</Button></Actions>}
     </div>
   )
 }

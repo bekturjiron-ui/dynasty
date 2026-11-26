@@ -562,6 +562,15 @@ a:active .tab-icon {
     radial-gradient(90% 26% at 50% 24%, rgba(14, 14, 16, 0.5) 0%, rgba(14, 14, 16, 0) 100%),
     linear-gradient(180deg, rgba(14, 14, 16, 0.55) 0%, rgba(14, 14, 16, 0.1) 12%, rgba(14, 14, 16, 0.2) 32%, rgba(14, 14, 16, 0.8) 50%, #0e0e10 66%);
 }
+/* Нижняя панель урока: плотная внизу, кверху растворяется в фоне недели.
+   Прозрачный верх не ловит нажатия — под ним остаётся контент урока. */
+.lesson-bar {
+  pointer-events: none;
+  background: linear-gradient(0deg, #0e0e10 0%, #0e0e10 58%, rgba(14, 14, 16, 0.85) 78%, rgba(14, 14, 16, 0) 100%);
+}
+.lesson-bar > * {
+  pointer-events: auto;
+}
 /* Текст поверх картинки: мягкая тень, чтобы буквы не терялись на светлых деталях */
 .lesson-bg + .scene-lesson,
 .lesson-bg + .scene-boss {

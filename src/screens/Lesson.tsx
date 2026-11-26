@@ -14,6 +14,7 @@ import { TableView } from '../components/TableView'
 import { VideoBlock } from '../components/VideoBlock'
 import { LessonBackdrop } from '../components/LessonBackdrop'
 import { RewardPills } from '../components/Reward'
+import { Actions, ActionSlotProvider } from '../components/ActionSlot'
 import { Advisor, Button, Icon, Label } from '../components/ui'
 
 type Phase = 'why' | 'demo' | 'guided' | 'solo' | 'report'
@@ -41,6 +42,7 @@ export default function LessonScreen() {
   const [attempts, setAttempts] = useState(0)
   const [gain, setGain] = useState<{ capital: number; xp: number } | null>(null)
   const touchX = useRef<number | null>(null)
+  const [slot, setSlot] = useState<HTMLDivElement | null>(null) // нижняя панель: сюда уходят кнопки «вперёд»
 
   // Контекст урока фиксируется на старте, чтобы цифры не прыгали при смене настроек
   const scope = useMemo(() => (game.loading || !lesson ? null : withVars(game.scope, lesson.vars)), [game.loading, lesson]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -111,7 +113,8 @@ export default function LessonScreen() {
   return (
     <>
     <LessonBackdrop weekKey={weekKey} />
-    <div className="scene-lesson pt-safe relative z-10 mx-auto min-h-dvh max-w-2xl px-4 pb-28 md:pt-8">
+    <ActionSlotProvider value={slot}>
+    <div className="scene-lesson pt-safe relative z-10 mx-auto min-h-dvh max-w-2xl px-4 pb-44 md:pt-8">
       {/* Шапка: закрыть + 5 фаз цикла */}
       <div className="mb-5 flex items-center gap-3">
         <button onClick={() => nav(-1)} aria-label="Закрыть урок" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted active:bg-panel">
@@ -142,7 +145,7 @@ export default function LessonScreen() {
       {phase === 'why' && (
         <div className="animate-rise mt-10 space-y-8">
           <p className="font-serif text-[28px] leading-snug text-parch"><TermText text={render(lesson.why, scope)} /></p>
-          <Button full onClick={() => go('demo')}>Смотреть, как делает профи</Button>
+          <Actions><Button full onClick={() => go('demo')}>Смотреть, как делает профи</Button></Actions>
         </div>
       )}
 
@@ -154,10 +157,12 @@ export default function LessonScreen() {
             <p className="text-[17px] leading-relaxed"><TermText text={render(demo.text, scope)} /></p>
             {demo.table && <TableView grid={resolveTable(demo.table, scope)} highlight={demo.highlight} />}
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setDemoIdx((i) => i - 1)} disabled={demoIdx === 0}>Назад</Button>
-            <Button full onClick={demoNext}>{demoIdx < lesson.demo.length - 1 ? 'Дальше' : 'Теперь вместе'}</Button>
-          </div>
+          <Actions>
+            <div className="flex gap-2">
+              <Button variant="ghost" className="w-[34%] shrink-0" onClick={() => setDemoIdx((i) => i - 1)} disabled={demoIdx === 0}>Назад</Button>
+              <Button className="min-w-0 flex-1" onClick={demoNext}>{demoIdx < lesson.demo.length - 1 ? 'Дальше' : 'Теперь вместе'}</Button>
+            </div>
+          </Actions>
         </div>
       )}
 
@@ -192,16 +197,23 @@ export default function LessonScreen() {
             <div className="font-serif text-[20px] text-parch"><TermText text={lesson.arsenalCard.title} /></div>
             <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[15px] leading-relaxed text-parch/90"><TermText text={lesson.arsenalCard.body} /></pre>
           </div>
-          <Button full onClick={() => nav('/')}>В Дом</Button>
+          <Actions><Button full onClick={() => nav('/')}>В Дом</Button></Actions>
         </div>
       )}
 
-      {/* «Не понял» — другой способ объяснить */}
-      {phase !== 'why' && phase !== 'report' && (
-        <div className="pb-safe fixed inset-x-0 bottom-0 z-20 border-t border-line bg-ink/95 px-4 pt-3 backdrop-blur">
-          <div className="mx-auto max-w-2xl"><Button variant="ghost" full onClick={openHelp}>Не понял</Button></div>
+      {/* Нижняя панель: всегда на одном месте, в зоне большого пальца. Сверху — тихая ссылка «Не понял»,
+          под ней кнопки «вперёд» (их присылают фазы урока и ExerciseView через <Actions>). */}
+      <div className="lesson-bar pb-safe fixed inset-x-0 bottom-0 z-20 px-4 pt-8">
+        <div className="mx-auto max-w-2xl space-y-1">
+          {phase !== 'why' && phase !== 'report' && (
+            <button type="button" onClick={openHelp} className="mx-auto flex min-h-11 items-center gap-1.5 px-3 text-[14px] font-medium text-gold-soft/80 active:text-gold">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-gold/50 text-[12px] leading-none">?</span>
+              Не понял — объясни иначе
+            </button>
+          )}
+          <div ref={setSlot} className="pb-2" />
         </div>
-      )}
+      </div>
       {sheetOpen && (
         <div className="fixed inset-0 z-30 flex items-end bg-black/60" onClick={() => setSheetOpen(false)}>
           <div className="pb-safe animate-rise max-h-[80dvh] w-full overflow-y-auto surface rounded-t-3xl border-t border-gold/40 px-4 pt-5 md:mx-auto md:max-w-2xl" onClick={(e) => e.stopPropagation()}>
@@ -228,6 +240,7 @@ export default function LessonScreen() {
         </div>
       )}
     </div>
+    </ActionSlotProvider>
     </>
   )
 }
